@@ -1,6 +1,15 @@
-import { Alert, Text, TextInput, TouchableOpacity, View, Image } from "react-native";
+import {
+  Alert,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Image,
+} from "react-native";
 import React, { useState } from "react";
 import { icons } from "../constants";
+import { Link } from "expo-router";
+import CustomButton from "../components/CustomButton";
 
 export default function App() {
   const [username, setUsername] = useState("");
@@ -9,7 +18,6 @@ export default function App() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-
 
   const handleRegister = () => {
     if (password !== confirmPassword) {
@@ -42,7 +50,7 @@ export default function App() {
         onChangeText={setEmail}
       />
 
-<Text className="font-urbanistmedium mb-2">Password</Text>
+      <Text className="font-urbanistmedium mb-2">Password</Text>
       <View className="relative">
         <TextInput
           className="font-urbanistmedium border border-gray-300 rounded-md p-3 mb-2"
@@ -84,7 +92,7 @@ export default function App() {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
         className="bg-green text-white rounded-xl p-3 mt-4"
         onPress={handleRegister}
         activeOpacity={0.7}
@@ -92,16 +100,25 @@ export default function App() {
         <Text className="text-lg text-white font-psemibold text-center">
           Register
         </Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+
+      <CustomButton
+        title="Register"
+        handlePress={handleRegister}
+        containerStyles="mt-7"
+      />
 
       <View className="flex-row justify-center mt-2.5">
         <Text className="font-urbanistmedium">Already have an account? </Text>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           activeOpacity={0.3}
           onPress={() => Alert.alert("Navigate to Login")}
-        >
-          <Text className="font-urbanistmedium text-green">Log in</Text>
-        </TouchableOpacity>
+        > */}
+        {/* <Text className="font-urbanistmedium text-green">Log in</Text> */}
+        <Link href={"/login"} className="font-urbanistmedium text-green">
+          Log in
+        </Link>
+        {/* </TouchableOpacity> */}
       </View>
     </View>
   );
