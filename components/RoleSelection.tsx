@@ -1,0 +1,48 @@
+import { View, Text, TouchableOpacity } from 'react-native'
+import React, { useState } from 'react'
+import { useRouter } from "expo-router"; 
+
+const RoleSelection = () => {
+    const [selectedOption, setSelectedOption] = useState<string | null>(null);
+    const router = useRouter()
+
+    const handlePress = () => {
+      router.push("/login")
+    }
+    return (
+    <View className="space-y-2 justify-center display-flex alignItems-center">
+      <Text className="text-black text-2xl mt-10"> Are you</Text>
+
+      <TouchableOpacity className={`border border-black-300 rounded-lg p-4 mb-4 ${
+          selectedOption === 'customer' ? 'border-green-500 bg-green-100' : ''
+        }`}
+      onPress={() => setSelectedOption('customer')}
+      >
+        <Text className="text-lg">Customer</Text>
+        <Text className="text-gray-600">Track your daily food carbon footprint</Text>
+
+      </TouchableOpacity>
+
+      <Text className="justify-center p-3 text-semibold font-psemibold text-base "> or </Text>
+
+      <TouchableOpacity  className={`border border-black-300 rounded-lg p-4 mb-4 ${
+          selectedOption === 'vendor' ? 'border-green-500 bg-green-100' : ''
+        }`}
+      onPress={() => setSelectedOption('vendor')}
+      >
+        <Text className="text-lg">Vendor</Text>
+        <Text className="text-gray-600">Disclose your food carbon footprint to customers with a digital menu</Text>
+
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        className={`rounded-lg p-4 mt-6 ${selectedOption ? 'bg-green/100' : 'bg-gray-300'}`}
+        disabled={!selectedOption} onPress={handlePress}
+      >
+        <Text className="text-white text-lg text-semibold font-psemibold text-center">Next step</Text>
+      </TouchableOpacity>
+    </View>
+    )
+}
+
+export default RoleSelection
