@@ -8,10 +8,13 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { icons } from "../constants";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import CustomButton from "../components/CustomButton";
+import { useNavigation } from "@react-navigation/native";
 
-export default function App() {
+
+
+export default function App({  }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,15 +22,20 @@ export default function App() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
+  const router = useRouter()
+
   const handleRegister = () => {
     if (password !== confirmPassword) {
       Alert.alert("Passwords do not match");
     } else {
       Alert.alert("Register successful");
+      router.push("/role_page")
     }
   };
 
   return (
+
+
     <View className="flex-1 justify-center px-8 bg-white">
       <Text className="text-3xl font-urbanistbold text mb-4">
         Welcome to join the sustainable community
@@ -105,6 +113,7 @@ export default function App() {
       <CustomButton
         title="Register"
         handlePress={handleRegister}
+        
         containerStyles="mt-7"
       />
 
@@ -123,3 +132,4 @@ export default function App() {
     </View>
   );
 }
+
