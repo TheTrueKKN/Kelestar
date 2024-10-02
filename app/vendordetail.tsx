@@ -102,20 +102,20 @@ export default function VendorDetailPage() {
             {/* Next Step Button */}
             <TouchableOpacity
               className="bg-[#74B318] h-12 rounded-md justify-center items-center mt-6"
-              onPress={() => router.push('/createdish')} // Navigate to createdish page
+              onPress={() => router.push({ pathname: '/createdish', params: { vendorUri: thumbnailImage }})} // Navigate to createdish page
             >
               <Text className="text-white font-bold text-lg">Next Step</Text>
             </TouchableOpacity>
 
             {/* Temporary Link to Edit Vendor Page */}
-            {/* <View className="mt-4">
+            <View className="mt-4">
               <TouchableOpacity
                 className="bg-[#74B318] h-12 rounded-md justify-center items-center"
                 onPress={() => router.push('/editvendor')} // Navigate to editvendor page
               >
                 <Text className="text-white font-bold text-lg">Edit Vendor Details</Text>
               </TouchableOpacity>
-            </View> */}
+            </View>
           </View>
         </View>
       </ScrollView>

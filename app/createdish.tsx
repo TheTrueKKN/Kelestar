@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StatusBar, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
+import { useGlobalSearchParams, useRouter } from 'expo-router';
 
 const galleryIcon = require('../assets/icons/gallery.png'); // Adjust the path to your gallery icon
 
@@ -10,6 +10,8 @@ export default function CreateDishPage() {
   const [dishPrice, setDishPrice] = useState('');
   const [thumbnailImage, setThumbnailImage] = useState(''); // State for thumbnail image
   const router = useRouter(); // Initialize router
+
+  const { vendorUri } = useGlobalSearchParams();
 
   const pickImage = async () => {
     // Request permission to access the media library
@@ -106,7 +108,8 @@ export default function CreateDishPage() {
             className="h-12 bg-[#74B318] rounded-md justify-center items-center mb-4"
             onPress={() => {
               // Add functionality for creating the new dish
-              console.log('Create new dish button pressed');
+              router.push({ pathname: '/menu', params: { vendorUri, dishUri: thumbnailImage }})
+              // console.log('Create new dish button pressed');
             }}
           >
             <Text className="text-white text-lg font-bold">Create dish</Text>
