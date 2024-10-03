@@ -7,8 +7,13 @@ const RoleSelection = () => {
     const router = useRouter()
 
     const handlePress = () => {
-      router.push("/login")
+      if (selectedOption === 'customer') {
+        router.push("/login")
+      } else if (selectedOption === 'vendor') {
+        router.push("/vendordetail")
+      }
     }
+
     return (
     <View className="space-y-2 justify-center display-flex alignItems-center">
       <Text className="text-black text-2xl mt-10"> Are you</Text>
@@ -20,7 +25,6 @@ const RoleSelection = () => {
       >
         <Text className="text-lg">Customer</Text>
         <Text className="text-gray-600">Track your daily food carbon footprint</Text>
-
       </TouchableOpacity>
 
       <Text className="justify-center p-3 text-semibold font-psemibold text-base "> or </Text>
@@ -32,7 +36,6 @@ const RoleSelection = () => {
       >
         <Text className="text-lg">Vendor</Text>
         <Text className="text-gray-600">Disclose your food carbon footprint to customers with a digital menu</Text>
-
       </TouchableOpacity>
 
       <TouchableOpacity
