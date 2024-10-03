@@ -11,7 +11,10 @@ import logout from "../assets/icons/logout.png";
 import eyeHide from "../assets/icons/eye-hide.png";
 import eye from "../assets/icons/eye.png";
 import play from "../assets/icons/play.png";
-
+import badge from "../assets/icons/badge.png";
+import calculator from "../assets/icons/calculator.png";
+import questionCircle from "../assets/icons/question-circle.png";
+import settings from "../assets/icons/settings.png";
 
 export default {
   play,
@@ -27,4 +30,8 @@ export default {
   logout,
   eyeHide,
   eye,
+  badge,
+  calculator,
+  questionCircle,
+  settings,
 };
