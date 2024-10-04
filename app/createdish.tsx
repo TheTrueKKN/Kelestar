@@ -11,7 +11,8 @@ export default function CreateDishPage() {
   const [thumbnailImage, setThumbnailImage] = useState(''); // State for thumbnail image
   const router = useRouter(); // Initialize router
 
-  const { vendorUri } = useGlobalSearchParams();
+  const { prevPage } = useGlobalSearchParams();
+  const [dishes, setDishes] = useState([]);
 
   const pickImage = async () => {
     // Request permission to access the media library
@@ -28,6 +29,45 @@ export default function CreateDishPage() {
     if (!result.canceled) {
       setThumbnailImage(result.assets[0].uri); // Set the selected image URI
     }
+  };
+
+  type Dish = {
+    id: string;
+    dishName: string;
+    dishPrice: string | number;
+    thumbnailImage: string;
+  };
+
+  const handleCreateDish = () => {
+    const newDish: Dish = {
+      id: Math.random().toString(), // Generate a unique ID
+      dishName,  // Assuming dishName is already a string from input
+      dishPrice: Number(dishPrice), // Make sure the price is a number or string as per the type
+      thumbnailImage // Assuming thumbnailImage is a string (URI to the image)
+    };
+    
+    setDishName('');
+    setDishPrice('');
+    setThumbnailImage('');
+
+
+    // Navigate back to the dishes page
+    const validPrevpage = Array.isArray(prevPage) ? prevPage[0] : prevPage;
+    if (newDish.dishName != '' || newDish.dishPrice != 0){
+      router.replace({
+      
+        pathname: validPrevpage, // Use the dynamically passed previous page
+        params: { newDish: JSON.stringify(newDish) }
+      });
+    
+    }
+    else{
+      // router.replace({
+      //   pathname:validPrevpage
+      // })
+      router.back()
+    }
+
   };
 
   return (
@@ -108,8 +148,9 @@ export default function CreateDishPage() {
             className="h-12 bg-[#74B318] rounded-md justify-center items-center mb-4"
             onPress={() => {
               // Add functionality for creating the new dish
-              router.push({ pathname: '/menu', params: { vendorUri, dishUri: thumbnailImage }})
+              // router.push({ pathname: '/menu', params: { vendorUri, dishUri: thumbnailImage }})
               // console.log('Create new dish button pressed');
+              handleCreateDish()
             }}
           >
             <Text className="text-white text-lg font-bold">Create dish</Text>

@@ -102,7 +102,7 @@ export default function VendorDetailPage() {
             {/* Next Step Button */}
             <TouchableOpacity
               className="bg-[#74B318] h-12 rounded-md justify-center items-center mt-6"
-              onPress={() => router.push({ pathname: '/createdish', params: { vendorUri: thumbnailImage }})} // Navigate to createdish page
+              onPress={() => router.push({ pathname: '/initialmenu', params: { vendorUri: thumbnailImage }})} // Navigate to createdish page
             >
               <Text className="text-white font-bold text-lg">Next Step</Text>
             </TouchableOpacity>

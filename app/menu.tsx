@@ -1,7 +1,13 @@
 import { StyleSheet, Text, View, Image, ScrollView, TouchableOpacity } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 
+type Dish = {
+    id: string;
+    dishName: string;
+    dishPrice: number;
+    thumbnailImage: string;
+  };
 
 export default function menu() {
     const { vendorUri, dishUri } = useGlobalSearchParams();
@@ -9,10 +15,13 @@ export default function menu() {
 
     const validVendorUri = Array.isArray(vendorUri) ? vendorUri[0] : vendorUri;
     const validDishUri = Array.isArray(dishUri) ? dishUri[0] : dishUri;
+
+    const [dishes, setDishes] = useState<Dish[]>([]);
+
     return (
     <View className = "bg-white flex-1">
         {/* header */}
-        <Text className='text-semibold text-2xl mt-5 ml - 3'>Hello 'to be filled in'</Text>
+        <Text className='text-semibold text-2xl mt-5 ml-3'>Hello 'to be filled in'</Text>
         <View className='space-y-2 justify-center items-center'>
             <Image source= {{uri: validVendorUri}} className='w-40 h-40 mt-10' />
         </View>
