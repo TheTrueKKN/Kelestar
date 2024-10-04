@@ -12,7 +12,7 @@ type Dish = {
 };
 
 const initialmenu = () => {
-  const { vendorUri, newDish } = useGlobalSearchParams();
+  const { vendorName , vendorDesc, vendorUri, newDish } = useGlobalSearchParams();
   const router = useRouter();
 
   const [dishes, setDishes] = useState<Dish[]>([]);
@@ -22,7 +22,6 @@ const initialmenu = () => {
     if (!dishes.some(dish => dish.id === newDish.id)){
         setDishes((prevDishes) => {
             const updatedDishes = [...prevDishes, newDish];
-            console.log("im in")
             return updatedDishes;
         });
     }
@@ -53,6 +52,7 @@ const initialmenu = () => {
   useEffect(() => {
     console.log("Current Dishes:", dishes);
   }, [dishes]);
+
 
   return (
     <View className="space-y-3 p-6 justify-center bg-white flex-1">
@@ -94,7 +94,7 @@ const initialmenu = () => {
 
         <TouchableOpacity
           className="bg-[#74B318] rounded-full py-4 justify-center items-center shadow-md"
-          onPress={() => router.push({ pathname: '/menu' })}
+          onPress={() => router.push({ pathname: '/menu' , params:{vendorName, vendorDesc, vendorUri, menudDishes:JSON.stringify(dishes)}})}
         >
           <Text className="text-white font-semibold text-lg">Next step</Text>
         </TouchableOpacity>
