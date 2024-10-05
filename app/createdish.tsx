@@ -56,7 +56,7 @@ export default function CreateDishPage() {
     if (newDish.dishName != '' || newDish.dishPrice != 0){
       router.replace({
       
-        pathname: validPrevpage, // Use the dynamically passed previous page
+        pathname: validPrevpage, // Use the passed previous page
         params: { newDish: JSON.stringify(newDish) }
       });
     

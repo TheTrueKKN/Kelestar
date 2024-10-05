@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, Image, ScrollView, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { RouteParamInput, useGlobalSearchParams, useRouter } from 'expo-router';
+import { RouteParamInput, useGlobalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
 import DishItem from '../components/DishItem';
 
 type Dish = {
@@ -10,22 +11,26 @@ type Dish = {
   thumbnailImage: string;
 };
 
-export default function menu() {
-  const { vendorName, vendorDesc, vendorUri, menudDishes , newDish } = useGlobalSearchParams();
+export default function Menu() {
+  const { vendorName, vendorDesc, vendorUri, menudDishes, newDish } = useGlobalSearchParams();
+  const { newVendorName, newVendorDesc, newImg } = useGlobalSearchParams();
   const router = useRouter();
-  
-  const validVendorName = Array.isArray(vendorName) ? vendorName[0] : vendorName;
-  const validVendorDesc = Array.isArray(vendorDesc) ? vendorDesc[0] : vendorDesc;
-  const validVendorUri = Array.isArray(vendorUri) ? vendorUri[0] : vendorUri;
-  const validMenuDishes = Array.isArray(menudDishes) ? menudDishes[0] : menudDishes;
 
-  const parsedDishes = menudDishes ? JSON.parse(validMenuDishes) : [];
+  const [validVendorName, setValidVendorName] = useState<string | undefined>(undefined);
+  const [validVendorDesc, setValidVendorDesc] = useState<string | undefined>(undefined);
+  const [validVendorUri, setValidVendorUri] = useState<string | undefined>(undefined);
 
+  const parsedDishes = menudDishes ? JSON.parse(Array.isArray(menudDishes) ? menudDishes[0] : menudDishes) : [];
   const [dishes, setDishes] = useState<Dish[]>(parsedDishes);
+
+  // Helper function to validate and extract single value
+  const validateParam = (param: string | string[] | undefined): string | undefined => {
+    return Array.isArray(param) ? param[0] : param;
+  };
 
   const addNewDish = (newDish: Dish) => {
     if (!dishes.some(dish => dish.id === newDish.id)) {
-        setDishes((prevDishes) => [...prevDishes, newDish]);
+      setDishes((prevDishes) => [...prevDishes, newDish]);
     }
   };
 
@@ -40,26 +45,30 @@ export default function menu() {
     });
   };
 
-  useEffect(() => {
-    if (newDish) {
-      const parsedDish = typeof newDish === 'string' ? JSON.parse(newDish) : null;
-      if (parsedDish) {
-        addNewDish(parsedDish);
-      }
-    }
-  }, [newDish]);
+  // Update vendor details when the screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      setValidVendorName(validateParam(newVendorName || vendorName));
+      setValidVendorDesc(validateParam(newVendorDesc || vendorDesc));
+      setValidVendorUri(validateParam(newImg || vendorUri));
 
-  const isVendorInfoMissing = !validVendorName || !validVendorDesc || !validVendorUri;
+      if (newDish) {
+        const parsedDish = typeof newDish === 'string' ? JSON.parse(newDish) : null;
+        if (parsedDish) {
+          addNewDish(parsedDish);
+        }
+      }
+    }, [vendorName, vendorDesc, vendorUri, newVendorName, newVendorDesc, newImg, newDish])
+  );
 
   return (
     <View className="bg-white flex-1">
       {/* Top Header with icon on the right */}
       <View className="flex-row justify-between items-center mt-5 ml-3 mr-3">
         <Text className='font-bold text-2xl'>{validVendorName ? `Hello ${validVendorName}!` : 'Hello there!!'}</Text>
-        <TouchableOpacity onPress={() => router.push('/editvendor')}>
+        <TouchableOpacity onPress={() => router.push({ pathname: '/editvendor', params: { prevPage: '/menu' } })}>
           <Image className="w-5 h-5 tintColour-white"
             source={require('../assets/icons/pen.png')} // Replace with your icon 
-            // style={{tintColor:'white'}}
           />
         </TouchableOpacity>
       </View>
