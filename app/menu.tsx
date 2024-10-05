@@ -11,13 +11,9 @@ type Dish = {
 };
 
 export default function menu() {
-  const { vendorName, vendorDesc, vendorUri, menudDishes , newDish} = useGlobalSearchParams();
+  const { vendorName, vendorDesc, vendorUri, menudDishes , newDish } = useGlobalSearchParams();
   const router = useRouter();
   
-  // Logging to check parsed dishes
-  console.log("Parsed Dishes");
-  console.log(menudDishes);
-
   const validVendorName = Array.isArray(vendorName) ? vendorName[0] : vendorName;
   const validVendorDesc = Array.isArray(vendorDesc) ? vendorDesc[0] : vendorDesc;
   const validVendorUri = Array.isArray(vendorUri) ? vendorUri[0] : vendorUri;
@@ -28,11 +24,8 @@ export default function menu() {
   const [dishes, setDishes] = useState<Dish[]>(parsedDishes);
 
   const addNewDish = (newDish: Dish) => {
-    if (!dishes.some(dish => dish.id === newDish.id)){
-        setDishes((prevDishes) => {
-            const updatedDishes = [...prevDishes, newDish];
-            return updatedDishes;
-        });
+    if (!dishes.some(dish => dish.id === newDish.id)) {
+        setDishes((prevDishes) => [...prevDishes, newDish]);
     }
   };
 
@@ -40,7 +33,6 @@ export default function menu() {
     setDishes((prevDishes) => prevDishes.filter(dish => dish.id !== id));
   };
 
-  // Function to edit a dish (navigates to edit page)
   const editDish = (dish: RouteParamInput<string> | undefined) => {
     router.push({
       pathname: '/editdish',
@@ -57,61 +49,59 @@ export default function menu() {
     }
   }, [newDish]);
 
-  // Check if any of the key fields are missing
   const isVendorInfoMissing = !validVendorName || !validVendorDesc || !validVendorUri;
 
   return (
     <View className="bg-white flex-1">
-      {/* Conditional rendering for missing vendor information */}
-      {isVendorInfoMissing ? (
-        <View className="flex-1 justify-center items-center">
-          <Text className="text-gray-600 text-lg font-semibold">Vendor information is missing!</Text>
-          <Text className="text-gray-400 text-center mt-2">
-            Please provide the necessary details to view the menu.
+      {/* Top Header with icon on the right */}
+      <View className="flex-row justify-between items-center mt-5 ml-3 mr-3">
+        <Text className='font-bold text-2xl'>{validVendorName ? `Hello ${validVendorName}!` : 'Hello there!!'}</Text>
+        <TouchableOpacity onPress={() => router.push('/editvendor')}>
+          <Image className="w-5 h-5 tintColour-white"
+            source={require('../assets/icons/pen.png')} // Replace with your icon 
+            // style={{tintColor:'white'}}
+          />
+        </TouchableOpacity>
+      </View>
+
+      <View className='space-y-2 justify-center items-center'>
+        <Image 
+          source={{ uri: validVendorUri || 'https://via.placeholder.com/150' }} 
+          className='w-40 h-40 mt-10' 
+        />
+      </View>
+
+      <Text className='font-bold text-center px-5 mt-4'>
+        {validVendorDesc || 'Happy to serve you'}
+      </Text>
+
+      {/* Create new dish button */}
+      <View className='px-4 mt-6'>
+        <TouchableOpacity 
+          className='bg-[#74B318] py-3 rounded-md justify-center items-center'
+          onPress={() => router.push({ pathname: '/createdish', params: { prevPage: '/menu' } })}
+        >
+          <Text className='text-white text-lg font-bold'>
+            Create new dish +
           </Text>
-        </View>
-      ) : (
-        <>
-          {/* Header */}
-          <Text className='text-semibold text-2xl mt-5 ml-3'>Hello {validVendorName}</Text>
-          <View className='space-y-2 justify-center items-center'>
-            {/* Display placeholder image if validVendorUri is empty */}
-            <Image 
-              source={{ uri: validVendorUri || 'https://via.placeholder.com/150' }} 
-              className='w-40 h-40 mt-10' 
+        </TouchableOpacity>
+      </View>
+
+      {/* Dish list */}
+      <ScrollView className="h-60 mt-5" showsVerticalScrollIndicator={false}>
+        {dishes.length === 0 ? (
+          <Text className="text-gray-400 text-center mt-4">No dishes added yet.</Text>
+        ) : (
+          dishes.map((dish) => (
+            <DishItem
+              key={dish.id} 
+              dish={dish}
+              onDelete={() => deleteDish(dish.id)}
+              onEdit={() => editDish(dish)}
             />
-          </View>
-          <Text className='text-semibold text-center px-5 mt-4'>{validVendorDesc}</Text>
-
-          {/* Create new dish button */}
-          <View className='px-4 mt-6'>
-            <TouchableOpacity 
-              className='bg-[#74B318] py-3 rounded-md justify-center items-center'
-              onPress={() =>router.push({ pathname: '/createdish', params: { prevPage: '/menu' } })}
-            >
-              <Text className='text-white text-lg font-semibold'>
-                Create new dish + 
-              </Text> 
-            </TouchableOpacity>
-          </View>
-
-          {/* Dish list */}
-          <ScrollView className="h-60 mt-5" showsVerticalScrollIndicator={false}>
-            {dishes.length === 0 ? (
-              <Text className="text-gray-400 text-center mt-4">No dishes added yet.</Text>
-            ) : (
-              dishes.map((dish) => (
-                <DishItem
-                  key={dish.id} 
-                  dish={dish}
-                  onDelete={() => deleteDish(dish.id)}
-                  onEdit={() => editDish(dish)}
-                />
-              ))
-            )}
-          </ScrollView>
-        </>
-      )}
+          ))
+        )}
+      </ScrollView>
     </View>
   );
 }
