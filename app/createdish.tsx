@@ -38,6 +38,7 @@ export default function CreateDishPage() {
     thumbnailImage: string;
   };
 
+  // Function to handle Dish creation
   const handleCreateDish = () => {
     const newDish: Dish = {
       id: Math.random().toString(), // Generate a unique ID
@@ -46,6 +47,7 @@ export default function CreateDishPage() {
       thumbnailImage // Assuming thumbnailImage is a string (URI to the image)
     };
     
+    // Settign the attributes to empty after Dish creation
     setDishName('');
     setDishPrice('');
     setThumbnailImage('');

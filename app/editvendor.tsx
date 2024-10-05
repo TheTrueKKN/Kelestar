@@ -40,6 +40,7 @@ export default function EditVendorPage() {
     }
   };
 
+  // Function to handle any changes to vendor detail
   const handleVendorDetail = () => {
     // Navigate back to the dishes page
     const validPrevpage = Array.isArray(prevPage) ? prevPage[0] : prevPage;

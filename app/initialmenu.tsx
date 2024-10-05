@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import DishItem from '../components/DishItem'
 import { RouteParamInput, useGlobalSearchParams, useRouter } from 'expo-router'
 
+// Declaring Dish object
 type Dish = {
   id: string;
   dishName: string;
@@ -12,9 +13,11 @@ type Dish = {
 };
 
 const initialmenu = () => {
+  // Getting the parameters from vendor Detail page
   const { vendorName , vendorDesc, vendorUri, newDish } = useGlobalSearchParams();
   const router = useRouter();
 
+  // Keep track of the dishes made
   const [dishes, setDishes] = useState<Dish[]>([]);
 
   // Function to add a new dish to the list
@@ -40,6 +43,7 @@ const initialmenu = () => {
     });
   };
 
+  // Whenever got an update to new Dish, add the dish into the array
   useEffect(() => {
     if (newDish) {
       const parsedDish = typeof newDish === 'string' ? JSON.parse(newDish) : null;
@@ -49,6 +53,7 @@ const initialmenu = () => {
     }
   }, [newDish]);
 
+  // Just for checking it the dish has been added into the array or not (Can be commented out if not required)
   useEffect(() => {
     console.log("Current Dishes:", dishes);
   }, [dishes]);

@@ -12,14 +12,19 @@ type Dish = {
 };
 
 export default function Menu() {
+  // Getting parameters from Initial menu page
   const { vendorName, vendorDesc, vendorUri, menudDishes, newDish } = useGlobalSearchParams();
+
+  // Getting parameters from the editvendor Page 
   const { newVendorName, newVendorDesc, newImg } = useGlobalSearchParams();
   const router = useRouter();
+
 
   const [validVendorName, setValidVendorName] = useState<string | undefined>(undefined);
   const [validVendorDesc, setValidVendorDesc] = useState<string | undefined>(undefined);
   const [validVendorUri, setValidVendorUri] = useState<string | undefined>(undefined);
 
+  // Parsing the menu dishes item
   const parsedDishes = menudDishes ? JSON.parse(Array.isArray(menudDishes) ? menudDishes[0] : menudDishes) : [];
   const [dishes, setDishes] = useState<Dish[]>(parsedDishes);
 
@@ -28,16 +33,19 @@ export default function Menu() {
     return Array.isArray(param) ? param[0] : param;
   };
 
+  // Function to add dishes into the array 
   const addNewDish = (newDish: Dish) => {
     if (!dishes.some(dish => dish.id === newDish.id)) {
       setDishes((prevDishes) => [...prevDishes, newDish]);
     }
   };
 
+  // Function to delete a dish 
   const deleteDish = (id: string) => {
     setDishes((prevDishes) => prevDishes.filter(dish => dish.id !== id));
   };
 
+  // Function to edit a dish (Not functionable yet just redirect to different page)
   const editDish = (dish: RouteParamInput<string> | undefined) => {
     router.push({
       pathname: '/editdish',
@@ -65,6 +73,7 @@ export default function Menu() {
     <View className="bg-white flex-1">
       {/* Top Header with icon on the right */}
       <View className="flex-row justify-between items-center mt-5 ml-3 mr-3">
+        {/* Checking if valid Vendor name, if not show the default version */}
         <Text className='font-bold text-2xl'>{validVendorName ? `Hello ${validVendorName}!` : 'Hello there!!'}</Text>
         <TouchableOpacity onPress={() => router.push({ pathname: '/editvendor', params: { prevPage: '/menu' } })}>
           <Image className="w-5 h-5 tintColour-white"
@@ -73,6 +82,7 @@ export default function Menu() {
         </TouchableOpacity>
       </View>
 
+      {/* Same goes for the thumbnail image */}
       <View className='space-y-2 justify-center items-center'>
         <Image 
           source={{ uri: validVendorUri || 'https://via.placeholder.com/150' }} 
@@ -80,6 +90,7 @@ export default function Menu() {
         />
       </View>
 
+      {/* Display the previously given vendor description, if not valud then display a default version */}
       <Text className='font-bold text-center px-5 mt-4'>
         {validVendorDesc || 'Happy to serve you'}
       </Text>
