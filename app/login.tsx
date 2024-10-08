@@ -20,7 +20,7 @@ const SignIn = () => {
   return (
     <SafeAreaView className="bg-white h-full">
       <ScrollView>
-        <View className="w-full h-full px-4 mb-6">
+        <View className="w-full h-full mb-6 flex-1 justify-center px-8 bg-white">
           <Text className="text-3xl font-urbanistbold text mb-4">
             Start tracking your meal footprint today
           </Text>
@@ -37,7 +37,6 @@ const SignIn = () => {
             value={form.password}
             handleChangeText={(e: string) => setForm({ ...form, password: e })}
             otherStyles="mt-7"
-            keyboardType="password"
             placeholder="Enter your password"
           />
           <View className="justify-end pt-4 flex-row gap-2 top-1">
@@ -53,9 +52,6 @@ const SignIn = () => {
           />
           <View className="justify-center pt-4 flex-row gap-2 top-4">
             <Text className="font-urbanistmedium">Don't have an account?</Text>
-            {/* <Text className="text-base text-secondary font-pregular">
-              Register Now
-            </Text> */}
             <Link href={"/register"} className="font-urbanistmedium text-green">
               Register Now
             </Link>

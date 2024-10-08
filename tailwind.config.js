@@ -15,10 +15,16 @@ module.exports = {
           100: "#1E1E2D",
           200: "#232533",
         },
+        white: {
+          DEFAULT: "#FFFFFF",
+          100: "#F8F9FA",
+        },
         gray: {
           100: "#CDCDE0",
+          200: "#54595E",
+          300: "#8391A1",
         },
-        green:{
+        green: {
           DEFAULT: "#74B318",
         },
       },
@@ -41,5 +47,4 @@ module.exports = {
     },
   },
   plugins: [],
-}
-
+};

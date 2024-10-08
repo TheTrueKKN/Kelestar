@@ -1,14 +1,26 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, StatusBar, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { useGlobalSearchParams, useRouter } from 'expo-router';
-
-const galleryIcon = require('../assets/icons/gallery.png'); // Adjust the path to your gallery icon
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  StatusBar,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import IngredientSelector from "../components/IngredientSelector";
+import { useGlobalSearchParams, useRouter } from "expo-router";
+const galleryIcon = require("../assets/icons/gallery.png"); // Adjust the path to your gallery icon
 
 export default function CreateDishPage() {
-  const [dishName, setDishName] = useState('');
-  const [dishPrice, setDishPrice] = useState('');
-  const [thumbnailImage, setThumbnailImage] = useState(''); // State for thumbnail image
+  const [dishName, setDishName] = useState("");
+  const [dishPrice, setDishPrice] = useState("");
+  const [thumbnailImage, setThumbnailImage] = useState(""); // State for thumbnail image
+  const [ingredientList, setIngredientList] = useState<String[]>([]);
+  const [showIngredientSelector, setShowIngredientSelector] = useState(false);
   const router = useRouter(); // Initialize router
 
   const { prevPage } = useGlobalSearchParams();
@@ -16,10 +28,11 @@ export default function CreateDishPage() {
 
   const pickImage = async () => {
     // Request permission to access the media library
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (permissionResult.granted === false) {
-      alert('Permission to access camera roll is required!');
+      alert("Permission to access camera roll is required!");
       return;
     }
 
@@ -29,6 +42,11 @@ export default function CreateDishPage() {
     if (!result.canceled) {
       setThumbnailImage(result.assets[0].uri); // Set the selected image URI
     }
+  };
+
+  const handleAddIngredient = (ingredient: string) => {
+    ingredientList.push(ingredient);
+    console.log(ingredientList);
   };
 
   type Dish = {
@@ -42,39 +60,34 @@ export default function CreateDishPage() {
   const handleCreateDish = () => {
     const newDish: Dish = {
       id: Math.random().toString(), // Generate a unique ID
-      dishName,  // Assuming dishName is already a string from input
+      dishName, // Assuming dishName is already a string from input
       dishPrice: Number(dishPrice), // Make sure the price is a number or string as per the type
-      thumbnailImage // Assuming thumbnailImage is a string (URI to the image)
+      thumbnailImage, // Assuming thumbnailImage is a string (URI to the image)
     };
-    
-    // Settign the attributes to empty after Dish creation
-    setDishName('');
-    setDishPrice('');
-    setThumbnailImage('');
 
+    // Settign the attributes to empty after Dish creation
+    setDishName("");
+    setDishPrice("");
+    setThumbnailImage("");
 
     // Navigate back to the dishes page
     const validPrevpage = Array.isArray(prevPage) ? prevPage[0] : prevPage;
-    if (newDish.dishName != '' || newDish.dishPrice != 0){
+    if (newDish.dishName != "" || newDish.dishPrice != 0) {
       router.replace({
-      
         pathname: validPrevpage, // Use the passed previous page
-        params: { newDish: JSON.stringify(newDish) }
+        params: { newDish: JSON.stringify(newDish) },
       });
-    
-    }
-    else{
+    } else {
       // router.replace({
       //   pathname:validPrevpage
       // })
-      router.back()
+      router.back();
     }
-
   };
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ flex: 1 }}
     >
       <View style={{ flex: 1 }}>
@@ -85,7 +98,9 @@ export default function CreateDishPage() {
 
             {/* Header */}
             <View className="px-5 py-8">
-              <Text className="text-2xl font-bold text-[#006400] mb-5">Ready to craft a new dish?</Text>
+              <Text className="text-2xl font-bold text-[#006400] mb-5">
+                Ready to craft a new dish?
+              </Text>
 
               {/* Dish Name Input */}
               <Text className="text-base text-[#006400] mb-2">Dish name:</Text>
@@ -107,7 +122,9 @@ export default function CreateDishPage() {
               />
 
               {/* Thumbnail Image Upload Box */}
-              <Text className="text-base text-[#006400] mb-2">Thumbnail image:</Text>
+              <Text className="text-base text-[#006400] mb-2">
+                Thumbnail image:
+              </Text>
               <TouchableOpacity
                 className="h-40 bg-[#F9F9F9] border border-[#DDDDDD] rounded-md justify-center items-center mb-4"
                 onPress={pickImage} // Call pickImage function when pressed
@@ -124,21 +141,28 @@ export default function CreateDishPage() {
                       source={galleryIcon}
                       className="w-12 h-12 mb-2" // Adjust icon size as needed
                     />
-                    <Text className="text-gray-600">Upload your thumbnail here</Text>
+                    <Text className="text-gray-600">
+                      Upload your thumbnail here
+                    </Text>
                   </>
                 )}
               </TouchableOpacity>
 
               {/* Ingredients Section */}
-              <Text className="text-base text-[#006400] mb-2">Ingredients:</Text>
+              <Text className="text-base text-[#006400] mb-2">
+                Ingredients:
+              </Text>
               <TouchableOpacity
                 className="h-10 bg-[#74B318] rounded-md justify-center items-center mb-6"
                 onPress={() => {
                   // Add functionality for adding ingredients
-                  console.log('Add ingredients button pressed');
+                  setShowIngredientSelector(true);
+                  console.log("Add ingredients button pressed");
                 }}
               >
-                <Text className="text-white text-base font-bold">+ add ingredients</Text>
+                <Text className="text-white text-base font-bold">
+                  + add ingredients
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -150,21 +174,28 @@ export default function CreateDishPage() {
             className="h-12 bg-[#74B318] rounded-md justify-center items-center mb-4"
             onPress={() => {
               // Add functionality for creating the new dish
+              console.log("Create new dish button pressed");
               // router.push({ pathname: '/menu', params: { vendorUri, dishUri: thumbnailImage }})
-              // console.log('Create new dish button pressed');
-              handleCreateDish()
+              handleCreateDish();
             }}
           >
             <Text className="text-white text-lg font-bold">Create dish</Text>
           </TouchableOpacity>
 
           {/* Button to navigate to EditDishPage */}
-          {/* <TouchableOpacity
+          <TouchableOpacity
             className="h-12 bg-[#006400] rounded-md justify-center items-center"
-            onPress={() => router.push('/editdish')} // Navigate to EditDishPage
+            onPress={() => router.push("/editdish")} // Navigate to EditDishPage
           >
-            <Text className="text-white text-lg font-bold">Edit Dish Details</Text>
-          </TouchableOpacity> */}
+            <Text className="text-white text-lg font-bold">
+              Edit Dish Details
+            </Text>
+          </TouchableOpacity>
+          <IngredientSelector
+            showModal={showIngredientSelector}
+            handleShowModal={setShowIngredientSelector}
+            handleAddIngredient={(e: string) => handleAddIngredient(e)}
+          ></IngredientSelector>
         </View>
       </View>
     </KeyboardAvoidingView>

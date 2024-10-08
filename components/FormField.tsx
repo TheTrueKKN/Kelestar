@@ -1,15 +1,25 @@
-import { View, Text, TextInput, TouchableOpacity, Image } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  InputModeOptions,
+  KeyboardTypeIOS,
+  KeyboardTypeOptions,
+} from "react-native";
 import React, { useState } from "react";
 import { icons } from "../constants";
 import CustomButton from "./CustomButton";
 
 interface Props {
   title: string;
-  value: string;
+  value?: any;
   placeholder?: string;
-  handleChangeText: (e: string) => void;
-  otherStyles: string;
-  keyboardType: string;
+  handleChangeText?: (e: any) => void;
+  otherStyles?: string;
+  keyboardType?: KeyboardTypeOptions;
+  inputMode?: InputModeOptions;
 }
 
 const FormField = ({
@@ -19,11 +29,11 @@ const FormField = ({
   handleChangeText,
   otherStyles,
   keyboardType,
+  inputMode,
 }: Props) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   return (
-    <View className={`space-y-2 ${otherStyles}`}>
+    <View className={`space-y-1 ${otherStyles}`}>
       <Text className="font-urbanistmedium mb-2">{title}</Text>
       <View className="relative">
         <TextInput
@@ -33,6 +43,8 @@ const FormField = ({
           placeholderTextColor="#8391A1"
           onChangeText={handleChangeText}
           secureTextEntry={title === "Password" && !passwordVisible}
+          keyboardType={keyboardType}
+          inputMode={inputMode}
         />
 
         {title === "Password" && (
