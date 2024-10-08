@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StatusBar, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
+import { useGlobalSearchParams, useRouter } from 'expo-router';
 
 const galleryIcon = require('../assets/icons/gallery.png'); // Adjust the path to your gallery icon
 
 export default function EditVendorPage() {
-  const [vendorName, setVendorName] = useState(''); // Vendor name state
-  const [thumbnailImage, setThumbnailImage] = useState(''); // Thumbnail image state
-  const [vendorDescription, setVendorDescription] = useState(''); // Vendor description state
+  const [editVendorName, setVendorName] = useState(''); // Vendor name state
+  const [editThumbnailImage, setThumbnailImage] = useState(''); // Thumbnail image state
+  const [editVendorDescription, setVendorDescription] = useState(''); // Vendor description state
   const [wordCount, setWordCount] = useState(0); // Word count for vendor description
   const router = useRouter(); // Initialize router
+
+  const { prevPage} = useGlobalSearchParams()
+
+  const validPrevpage = Array.isArray(prevPage) ? prevPage[0] : prevPage;
 
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -36,6 +40,24 @@ export default function EditVendorPage() {
     }
   };
 
+  // Function to handle any changes to vendor detail
+  const handleVendorDetail = () => {
+    // Navigate back to the dishes page
+    const validPrevpage = Array.isArray(prevPage) ? prevPage[0] : prevPage;
+    if (editVendorName != '' || editVendorDescription != '' || editThumbnailImage != ''){
+      router.replace({
+      
+        pathname: validPrevpage, // Use the dynamically passed previous page
+        params: { newVendorName: editVendorName , newVendorDesc:editVendorDescription, newImg: editThumbnailImage }
+      });
+    
+    }
+    else{
+      router.back()
+    }
+
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -56,7 +78,7 @@ export default function EditVendorPage() {
             <TextInput
               className="h-12 bg-[#F9F9F9] border border-[#DDDDDD] rounded-md px-4 mb-4"
               placeholder="Enter your vendor name"
-              value={vendorName}
+              value={editVendorName}
               onChangeText={setVendorName}
             />
 
@@ -66,9 +88,9 @@ export default function EditVendorPage() {
               className="h-40 bg-[#F9F9F9] border border-[#DDDDDD] rounded-md justify-center items-center mb-4"
               onPress={pickImage}
             >
-              {thumbnailImage ? (
+              {editThumbnailImage ? (
                 <Image
-                  source={{ uri: thumbnailImage }}
+                  source={{ uri: editThumbnailImage }}
                   className="w-full h-full rounded-md"
                   resizeMode="cover"
                 />
@@ -88,7 +110,7 @@ export default function EditVendorPage() {
             <TextInput
               className="h-40 bg-[#F9F9F9] border border-[#DDDDDD] rounded-md px-4 mb-2"
               placeholder="Enter your vendor description"
-              value={vendorDescription}
+              value={editVendorDescription}
               onChangeText={handleDescriptionChange}
               multiline={true}
             />
@@ -101,7 +123,7 @@ export default function EditVendorPage() {
               className="bg-[#74B318] h-12 rounded-md justify-center items-center mt-6"
               onPress={() => {
                 alert('Changes saved successfully');
-                router.push('/vendordetail'); // Navigate back to vendor detail after saving
+                handleVendorDetail() // Navigate back to vendor detail after saving
               }}
             >
               <Text className="text-white font-bold text-lg">Save Changes</Text>

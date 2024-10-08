@@ -100,9 +100,10 @@ export default function VendorDetailPage() {
             <Text className="text-sm text-[#006400]">{wordCount}/100 words</Text>
 
             {/* Next Step Button */}
+            {/* Passing in vendorName, vendorDesription and Thumbnail image to Initial menu */}
             <TouchableOpacity
               className="bg-[#74B318] h-12 rounded-md justify-center items-center mt-6"
-              onPress={() => router.push('/createdish')} // Navigate to createdish page
+              onPress={() => router.push({ pathname: '/initialmenu', params: { vendorName:vendorName, vendorDesc: vendorDescription, vendorUri: thumbnailImage }})} // Navigate to createdish page
             >
               <Text className="text-white font-bold text-lg">Next Step</Text>
             </TouchableOpacity>
