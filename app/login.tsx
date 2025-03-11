@@ -1,21 +1,50 @@
-import { View, Text, ScrollView, Image } from "react-native";
+import { View, Text, ScrollView, Image, AppState, Alert } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { images } from "../constants";
 import FormField from "../components/FormField";
 import CustomButton from "../components/CustomButton";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
+import { supabase } from "../lib/supabase";
+import { signInWithEmail } from "../controller/authController";
+import { getUser } from "../controller/userController";
+import { UserRole } from "../enums/userRole";
+
+AppState.addEventListener("change", (state) => {
+  if (state === "active") {
+    supabase.auth.startAutoRefresh();
+  } else {
+    supabase.auth.stopAutoRefresh();
+  }
+});
 
 const SignIn = () => {
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const submit = () => {};
+  const router = useRouter();
+
+  const handleSignIn = async () => {
+    if (await signInWithEmail(email, password)) {
+      // Alert.alert("Login successful");
+      const user = await getUser();
+      if (!user) {
+        throw new Error("Failed to get user!");
+      }
+
+      if (!user.user_role) {
+        router.push({ pathname: "/role_page" });
+      } else if (user.user_role == UserRole.Vendor) {
+        router.push({ pathname: "/vendordetail" });
+      } else if (user.user_role == UserRole.Customer) {
+        router.push({ pathname: "/faq" });
+      }
+    }
+  };
 
   return (
     <SafeAreaView className="bg-white h-full">
@@ -26,16 +55,16 @@ const SignIn = () => {
           </Text>
           <FormField
             title="Email"
-            value={form.email}
-            handleChangeText={(e: string) => setForm({ ...form, email: e })}
+            value={email}
+            handleChangeText={setEmail}
             otherStyles="mt-7"
             keyboardType="email-address"
             placeholder="Enter your email"
           />
           <FormField
             title="Password"
-            value={form.password}
-            handleChangeText={(e: string) => setForm({ ...form, password: e })}
+            value={password}
+            handleChangeText={setPassword}
             otherStyles="mt-7"
             placeholder="Enter your password"
           />
@@ -46,7 +75,7 @@ const SignIn = () => {
           </View>
           <CustomButton
             title="Log In"
-            handlePress={submit}
+            handlePress={handleSignIn}
             containerStyles="mt-7"
             isLoading={isSubmitting}
           />

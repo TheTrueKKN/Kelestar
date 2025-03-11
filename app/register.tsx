@@ -10,6 +10,9 @@ import React, { useState } from "react";
 import { icons } from "../constants";
 import { Link, useRouter } from "expo-router";
 import CustomButton from "../components/CustomButton";
+import { supabase } from "../lib/supabase";
+import { updateUser } from "../controller/userController";
+import { signUpWithEmail } from "../controller/authController";
 
 export default function App() {
   const [username, setUsername] = useState("");
@@ -18,15 +21,18 @@ export default function App() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (password !== confirmPassword) {
       Alert.alert("Passwords do not match");
     } else {
-      Alert.alert("Register successful");
-      router.push("/role_page");
+      if (await signUpWithEmail(username, email, password)) {
+        Alert.alert("Register successful");
+        router.push({pathname: "/role_page"});
+      }
     }
   };
 
