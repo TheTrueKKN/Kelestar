@@ -6,6 +6,7 @@ export async function signUpWithEmail(
   email: string,
   password: string
 ) {
+  await signOutIfSessionExists();
   const {
     data: { session },
     error,
@@ -20,7 +21,10 @@ export async function signUpWithEmail(
     },
   });
 
-  if (error) Alert.alert(error.message);
+  if (error) {
+    Alert.alert(error.message);
+    return false;
+  }
   if (!session) {
     Alert.alert("Please check your inbox for email verification!");
     return true;
@@ -28,11 +32,27 @@ export async function signUpWithEmail(
 }
 
 export async function signInWithEmail(email: string, password: string) {
+  await signOutIfSessionExists();
   const { error } = await supabase.auth.signInWithPassword({
     email: email,
     password: password,
   });
 
+  if (error) {
+    Alert.alert(error.message);
+    return false;
+  } else return true;
+}
+
+export async function signOutIfSessionExists() {
+  const { data, error } = await supabase.auth.getSession();
+  if (data.session?.user) {
+    await signOut();
+  }
+}
+
+export async function signOut() {
+  const { error } = await supabase.auth.signOut();
   if (error) Alert.alert(error.message);
   else return true;
 }

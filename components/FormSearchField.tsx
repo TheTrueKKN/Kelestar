@@ -16,7 +16,7 @@ interface Props {
   handleChangeText: (e: string) => void;
 }
 
-const FormDropDown = ({
+const FormSearchField = ({
   title,
   value,
   options,
@@ -97,4 +97,4 @@ const FormDropDown = ({
   );
 };
 
-export default FormDropDown;
+export default FormSearchField;

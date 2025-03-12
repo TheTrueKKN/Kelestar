@@ -24,11 +24,10 @@ const SignIn = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const router = useRouter();
 
   const handleSignIn = async () => {
+    setLoading(true);
     if (await signInWithEmail(email, password)) {
       // Alert.alert("Login successful");
       const user = await getUser();
@@ -44,6 +43,7 @@ const SignIn = () => {
         router.push({ pathname: "/faq" });
       }
     }
+    setLoading(false);
   };
 
   return (
@@ -77,7 +77,7 @@ const SignIn = () => {
             title="Log In"
             handlePress={handleSignIn}
             containerStyles="mt-7"
-            isLoading={isSubmitting}
+            isLoading={loading}
           />
           <View className="justify-center pt-4 flex-row gap-2 top-4">
             <Text className="font-urbanistmedium">Don't have an account?</Text>

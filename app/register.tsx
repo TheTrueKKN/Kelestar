@@ -12,7 +12,7 @@ import { Link, useRouter } from "expo-router";
 import CustomButton from "../components/CustomButton";
 import { supabase } from "../lib/supabase";
 import { updateUser } from "../controller/userController";
-import { signUpWithEmail } from "../controller/authController";
+import { signInWithEmail, signUpWithEmail } from "../controller/authController";
 
 export default function App() {
   const [username, setUsername] = useState("");
@@ -26,14 +26,16 @@ export default function App() {
   const router = useRouter();
 
   const handleRegister = async () => {
-    if (password !== confirmPassword) {
+    setLoading(true);
+    if (!username || !email || !password || !confirmPassword) {
+      Alert.alert("Please fill in all fields");
+    } else if (password !== confirmPassword) {
       Alert.alert("Passwords do not match");
-    } else {
-      if (await signUpWithEmail(username, email, password)) {
-        Alert.alert("Register successful");
-        router.push({pathname: "/role_page"});
-      }
+    } else if (await signUpWithEmail(username, email, password)) {
+        // Alert.alert("Register successful");
+        router.push({ pathname: "/userverification" });
     }
+    setLoading(false);
   };
 
   return (
@@ -115,6 +117,7 @@ export default function App() {
         title="Register"
         handlePress={handleRegister}
         containerStyles="mt-7"
+        isLoading={loading}
       />
 
       <View className="flex-row justify-center mt-2.5">
