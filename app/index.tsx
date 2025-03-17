@@ -59,7 +59,7 @@ export default function App() {
             in Monash University Canteen
           </Text>
 
-          <Link href="/register" asChild>
+          <Link href="/login" asChild>
             <TouchableOpacity
               style={{
                 backgroundColor: "#5B3A29",

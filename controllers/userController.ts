@@ -35,6 +35,46 @@ export async function getUser(): Promise<User | null> {
   }
 }
 
+export async function getUserByUsername(username: string): Promise<User | null> {
+  try {
+    const { data, error, status } = await supabase
+      .from("app_user")
+      .select(`id, user_name, user_email, user_gender, user_role`)
+      .eq("user_name", username)
+      .single<User>();
+
+    if (error && status !== 406) throw error;
+
+    return data;
+  } catch (error) {
+    if (error instanceof Error) {
+      Alert.alert(error.message);
+      throw error;
+    }
+    return null;
+  }
+}
+
+export async function getUserByEmail(email: string): Promise<User | null> {
+  try {
+    const { data, error, status } = await supabase
+      .from("app_user")
+      .select(`id, user_name, user_email, user_gender, user_role`)
+      .eq("user_email", email)
+      .single<User>();
+
+    if (error && status !== 406) throw error;
+
+    return data;
+  } catch (error) {
+    if (error instanceof Error) {
+      Alert.alert(error.message);
+      throw error;
+    }
+    return null;
+  }
+}
+
 export async function updateUser({
   user_name,
   user_email,

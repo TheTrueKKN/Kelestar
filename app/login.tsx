@@ -7,8 +7,8 @@ import FormField from "../components/FormField";
 import CustomButton from "../components/CustomButton";
 import { Link, useRouter } from "expo-router";
 import { supabase } from "../lib/supabase";
-import { signInWithEmail } from "../controller/authController";
-import { getUser } from "../controller/userController";
+import { signInWithEmail, signInWithOtp } from "../controllers/authController";
+import { getUser } from "../controllers/userController";
 import { UserRole } from "../enums/userRole";
 
 AppState.addEventListener("change", (state) => {
@@ -20,6 +20,7 @@ AppState.addEventListener("change", (state) => {
 });
 
 const SignIn = () => {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,20 +29,16 @@ const SignIn = () => {
 
   const handleSignIn = async () => {
     setLoading(true);
-    if (await signInWithEmail(email, password)) {
-      // Alert.alert("Login successful");
-      const user = await getUser();
-      if (!user) {
-        throw new Error("Failed to get user!");
-      }
-
-      if (!user.user_role) {
-        router.push({ pathname: "/role_page" });
-      } else if (user.user_role == UserRole.Vendor) {
-        router.push({ pathname: "/vendordetail" });
-      } else if (user.user_role == UserRole.Customer) {
-        router.push({ pathname: "/faq" });
-      }
+    if (!email) {
+      Alert.alert("Email cannot be blank");
+    } else if (await signInWithOtp(username, email)) {
+      // Alert.alert("Register successful");
+      const userDetails = {
+        username: username,
+        email: email,
+      };
+      router.dismissAll()
+      router.replace({ pathname: "/userverification", params: userDetails });
     }
     setLoading(false);
   };
@@ -53,6 +50,13 @@ const SignIn = () => {
           <Text className="text-3xl font-urbanistbold text mb-4">
             Start tracking your meal footprint today
           </Text>
+          {/* <FormField
+            title="Username"
+            value={username}
+            handleChangeText={setUsername}
+            otherStyles="mt-7"
+            placeholder="Enter your username"
+          /> */}
           <FormField
             title="Email"
             value={email}
@@ -61,7 +65,7 @@ const SignIn = () => {
             keyboardType="email-address"
             placeholder="Enter your email"
           />
-          <FormField
+          {/* <FormField
             title="Password"
             value={password}
             handleChangeText={setPassword}
@@ -72,7 +76,7 @@ const SignIn = () => {
             <Text className="text-gray-100 font-urbanistmedium">
               Forgot Password?
             </Text>
-          </View>
+          </View> */}
           <CustomButton
             title="Log In"
             handlePress={handleSignIn}

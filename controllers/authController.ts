@@ -44,15 +44,57 @@ export async function signInWithEmail(email: string, password: string) {
   } else return true;
 }
 
+export async function signInWithOtp(
+  username: string,
+  email: string,
+) {
+  await signOutIfSessionExists();
+  const { data, error } = await supabase.auth.signInWithOtp({
+    email: email,
+    options: {
+      data: {
+        user_name: username,
+        user_email: email,
+      },
+    },
+  });
+
+  if (error) {
+    Alert.alert(error.message);
+    return false;
+  } else {
+    Alert.alert("Please check your inbox for email verification!");
+    return true
+  };
+}
+
+export async function verifyEmailOtp(  email: string, token: string){
+  const { data, error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'email'
+  });
+  if (error) {
+    Alert.alert(error.message);
+    return false;
+  } else return true;
+}
+
 export async function signOutIfSessionExists() {
   const { data, error } = await supabase.auth.getSession();
   if (data.session?.user) {
     await signOut();
   }
+  if (error) {
+    Alert.alert(error.message);
+    return false;
+  } else return true;
 }
 
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
-  if (error) Alert.alert(error.message);
-  else return true;
+  if (error) {
+    Alert.alert(error.message);
+    return false;
+  } else return true;
 }

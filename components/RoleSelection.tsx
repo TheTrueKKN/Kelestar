@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
-import { updateUser } from "../controller/userController";
+import { updateUser } from "../controllers/userController";
 import { UserRole } from "../enums/userRole";
 
 const RoleSelection = () => {
