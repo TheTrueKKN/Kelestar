@@ -2,7 +2,8 @@ import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-nati
 import React, { useEffect, useState } from 'react'
 
 import DishItem from '../components/DishItem'
-import { RouteParamInput, useGlobalSearchParams, useRouter } from 'expo-router'
+import { useGlobalSearchParams, useRouter } from 'expo-router'
+import { getVendorByUser } from '../controllers/vendorController';
 
 // Declaring Dish object
 type Dish = {
@@ -12,13 +13,17 @@ type Dish = {
   thumbnailImage: string;
 };
 
-const initialmenu = () => {
+const InitialMenu = () => {
   // Getting the parameters from vendor Detail page
-  const { vendorName , vendorDesc, vendorUri, newDish } = useGlobalSearchParams();
+  // const { vendorName , vendorDesc, vendorUri, newDish } = useGlobalSearchParams();
+  const { newDish } = useGlobalSearchParams();
   const router = useRouter();
 
   // Keep track of the dishes made
   const [dishes, setDishes] = useState<Dish[]>([]);
+  const [vendorName, setVendorName] = useState(""); // Vendor name state
+  const [thumbnailImage, setThumbnailImage] = useState(""); // Thumbnail image state
+  const [vendorDescription, setVendorDescription] = useState(""); // Vendor description state
 
   // Function to add a new dish to the list
   const addNewDish = (newDish: Dish) => {
@@ -30,13 +35,28 @@ const initialmenu = () => {
     }
   };
 
+    useEffect(() => {
+      const setVendorValues = async () => {
+        const result = await getVendorByUser();
+        if (result) {
+          setVendorName(result.vendor_name);
+          setVendorDescription(result.vendor_description);
+          if (result.vendor_image_url) {
+            setThumbnailImage(result.vendor_image_url);
+            // console.log("thumbnailimage", editThumbnailImage);
+          }
+        }
+      };
+      setVendorValues();
+    }, []);
+
   // Function to delete a dish by ID
   const deleteDish = (id: string) => {
     setDishes((prevDishes) => prevDishes.filter(dish => dish.id !== id));
   };
 
   // Function to edit a dish (navigates to edit page)
-  const editDish = (dish: RouteParamInput<string> | undefined) => {
+  const editDish = (dish: Dish | undefined) => {
     router.push({
       pathname: '/editdish',
       params: { ...dish }
@@ -99,7 +119,7 @@ const initialmenu = () => {
 
         <TouchableOpacity
           className="bg-[#74B318] rounded-full py-4 justify-center items-center shadow-md"
-          onPress={() => router.push({ pathname: '/menu' , params:{vendorName, vendorDesc, vendorUri, menudDishes:JSON.stringify(dishes)}})}
+          onPress={() => router.push({ pathname: '/menu' , params:{vendorName, vendorDescription, thumbnailImage, menudDishes:JSON.stringify(dishes)}})}
         >
           <Text className="text-white font-semibold text-lg">Next step</Text>
         </TouchableOpacity>
@@ -108,4 +128,4 @@ const initialmenu = () => {
   );
 };
 
-export default initialmenu;
+export default InitialMenu;

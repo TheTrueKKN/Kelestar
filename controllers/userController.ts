@@ -28,9 +28,9 @@ export async function getUser(): Promise<User | null> {
 
     return data;
   } catch (error) {
-    if (error instanceof Error) {
-      Alert.alert(error.message);
-    }
+    // if (error instanceof Error) {
+    //   Alert.alert(error.message);
+    // }
     return null;
   }
 }

@@ -1,15 +1,13 @@
-import { View, Text, ScrollView, Image, AppState, Alert } from "react-native";
+import { View, Text, ScrollView, AppState, Alert } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { images } from "../constants";
 import FormField from "../components/FormField";
 import CustomButton from "../components/CustomButton";
 import { Link, useRouter } from "expo-router";
 import { supabase } from "../lib/supabase";
-import { signInWithEmail, signInWithOtp } from "../controllers/authController";
-import { getUser } from "../controllers/userController";
-import { UserRole } from "../enums/userRole";
+import { signInWithOtp } from "../controllers/authController";
+import { getUserByEmail} from "../controllers/userController";
 
 AppState.addEventListener("change", (state) => {
   if (state === "active") {
@@ -31,13 +29,15 @@ const SignIn = () => {
     setLoading(true);
     if (!email) {
       Alert.alert("Email cannot be blank");
+    } else if (!await getUserByEmail(email)) {
+      Alert.alert("Email is not registered yet, please register instead.");
     } else if (await signInWithOtp(username, email)) {
       // Alert.alert("Register successful");
       const userDetails = {
         username: username,
         email: email,
       };
-      router.dismissAll()
+      router.dismissAll();
       router.replace({ pathname: "/userverification", params: userDetails });
     }
     setLoading(false);
@@ -85,9 +85,9 @@ const SignIn = () => {
           />
           <View className="justify-center pt-4 flex-row gap-2 top-4">
             <Text className="font-urbanistmedium">Don't have an account?</Text>
-            <Link href={"/register"} className="font-urbanistmedium text-green">
+            <Text onPress={()=>{router.push("/register")}} className="font-urbanistmedium text-green">
               Register Now
-            </Link>
+            </Text>
           </View>
         </View>
       </ScrollView>

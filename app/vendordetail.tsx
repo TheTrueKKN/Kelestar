@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StatusBar, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, StatusBar, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
+import { insertVendor } from '../controllers/vendorController';
+import { Vendor } from '../interfaces/vendor';
+import { Base64Image } from '../interfaces/base64image';
 
 const galleryIcon = require('../assets/icons/gallery.png'); // Adjust the path to your gallery icon
 
 export default function VendorDetailPage() {
   const [vendorName, setVendorName] = useState('');
-  const [thumbnailImage, setThumbnailImage] = useState('');
+  const [uri, setUri] = useState('');
+  const [base64String, setBase64String] = useState('');
   const [vendorDescription, setVendorDescription] = useState(''); // State for vendor description
   const [wordCount, setWordCount] = useState(0); // State for word count
   const router = useRouter(); // Initialize router
@@ -22,10 +26,18 @@ export default function VendorDetailPage() {
     }
 
     // Open the image picker
-    const result = await ImagePicker.launchImageLibraryAsync();
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+      base64: true, // Ensure the image is returned as a base64 string
+    });
 
-    if (!result.canceled) {
-      setThumbnailImage(result.assets[0].uri); // Set the selected image URI
+    if (!result.canceled && result.assets?.[0]?.base64) {
+      const {base64} = result.assets[0];
+      setBase64String(base64);
+      setUri(result.assets[0].uri); // Set the selected image URI      
     }
   };
 
@@ -38,11 +50,31 @@ export default function VendorDetailPage() {
     }
   };
 
+  const handleSubmit = async() => {
+    if (!(vendorName && vendorDescription && base64String && uri)) {
+      Alert.alert("Please provide a vendor name, description and a photo");
+      return;
+    }
+    const vendor:Vendor = {
+      vendor_name: vendorName,
+      vendor_description: vendorDescription
+    }
+    const base64Image: Base64Image = {
+      base64: base64String,
+      uri: uri
+    }
+    const insertVendorSuccess = await insertVendor(vendor, base64Image);
+    if (insertVendorSuccess) {
+      router.dismissAll();
+      router.replace({ pathname: '/initialmenu', params: { vendorName:vendorName, vendorDesc: vendorDescription, vendorUri: uri }});
+    }
+  }
+
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1 }}
-    >
+    // <KeyboardAvoidingView
+    //   behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    //   style={{ flex: 1 }}
+    // >
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View className="flex-1 bg-white">
           {/* StatusBar setup */}
@@ -69,9 +101,9 @@ export default function VendorDetailPage() {
               className="h-40 bg-[#F9F9F9] border border-[#DDDDDD] rounded-md justify-center items-center mb-4"
               onPress={pickImage} // Call pickImage function when pressed
             >
-              {thumbnailImage ? (
+              {uri ? (
                 <Image 
-                  source={{ uri: thumbnailImage }} // Show selected image
+                  source={{ uri: uri }} // Show selected image
                   className="w-full h-full rounded-md" // Adjust styling as needed
                   resizeMode="cover" // Maintain aspect ratio
                 />
@@ -103,7 +135,7 @@ export default function VendorDetailPage() {
             {/* Passing in vendorName, vendorDesription and Thumbnail image to Initial menu */}
             <TouchableOpacity
               className="bg-[#74B318] h-12 rounded-md justify-center items-center mt-6"
-              onPress={() => router.push({ pathname: '/initialmenu', params: { vendorName:vendorName, vendorDesc: vendorDescription, vendorUri: thumbnailImage }})} // Navigate to createdish page
+              onPress={() => handleSubmit()} // Navigate to createdish page
             >
               <Text className="text-white font-bold text-lg">Next Step</Text>
             </TouchableOpacity>
@@ -120,6 +152,6 @@ export default function VendorDetailPage() {
           </View>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    // </KeyboardAvoidingView>
   );
 }
