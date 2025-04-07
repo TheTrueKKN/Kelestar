@@ -7,39 +7,39 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import FormField from "./FormField";
+import { SelectOption } from "../interfaces/shared";
 
 interface Props {
   title: string;
-  value: string;
-  options: string[];
+  options: SelectOption[];
   placeholder?: string;
   handleChangeText: (e: string) => void;
 }
 
 const FormSearchField = ({
   title,
-  value,
   options,
   placeholder,
   handleChangeText,
 }: Props) => {
   const [isOpen, setIsOpen] = useState(false); // Dropdown open/close state
   const [selectedItem, setSelectedItem] = useState(""); // Selected item state
-  const [filteredItems, setFilteredItems] = useState<string[]>(options);
+  const [filteredItems, setFilteredItems] = useState<SelectOption[]>(options);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const selectItem = (item: string) => {
-    setSelectedItem(item);
-    setSearchTerm(item);
-    handleChangeText(item);
+  const selectItem = (item: SelectOption) => {
+    setSelectedItem(item.value);
+    setSearchTerm(item.displayText);
+    handleChangeText(item.displayText);
     setIsOpen(false);
   };
 
   const handleSearchItem = (searchItem: string) => {
     setSearchTerm(searchItem);
+    handleChangeText(searchItem);
     const filteredList = searchItem
-      ? options.filter((option: string) =>
-          option.toLowerCase().includes(searchItem.toLowerCase())
+      ? options.filter((option: SelectOption) =>
+          option.displayText.toLowerCase().includes(searchItem.toLowerCase())
         )
       : options;
     !searchItem && setIsOpen(true);
@@ -64,7 +64,7 @@ const FormSearchField = ({
           className="absolute top-0 right-0 h-20 w-20 rounded-full z-100"
         >
           {searchTerm && (
-            <Text className="text-black absolute text-lg right-0 p-2 mt-1 mr-1">
+            <Text className="text-black absolute text-lg right-0 p-2 mr-1">
               ✕
             </Text>
           )}
@@ -78,13 +78,13 @@ const FormSearchField = ({
             keyboardShouldPersistTaps="handled" // Ensures taps are handled while keyboard is open
           >
             {filteredItems.length != 0 ? (
-              filteredItems.map((option: string) => (
+              filteredItems.map((option: SelectOption) => (
                 <TouchableOpacity
-                  key={option}
+                  key={option.value}
                   onPress={() => selectItem(option)}
                   className="p-3"
                 >
-                  <Text className="font-urbanistmedium">{option}</Text>
+                  <Text className="font-urbanistmedium">{option.displayText}</Text>
                 </TouchableOpacity>
               ))
             ) : (

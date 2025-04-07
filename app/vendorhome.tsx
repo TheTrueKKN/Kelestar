@@ -1,9 +1,5 @@
-import { useEffect, useState } from "react";
-import { Vendor } from "../interfaces/vendor";
+import { useEffect } from "react";
 import { getVendorByUser } from "../controllers/vendorController";
-import VendorDetailPage from "./vendordetail";
-import { View } from "react-native";
-import InitialMenu from "./initialmenu";
 import { useRouter } from "expo-router";
 
 export default function VendorHome() {
