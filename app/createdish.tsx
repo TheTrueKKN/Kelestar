@@ -13,6 +13,8 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import IngredientSelector from "../components/IngredientSelector";
 import { useGlobalSearchParams, useRouter } from "expo-router";
+import { Ingredient } from "../interfaces/ingredient";
+import { DishIngredient } from "../interfaces/dishIngredient";
 const galleryIcon = require("../assets/icons/gallery.png"); // Adjust the path to your gallery icon
 
 export default function CreateDishPage() {
@@ -44,9 +46,13 @@ export default function CreateDishPage() {
     }
   };
 
-  const handleAddIngredient = (ingredient: string) => {
-    ingredientList.push(ingredient);
-    console.log(ingredientList);
+  const handleAddIngredient = (dishIngredient: DishIngredient) => {
+    /**
+   @todo: (only do step 1 in this function, do step 2 and 3 in other functions)
+   1. add dishIngredient into list of DishIngredient
+   2. insert dish into supabase after "create dish" is pressed
+   3. insert list of DishIngredient into supabase
+    **/
   };
 
   type Dish = {
@@ -194,7 +200,7 @@ export default function CreateDishPage() {
           <IngredientSelector
             showModal={showIngredientSelector}
             handleShowModal={setShowIngredientSelector}
-            handleAddIngredient={(e: string) => handleAddIngredient(e)}
+            handleAddIngredient={(e: DishIngredient) => handleAddIngredient(e)}
           ></IngredientSelector>
         </View>
       </View>

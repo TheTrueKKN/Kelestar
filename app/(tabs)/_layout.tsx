@@ -20,8 +20,11 @@ const TabIcon = ({ icon, color, name, focused }: Props) => {
         className="w-6 h-6"
       />
       <Text
-        className={`${focused ? "font-psemibold" : "font-pregular"} text-xs`}
-        style={{ color: color }}
+        className={`${focused ? "font-psemibold" : "font-pregular"} text-xs w-12 text-center`}
+        style={{ 
+          color: color,
+          overflow: 'hidden',   // Hides overflow text
+        }}
       >
         {name}
       </Text>

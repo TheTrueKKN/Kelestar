@@ -13,7 +13,7 @@ import { icons } from "../constants";
 import CustomButton from "./CustomButton";
 
 interface Props {
-  title: string;
+  title?: string;
   value?: any;
   placeholder?: string;
   handleChangeText?: (e: any) => void;
@@ -34,7 +34,7 @@ const FormField = ({
   const [passwordVisible, setPasswordVisible] = useState(false);
   return (
     <View className={`space-y-1 ${otherStyles}`}>
-      <Text className="font-urbanistmedium mb-2">{title}</Text>
+      {title && <Text className="font-urbanistmedium mb-2">{title}</Text>}
       <View className="relative">
         <TextInput
           className="font-urbanistmedium border border-gray-300 rounded-md p-3 mb-2"

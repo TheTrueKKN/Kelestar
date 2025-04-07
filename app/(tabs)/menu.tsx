@@ -41,6 +41,7 @@ export default function Menu() {
   const [validVendorUri, setValidVendorUri] = useState<string | undefined>(
     undefined
   );
+  
 
   // Parsing the menu dishes item
   const parsedDishes = menudDishes
