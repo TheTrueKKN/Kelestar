@@ -1,16 +1,10 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import { Dish } from "../interfaces/dish";
+import { GestureResponderEvent } from 'react-native';
 
 
-
-
-type Dish = {
-  id: string;
-  dishName: string;      // Correct the name from 'name' to 'dishName'
-  dishPrice: number;  // Adjust the type to string or number for 'dishPrice'
-  thumbnailImage: string; // Correct the name from 'img' to 'thumbnailImage'
-};
 
 type DishItemProps = {
   dish: Dish;
@@ -19,7 +13,7 @@ type DishItemProps = {
 };
 
 const DishItem: React.FC<DishItemProps> = ({ dish, onEdit, onDelete }) => {
-  const { dishName, dishPrice, thumbnailImage } = dish;  // Destructure correctly
+  const { dish_name, dish_price, dish_image_name } = dish;  // Destructure correctly
 
   const renderLeftActions = () => (
     <TouchableOpacity onPress={onDelete} className="flex items-center justify-center bg-red-500 w-20">
@@ -35,16 +29,16 @@ const DishItem: React.FC<DishItemProps> = ({ dish, onEdit, onDelete }) => {
   return (
     <View className="p-4 bg-gray-300 rounded-lg mb-2 flex-row items-center">
       {/* Dish image on the left side */}
-      {thumbnailImage ? (
-        <Image source={{ uri: thumbnailImage }} className="w-24 h-24 rounded mr-4" />
+      {dish_image_name ? (
+        <Image source={{ uri: dish_image_name }} className="w-24 h-24 rounded mr-4" />
       ) : (
         <Text className="text-gray-400 italic mr-4">No image available</Text>
       )}
 
       {/* Dish name and price side by side with the image */}
       <View className="flex-1">
-        <Text className="text-lg font-semibold">{dishName}</Text>
-        <Text className="text-gray-500">RM {dishPrice}</Text>
+        <Text className="text-lg font-semibold">{dish_name}</Text>
+        <Text className="text-gray-500">RM {dish_price}</Text>
       </View>
 
       {/* Edit and Delete buttons in a row */}

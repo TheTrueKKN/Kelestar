@@ -17,15 +17,22 @@ import { Ingredient } from "../interfaces/ingredient";
 import { DishIngredient } from "../interfaces/dishIngredient";
 const galleryIcon = require("../assets/icons/gallery.png"); // Adjust the path to your gallery icon
 
+// Newly added
+import { insertDish } from "../controllers/dishController";
+import { Base64Image } from '../interfaces/base64image';
+import { Dish } from "../interfaces/dish";
+
 export default function CreateDishPage() {
   const [dishName, setDishName] = useState("");
   const [dishPrice, setDishPrice] = useState("");
   const [thumbnailImage, setThumbnailImage] = useState(""); // State for thumbnail image
-  const [ingredientList, setIngredientList] = useState<String[]>([]);
+  const [ingredientList, setIngredientList] = useState<DishIngredient[]>([]);
   const [showIngredientSelector, setShowIngredientSelector] = useState(false);
   const router = useRouter(); // Initialize router
 
-  const { prevPage } = useGlobalSearchParams();
+  const [base64String, setBase64String] = useState('');
+
+  const { prevPage, vendorId } = useGlobalSearchParams();
   const [dishes, setDishes] = useState([]);
 
   const pickImage = async () => {
@@ -39,56 +46,84 @@ export default function CreateDishPage() {
     }
 
     // Open the image picker
-    const result = await ImagePicker.launchImageLibraryAsync();
+    const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ['images'],
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 1,
+          base64: true, // Ensure the image is returned as a base64 string
+        });
 
-    if (!result.canceled) {
+    if (!result.canceled  && result.assets?.[0]?.base64) {
+      const {base64} = result.assets[0];
+      setBase64String(base64);
       setThumbnailImage(result.assets[0].uri); // Set the selected image URI
     }
   };
 
   const handleAddIngredient = (dishIngredient: DishIngredient) => {
-    /**
-   @todo: (only do step 1 in this function, do step 2 and 3 in other functions)
-   1. add dishIngredient into list of DishIngredient
-   2. insert dish into supabase after "create dish" is pressed
-   3. insert list of DishIngredient into supabase
-    **/
+  //  console.log("Adding into list")
+   const newList = [...ingredientList, dishIngredient]
+   setIngredientList(newList);
+   
+   //setIngredientList((ingredientList) => [...ingredientList, dishIngredient]);
+  //  console.log(`Current ing list: ${JSON.stringify(newList, null, 2)} `);
   };
 
-  type Dish = {
-    id: string;
-    dishName: string;
-    dishPrice: string | number;
-    thumbnailImage: string;
-  };
+
+
+  const base64Image: Base64Image = {
+        base64: base64String,
+        uri: thumbnailImage
+  }
 
   // Function to handle Dish creation
-  const handleCreateDish = () => {
+  const handleCreateDish = async () => {
     const newDish: Dish = {
       id: Math.random().toString(), // Generate a unique ID
-      dishName, // Assuming dishName is already a string from input
-      dishPrice: Number(dishPrice), // Make sure the price is a number or string as per the type
-      thumbnailImage, // Assuming thumbnailImage is a string (URI to the image)
+      dish_name: dishName, // Assuming dishName is already a string from input
+      dish_price: Number(dishPrice), // Make sure the price is a number or string as per the type
+      dish_image_name: thumbnailImage, // Assuming thumbnailImage is a string (URI to the image)
     };
 
-    // Settign the attributes to empty after Dish creation
-    setDishName("");
-    setDishPrice("");
-    setThumbnailImage("");
+        /**
+   @todo: (only do step 1 in this function, do step 2 and 3 in other functions)
+   3. insert list of DishIngredient into supabase
+    **/
+
+   // 2. insert dish into supabase after "create dish" is pressed
+   const finalVendorId = Array.isArray(vendorId) ? vendorId[0] : vendorId;
+  // console.log(`Current data, vendorId: ${finalVendorId}, curr dish: ${JSON.stringify(newDish)}`)
+   const insertDishSuccess = await insertDish(finalVendorId, newDish, base64Image);
+    
+   
+   
+    
 
     // Navigate back to the dishes page
-    const validPrevpage = Array.isArray(prevPage) ? prevPage[0] : prevPage;
-    if (newDish.dishName != "" || newDish.dishPrice != 0) {
-      router.replace({
-        pathname: validPrevpage, // Use the passed previous page
-        params: { newDish: JSON.stringify(newDish) },
-      });
-    } else {
-      // router.replace({
-      //   pathname:validPrevpage
-      // })
+
+    if(insertDishSuccess){
+      // Settign the attributes to empty after Dish creation
+      setDishName("");
+      setDishPrice("");
+      setThumbnailImage("");
+
+      // Route back to previous
       router.back();
+      router.replace({pathname: "/initialmenu"})
     }
+    // const validPrevpage = Array.isArray(prevPage) ? prevPage[0] : prevPage;
+    // if (newDish.dishName != "" || newDish.dishPrice != 0) {
+    //   router.replace({
+    //     pathname: validPrevpage, // Use the passed previous page
+    //     params: { newDish: JSON.stringify(newDish) },
+    //   });
+    // } else {
+    //   // router.replace({
+    //   //   pathname:validPrevpage
+    //   // })
+    //   router.back();
+    // }
   };
 
   return (
@@ -201,6 +236,7 @@ export default function CreateDishPage() {
             showModal={showIngredientSelector}
             handleShowModal={setShowIngredientSelector}
             handleAddIngredient={(e: DishIngredient) => handleAddIngredient(e)}
+            
           ></IngredientSelector>
         </View>
       </View>

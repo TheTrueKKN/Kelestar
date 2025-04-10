@@ -36,6 +36,7 @@ export default function VendorDetailPage() {
 
     if (!result.canceled && result.assets?.[0]?.base64) {
       const {base64} = result.assets[0];
+      //console.log(`Testing: ${JSON.stringify(result)}`)
       setBase64String(base64);
       setUri(result.assets[0].uri); // Set the selected image URI      
     }

@@ -18,6 +18,20 @@ export async function getImage(fileName: string): Promise<string | null> {
   }
 }
 
+export async function getDishImage(fileName: string): Promise<string | null> {
+  // Get the public URL of the image
+  const { data } = supabase.storage
+    .from("dishes")
+    .getPublicUrl(`dishImages/${fileName}`);
+
+  if (data) {
+    return data.publicUrl;
+  } else {
+    console.error("Error retrieving image");
+    return null;
+  }
+}
+
 export async function uploadBase64Image({
   base64,
   uri,
@@ -32,6 +46,35 @@ export async function uploadBase64Image({
   const { data, error } = await supabase.storage
     .from("vendor")
     .upload(`images/${fileName}`, arrayBuffer, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: contentType,
+      // contentType: "image/jpeg", // Adjust the content type based on the image type
+    });
+
+  if (error) {
+    console.error("Error uploading image:", error);
+    throw new Error(error.message);
+  } else {
+    console.log("Image uploaded successfully:", data);
+    return fileName;
+  }
+}
+
+export async function uploadBase64ImageDishes({
+  base64,
+  uri,
+}: Base64Image): Promise<string | null> {
+  const arrayBuffer = decode(base64);
+  const contentType = getContentType(uri);
+
+  // Generate a unique filename
+  const fileName = uuidv4();
+
+  // Upload the image to Supabase Storage
+  const { data, error } = await supabase.storage
+    .from("dishes")
+    .upload(`dishImages/${fileName}`, arrayBuffer, {
       cacheControl: "3600",
       upsert: false,
       contentType: contentType,
