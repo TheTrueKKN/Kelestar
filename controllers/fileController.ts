@@ -166,3 +166,12 @@ const getContentType = (uri: string): string => {
 
   return type;
 };
+
+export async function deleteDishImage(
+  fileName: string
+) {
+  
+  await supabase.storage
+  .from("dishes")
+  .remove([`dishImages/${fileName}`]);
+}

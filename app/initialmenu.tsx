@@ -7,8 +7,10 @@ import { useGlobalSearchParams, useRouter } from 'expo-router'
 import { getVendorByUser } from '../controllers/vendorController';
 
 // Newly added
-import { getDishes } from "../controllers/dishController";
+import { getDishes, deleteDish } from "../controllers/dishController";
 import { Dish } from "../interfaces/dish";
+import { withRepeat } from 'react-native-reanimated';
+import { supabase } from '../lib/supabase';
 
 
 const InitialMenu = () => {
@@ -72,7 +74,7 @@ const InitialMenu = () => {
           setVendorId(result.id ?? "");
           if (result.vendor_image_url) {
             setThumbnailImage(result.vendor_image_url);
-            // console.log("thumbnailimage", editThumbnailImage);
+            // console.log("thumbnailimage", editThumbnailImage)
           }
         }
       };
@@ -82,8 +84,9 @@ const InitialMenu = () => {
     }, []);
 
   // Function to delete a dish by ID
-  const deleteDish = (id: string) => {
-    setDishes((prevDishes) => prevDishes.filter(dish => dish.id !== id));
+  const removeDish = async (dish: Dish) => {
+    setDishes((prevDishes) => prevDishes.filter(allDish => allDish.id !== dish.id));
+    const deleteDishSuccess = await deleteDish(dish)
   };
 
   // Function to edit a dish (navigates to edit page)
@@ -140,7 +143,7 @@ const InitialMenu = () => {
             <DishItem
               key={dish.id} 
               dish={dish}
-              onDelete={() => deleteDish(dish.id!)} 
+              onDelete={() => removeDish(dish!)} 
               onEdit={(dish, dish_url) => editDish(dish, dish_url)}
             />
           ))

@@ -2,7 +2,7 @@ import { Alert } from "react-native";
 import { supabase } from "../lib/supabase";
 import { Dish } from "../interfaces/dish";
 import { Base64Image } from "../interfaces/base64image";
-import { updateBase64DishImage, uploadBase64ImageDishes } from "./fileController";
+import { updateBase64DishImage, uploadBase64ImageDishes, deleteDishImage } from "./fileController";
 
 type InsertDishReturn = [number | null, boolean];
 
@@ -111,3 +111,23 @@ export async function updateDish(
           }
     }
 }
+
+export async function deleteDish(
+    {id, dish_image_name}: Dish
+) {
+    try {
+        const{ data, error} = await supabase
+           .from('dish')
+           .delete()
+           .eq("id", id);
+
+        console.log(`Testing delete: ${JSON.stringify(data)}`)
+
+        if (dish_image_name) {
+            await deleteDishImage(dish_image_name);
+          }
+    } catch (error) {
+        
+    }
+}
+
