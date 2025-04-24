@@ -22,6 +22,7 @@ import { insertDish } from "../controllers/dishController";
 import { Base64Image } from '../interfaces/base64image';
 import { Dish } from "../interfaces/dish";
 import { insertDishIngredient } from "../controllers/dishIngredientController";
+import DishIngredientItem from "../components/DishIngredientItem";
 
 
 export default function CreateDishPage() {
@@ -171,7 +172,7 @@ export default function CreateDishPage() {
 
               {/* Thumbnail Image Upload Box */}
               <Text className="text-base text-[#006400] mb-2">
-                Thumbnail image:
+                Dish image:
               </Text>
               <TouchableOpacity
                 className="h-40 bg-[#F9F9F9] border border-[#DDDDDD] rounded-md justify-center items-center mb-4"
@@ -197,9 +198,7 @@ export default function CreateDishPage() {
               </TouchableOpacity>
 
               {/* Ingredients Section */}
-              <Text className="text-base text-[#006400] mb-2">
-                Ingredients:
-              </Text>
+              
               <TouchableOpacity
                 className="h-10 bg-[#74B318] rounded-md justify-center items-center mb-6"
                 onPress={() => {
@@ -212,6 +211,25 @@ export default function CreateDishPage() {
                   + Add ingredients
                 </Text>
               </TouchableOpacity>
+
+              <Text className="text-base text-[#006400] mb-2">
+                Ingredient List:
+              </Text>
+              <ScrollView className="h-60" showsVerticalScrollIndicator={false}>
+                  {ingredientList.length === 0 ? (
+                    <Text className="text-gray-400 text-center mt-4">No ingredients added yet.</Text>
+                  ) : 
+                  (
+                    ingredientList.map((dishIngredient) => (
+                    <DishIngredientItem
+                    key={dishIngredient.id}
+                    dishIngredient={dishIngredient}
+
+                    />
+                    ))
+                  )
+                }
+              </ScrollView>
             </View>
           </View>
         </ScrollView>
@@ -231,14 +249,14 @@ export default function CreateDishPage() {
           </TouchableOpacity>
 
           {/* Button to navigate to EditDishPage */}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             className="h-12 bg-[#006400] rounded-md justify-center items-center"
             onPress={() => router.push("/editdish")} // Navigate to EditDishPage
           >
             <Text className="text-white text-lg font-bold">
               Edit Dish Details
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <IngredientSelector
             showModal={showIngredientSelector}
             handleShowModal={setShowIngredientSelector}
