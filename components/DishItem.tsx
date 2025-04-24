@@ -7,9 +7,10 @@ import { getDishImage } from '../controllers/fileController';
 
 
 
+
 type DishItemProps = {
   dish: Dish;
-  onEdit: () => void; 
+  onEdit: (dish: Dish, dish_url?: string) => void;
   onDelete: () => void; 
 };
 
@@ -29,17 +30,7 @@ const DishItem: React.FC<DishItemProps> = ({ dish, onEdit, onDelete }) => {
     fetchImage();
   }, [dish_image_name]);
 
-  const renderLeftActions = () => (
-    <TouchableOpacity onPress={onDelete} className="flex items-center justify-center bg-red-500 w-20">
-      <Text className="text-white font-bold">Delete</Text>
-    </TouchableOpacity>
-  );
-
-  const renderRightActions = () => (
-    <TouchableOpacity onPress={onEdit} className="flex items-center justify-center bg-blue-500 w-20">
-      <Text className="text-white font-bold">Edit</Text>
-    </TouchableOpacity>
-  );
+  console.log(`Current image URl: ${dishUrl}`)
   return (
     <View style={{ backgroundColor: '#F2F2F2' }} className="p-4 rounded-lg mb-2 flex-row items-center border border-gray-100">
 
@@ -58,7 +49,7 @@ const DishItem: React.FC<DishItemProps> = ({ dish, onEdit, onDelete }) => {
 
       {/* Edit and Delete buttons in a row */}
       <View className="flex-row justify-end">
-        <TouchableOpacity onPress={onEdit} className="mr-4">
+        <TouchableOpacity onPress={() => onEdit(dish, dishUrl ?? '')} className="mr-4">
           <Text className="text-blue-500">Edit</Text>
         </TouchableOpacity>
 

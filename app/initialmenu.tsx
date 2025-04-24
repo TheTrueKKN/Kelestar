@@ -10,13 +10,6 @@ import { getVendorByUser } from '../controllers/vendorController';
 import { getDishes } from "../controllers/dishController";
 import { Dish } from "../interfaces/dish";
 
-// Declaring Dish object
-// type Dish = {
-//   id: string;
-//   dishName: string;
-//   dishPrice: number;
-//   thumbnailImage: string;
-// };
 
 const InitialMenu = () => {
   // Getting the parameters from vendor Detail page
@@ -94,11 +87,15 @@ const InitialMenu = () => {
   };
 
   // Function to edit a dish (navigates to edit page)
-  const editDish = (dish: Dish | undefined) => {
+  const editDish = (dish: Dish | null, dish_url?: string) => {
     router.push({
       pathname: '/editdish',
-      params: { ...dish }
+      params: {
+        ...dish,
+        dish_url: dish_url ?? ''
+      }
     });
+    console.log(`Current dish being edited: ${JSON.stringify(dish)}`)
   };
 
   // Whenever got an update to new Dish, add the dish into the array
@@ -144,7 +141,7 @@ const InitialMenu = () => {
               key={dish.id} 
               dish={dish}
               onDelete={() => deleteDish(dish.id!)} 
-              onEdit={() => editDish(dish)}
+              onEdit={(dish, dish_url) => editDish(dish, dish_url)}
             />
           ))
         )

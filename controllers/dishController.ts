@@ -2,7 +2,7 @@ import { Alert } from "react-native";
 import { supabase } from "../lib/supabase";
 import { Dish } from "../interfaces/dish";
 import { Base64Image } from "../interfaces/base64image";
-import { uploadBase64ImageDishes } from "./fileController";
+import { updateBase64DishImage, uploadBase64ImageDishes } from "./fileController";
 
 type InsertDishReturn = [number | null, boolean];
 
@@ -67,5 +67,47 @@ export async function getDishes(
         return data
     } catch (error) {
 
+    }
+}
+
+export async function updateDish(
+    {id, dish_name, dish_price, dish_image_name}: Dish,
+    {base64, uri}: Base64Image
+) {
+    try {
+       const dish: Dish = {
+        id: id,
+        dish_name: dish_name,
+        dish_price: dish_price,
+        dish_image_name:dish_image_name
+       };
+
+       if (base64 && dish?.dish_image_name) {
+             const dish_image_name = await updateBase64DishImage({
+               fileName: dish?.dish_image_name,
+               base64: base64,
+               uri: uri,
+             });
+             if (dish_image_name != null) {
+               dish.dish_image_name = dish_image_name;
+             }
+           }
+        
+           const{ data, error} = await supabase
+           .from('dish')
+           .update(dish)
+           .eq("id", dish.id);
+
+           if(error){
+            throw error;
+           }
+
+           console.log(`Checking update data: ${JSON.stringify(data)}`)
+           return true;
+    } catch (error) {
+        if (error instanceof Error) {
+            Alert.alert(error.message);
+            return false;
+          }
     }
 }

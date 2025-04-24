@@ -123,6 +123,38 @@ export async function updateBase64Image({
   }
 }
 
+export async function updateBase64DishImage({
+  fileName,
+  base64,
+  uri,
+}: Base64Image): Promise<string | null> {
+  const arrayBuffer = decode(base64);
+  const contentType = getContentType(uri);
+
+  // Upload the image to Supabase Storage
+  if (!fileName) {
+    throw new Error("File name is empty");
+  }
+  console.log(fileName);
+
+  await supabase.storage.from("dishes").remove([`dishImages/${fileName}`]);
+
+  const newFileName = uuidv4();
+  const { data, error } = await supabase.storage
+    .from("dishes")
+    .upload(`dishImages/${newFileName}`, arrayBuffer, {
+      cacheControl: "3600",
+      contentType: contentType,
+    });
+
+  if (error) {
+    console.error("Error updating dish image:", error);
+    throw new Error(error.message);
+  } else {
+    // console.log("Image uploaded successfully:", data);
+    return newFileName;
+  }
+}
 const getContentType = (uri: string): string => {
   const mimeTypeMatch = uri.match(/^data:(image\/\w+);/);
   let type = mimeTypeMatch ? mimeTypeMatch[1] : "image/jpeg";
