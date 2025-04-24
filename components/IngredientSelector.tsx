@@ -72,7 +72,7 @@ const IngredientSelector = ({
       // console.log("searched ingredient:", searchedIngredient);
       const dishIngredient: DishIngredient = {
         ingredient_id: searchedIngredient.id,
-        ingredient_weight: ingredientWeight
+        ingredient_amount: ingredientWeight
       }
       handleAddIngredient(dishIngredient);
 

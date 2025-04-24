@@ -55,13 +55,13 @@ const InitialMenu = () => {
     try {
       // Fetch dishes from Supabase (Assuming getDishes is defined elsewhere)
       const fetchedDishes = await getDishes(vendorId); 
-      console.log('Fetched dishes:', fetchedDishes);
+      // console.log('Fetched dishes:', fetchedDishes);
 
       // If fetched data is valid, map it to the Dish format
       if (fetchedDishes && Array.isArray(fetchedDishes)) {
         const dishes = convertToDishFormat(fetchedDishes); // Convert to the correct format
         setDishes(dishes); // Set the fetched and converted dishes to the state
-        console.log(`DEEEZ DISHES: ${JSON.stringify(dishes)}`)
+        // console.log(`DEEEZ DISHES: ${JSON.stringify(dishes)}`)
       }
     } catch (error) {
       console.error('Error fetching dishes:', error);

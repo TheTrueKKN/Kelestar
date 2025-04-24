@@ -4,11 +4,13 @@ import { Dish } from "../interfaces/dish";
 import { Base64Image } from "../interfaces/base64image";
 import { uploadBase64ImageDishes } from "./fileController";
 
+type InsertDishReturn = [number | null, boolean];
+
 export async function insertDish(
     vendor_id: string,
     {dish_name, dish_price}: Dish,
     {base64, uri}: Base64Image
-) {
+): Promise<InsertDishReturn> {
     try {
         const dish: Dish = {
             dish_name: dish_name,
@@ -40,13 +42,14 @@ export async function insertDish(
     if (error) {
         throw error;
       }
-      return true;
+      return [data?.[0]?.id ?? null, true];
 
     } catch (error) {
     if (error instanceof Error) {
         Alert.alert(error.message);
-        return false;
+        
         }
+        return [null, false];
     }
 }
 

@@ -21,6 +21,8 @@ const galleryIcon = require("../assets/icons/gallery.png"); // Adjust the path t
 import { insertDish } from "../controllers/dishController";
 import { Base64Image } from '../interfaces/base64image';
 import { Dish } from "../interfaces/dish";
+import { insertDishIngredient } from "../controllers/dishIngredientController";
+
 
 export default function CreateDishPage() {
   const [dishName, setDishName] = useState("");
@@ -64,10 +66,10 @@ export default function CreateDishPage() {
   const handleAddIngredient = (dishIngredient: DishIngredient) => {
   //  console.log("Adding into list")
    const newList = [...ingredientList, dishIngredient]
-   setIngredientList(newList);
+  //  setIngredientList(newList);
    
-   //setIngredientList((ingredientList) => [...ingredientList, dishIngredient]);
-  //  console.log(`Current ing list: ${JSON.stringify(newList, null, 2)} `);
+   setIngredientList((ingredientList) => [...ingredientList, dishIngredient]);
+   console.log(`Current ing list: ${JSON.stringify(newList, null, 2)} `);
   };
 
 
@@ -91,18 +93,23 @@ export default function CreateDishPage() {
    3. insert list of DishIngredient into supabase
     **/
 
+   
    // 2. insert dish into supabase after "create dish" is pressed
    const finalVendorId = Array.isArray(vendorId) ? vendorId[0] : vendorId;
   // console.log(`Current data, vendorId: ${finalVendorId}, curr dish: ${JSON.stringify(newDish)}`)
-   const insertDishSuccess = await insertDish(finalVendorId, newDish, base64Image);
+   const [dishId, insertDishSuccess] = await insertDish(finalVendorId, newDish, base64Image);
     
+   // Insert dishIngredient into Supabase
    
+   if (dishId == null){
+     return 
+   }
    
-    
+   const insertDishIngredientSuccess = await insertDishIngredient(dishId, ingredientList)
 
     // Navigate back to the dishes page
 
-    if(insertDishSuccess){
+    if(insertDishSuccess && insertDishIngredientSuccess){
       // Settign the attributes to empty after Dish creation
       setDishName("");
       setDishPrice("");
@@ -202,7 +209,7 @@ export default function CreateDishPage() {
                 }}
               >
                 <Text className="text-white text-base font-bold">
-                  + add ingredients
+                  + Add ingredients
                 </Text>
               </TouchableOpacity>
             </View>
