@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react'
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { Dish } from "../interfaces/dish";
 import { GestureResponderEvent } from 'react-native';
+import { getDishImage } from '../controllers/fileController';
 
 
 
@@ -14,6 +15,19 @@ type DishItemProps = {
 
 const DishItem: React.FC<DishItemProps> = ({ dish, onEdit, onDelete }) => {
   const { dish_name, dish_price, dish_image_name } = dish;  // Destructure correctly
+
+  const [dishUrl, setDishUrl] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const fetchImage = async () => {
+      if (dish_image_name) {
+        const url = await getDishImage(dish_image_name);
+        setDishUrl(url);
+      }
+    };
+
+    fetchImage();
+  }, [dish_image_name]);
 
   const renderLeftActions = () => (
     <TouchableOpacity onPress={onDelete} className="flex items-center justify-center bg-red-500 w-20">
@@ -27,10 +41,11 @@ const DishItem: React.FC<DishItemProps> = ({ dish, onEdit, onDelete }) => {
     </TouchableOpacity>
   );
   return (
-    <View className="p-4 bg-gray-300 rounded-lg mb-2 flex-row items-center">
+    <View style={{ backgroundColor: '#F2F2F2' }} className="p-4 rounded-lg mb-2 flex-row items-center border border-gray-100">
+
       {/* Dish image on the left side */}
-      {dish_image_name ? (
-        <Image source={{ uri: dish_image_name }} className="w-24 h-24 rounded mr-4" />
+      {dishUrl ? (
+        <Image source={{ uri: dishUrl }} className="w-24 h-24 rounded mr-4" />
       ) : (
         <Text className="text-gray-400 italic mr-4">No image available</Text>
       )}
