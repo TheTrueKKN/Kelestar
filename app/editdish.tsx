@@ -4,9 +4,11 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
 import { Dish } from '../interfaces/dish';
+import { JoinedDishIngredient } from '../interfaces/joinedDishIngredient'
 import { Base64Image } from '../interfaces/base64image';
 import { updateDish } from '../controllers/dishController';
-
+import { joinDishIngredient } from '../controllers/dishIngredientJoinController';
+import DishIngredientItem from '../components/DishIngredientItem';
 const galleryIcon = require('../assets/icons/gallery.png'); // Adjust the path to your gallery icon
 
 export default function EditDishPage() {
@@ -20,7 +22,7 @@ export default function EditDishPage() {
   // Newly added 
   const dishInfo = useLocalSearchParams()
   const [base64String, setBase64String] = useState("");
-
+  const [dishIngredientList, setDishIngredientList] = useState<JoinedDishIngredient[]>([]);
 
   useEffect(() => {
       setDishId(dishInfo.id as string)
@@ -29,7 +31,17 @@ export default function EditDishPage() {
       setDishImageName(dishInfo.dish_image_name as string)
       setDishUri(dishInfo.dish_url as string)
 
-      console.log(`Info in edit dish: ${JSON.stringify(dishInfo)}`)
+      const fetchDishIngredients = async () => {
+        const result = await joinDishIngredient(dishInfo.id as string);
+        if (result) {
+          setDishIngredientList(result);
+        } else {
+          console.warn("Failed to fetch dish ingredients.");
+        }
+      };
+    
+      fetchDishIngredients();
+      
     }, []);
   
 
@@ -78,6 +90,10 @@ export default function EditDishPage() {
       router.replace({pathname: "/initialmenu"})
     }
   }
+
+  const removeIngredient = async (ingredientId: string) => {
+    setDishIngredientList((ingredientList) => ingredientList.filter(allIngredient => allIngredient.ingredient.id !== ingredientId))
+  };
 
   return (
     <KeyboardAvoidingView
@@ -137,16 +153,35 @@ export default function EditDishPage() {
               </TouchableOpacity>
 
               {/* Ingredients Section */}
-              <Text className="text-base text-[#006400] mb-2">Edit Ingredients:</Text>
+              
               <TouchableOpacity
                 className="h-10 bg-[#74B318] rounded-md justify-center items-center mb-6"
                 onPress={() => {
                   // Logic for editing ingredients
-                  console.log('Edit ingredients button pressed');
+                  console.log('Add ingredients button pressed');
                 }}
               >
                 <Text className="text-white text-base font-bold">Edit Ingredients</Text>
               </TouchableOpacity>
+              <Text className="text-base text-[#006400] mb-2">Edit Ingredients:</Text>
+
+              <ScrollView className="h-60" showsVerticalScrollIndicator={false}>
+                  {dishIngredientList.length === 0 ? (
+                    <Text className="text-gray-400 text-center mt-4">No ingredients added yet.</Text>
+                  ) : 
+                  (
+                    dishIngredientList.map((dishIngredient) => (
+                    <DishIngredientItem
+                    key={dishIngredient.ingredient.id}
+                    dishIngredient={dishIngredient}
+                    ingredientName={dishIngredient.ingredient.ingredient_name}
+                    onDelete={() => removeIngredient(dishIngredient.ingredient.id!)} 
+
+                    />
+                    ))
+                  )
+                }
+              </ScrollView>
             </View>
           </View>
         </ScrollView>
