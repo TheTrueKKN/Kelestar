@@ -29,8 +29,8 @@ const DishItem: React.FC<DishItemProps> = ({ dish, onEdit, onDelete }) => {
 
     fetchImage();
   }, [dish_image_name]);
-
-  console.log(`Current image URl: ${dishUrl}`)
+  console.log(`Data passed in: ${JSON.stringify(dish)}`)
+  //console.log(`Current image URl: ${dishUrl}`)
   return (
     <View style={{ backgroundColor: '#F2F2F2' }} className="p-4 rounded-lg mb-2 flex-row items-center border border-gray-100">
 

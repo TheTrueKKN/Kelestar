@@ -88,12 +88,6 @@ export default function CreateDishPage() {
       dish_price: Number(dishPrice), // Make sure the price is a number or string as per the type
       dish_image_name: thumbnailImage, // Assuming thumbnailImage is a string (URI to the image)
     };
-
-        /**
-   @todo: (only do step 1 in this function, do step 2 and 3 in other functions)
-   3. insert list of DishIngredient into supabase
-    **/
-
    
    // 2. insert dish into supabase after "create dish" is pressed
    const finalVendorId = Array.isArray(vendorId) ? vendorId[0] : vendorId;
@@ -117,8 +111,11 @@ export default function CreateDishPage() {
       setThumbnailImage("");
 
       // Route back to previous
+      
       router.back();
-      router.replace({pathname: "/initialmenu"})
+      router.replace({pathname: prevPage as string})
+      
+      
     }
     // const validPrevpage = Array.isArray(prevPage) ? prevPage[0] : prevPage;
     // if (newDish.dishName != "" || newDish.dishPrice != 0) {

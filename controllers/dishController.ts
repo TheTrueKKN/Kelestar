@@ -66,7 +66,7 @@ export async function getDishes(
         console.log(`Data: ${JSON.stringify(data)}, error: ${JSON.stringify(error)}, status: ${JSON.stringify(status)}`)
         return data
     } catch (error) {
-
+        return null
     }
 }
 

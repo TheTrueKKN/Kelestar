@@ -67,7 +67,7 @@ const InitialMenu = () => {
       const setVendorValues = async () => {
         const result = await getVendorByUser();
         
-        console.log(`Vendor detail: ${JSON.stringify(result)}`)
+        //console.log(`Vendor detail: ${JSON.stringify(result)}`)
         if (result) {
           setVendorName(result.vendor_name);
           setVendorDescription(result.vendor_description);

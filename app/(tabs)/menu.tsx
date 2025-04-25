@@ -16,19 +16,16 @@ import {
 import { useCallback } from "react";
 import DishItem from "../../components/DishItem";
 import { getVendorByUser } from "../../controllers/vendorController";
-
-type Dish = {
-  id: string;
-  dishName: string;
-  dishPrice: number;
-  thumbnailImage: string;
-};
+import { Dish } from "../../interfaces/dish";
+import { getDishes } from "../../controllers/dishController";
 
 export default function Menu() {
 
+  const [vendorId, setVendorId] = useState("");
    const [vendorName, setVendorName] = useState(""); // Vendor name state
    const [vendorDesc, setVendorDescription] = useState(""); // Vendor description state
    const [vendorUri, setUri] = useState(""); // Thumbnail image state
+   const [vendorDishes, setVendorDishes] = useState<Dish[]>([]);
    // Getting parameters from Initial menu page
   const { menudDishes, newDish } =
     useGlobalSearchParams();
@@ -37,6 +34,7 @@ export default function Menu() {
         const setVendorValues = async () => {
           const result = await getVendorByUser();
           if (result) {
+            setVendorId(result.id!)
             setVendorName(result.vendor_name);
             setVendorDescription(result.vendor_description);
             if (result.vendor_image_url) {
@@ -45,7 +43,16 @@ export default function Menu() {
             }
           }
         };
+        const setDishMenu = async () => {
+          const menu_result = await getDishes(vendorId)
+          if(menu_result){
+            setVendorDishes(menu_result)
+          }
+        }
         setVendorValues();
+        setDishMenu();
+
+        console.log(`Curren dishes: ${JSON.stringify(vendorDishes)}`)
       }, []);
 
   // Getting parameters from the editvendor Page
@@ -99,6 +106,7 @@ export default function Menu() {
   // Update vendor details when the screen is focused
   useFocusEffect(
     useCallback(() => {
+      console.log("WASSSUPPPPPPPPPPPPPP")
       setValidVendorName(validateParam(newVendorName || vendorName));
       setValidVendorDesc(validateParam(newVendorDesc || vendorDesc));
       setValidVendorUri(validateParam(newImg || vendorUri));
@@ -176,16 +184,16 @@ export default function Menu() {
 
       {/* Dish list */}
       <ScrollView className="h-60 mt-5" showsVerticalScrollIndicator={false}>
-        {dishes.length === 0 ? (
+        {vendorDishes.length === 0 ? (
           <Text className="text-gray-400 text-center mt-4">
             No dishes added yet.
           </Text>
         ) : (
-          dishes.map((dish) => (
+          vendorDishes.map((dish) => (
             <DishItem
               key={dish.id}
               dish={dish}
-              onDelete={() => deleteDish(dish.id)}
+              onDelete={() => deleteDish(dish.id as string)}
               onEdit={() => {}}
             />
           ))
