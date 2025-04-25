@@ -153,13 +153,13 @@ const InitialMenu = () => {
 
       {/* Create Later / Next Step Buttons */}
       <View className="mt-6">
-        <TouchableOpacity onPress={() => router.push({ pathname: '/menu' })}>
+        <TouchableOpacity onPress={() => router.replace({ pathname: '/menu' })}>
           <Text className="text-[#74B318] text-center text-lg mb-4 underline">Create later?</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           className="bg-[#74B318] rounded-full py-4 justify-center items-center shadow-md"
-          onPress={() => router.push({ pathname: '/menu' , params:{vendorName, vendorDescription, thumbnailImage, menudDishes:JSON.stringify(dishes)}})}
+          onPress={() => router.replace({ pathname: '/menu' , params:{vendorName, vendorDescription, thumbnailImage, menudDishes:JSON.stringify(dishes)}})}
         >
           <Text className="text-white font-semibold text-lg">Next step</Text>
         </TouchableOpacity>

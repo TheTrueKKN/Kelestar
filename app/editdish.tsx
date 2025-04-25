@@ -9,6 +9,10 @@ import { Base64Image } from '../interfaces/base64image';
 import { updateDish } from '../controllers/dishController';
 import { joinDishIngredient } from '../controllers/dishIngredientJoinController';
 import DishIngredientItem from '../components/DishIngredientItem';
+import IngredientSelector from '../components/IngredientSelector';
+import { DishIngredient } from '../interfaces/dishIngredient';
+import { getIngredientName } from '../controllers/ingredientController';
+import { updateDishIngredient } from '../controllers/dishIngredientController';
 const galleryIcon = require('../assets/icons/gallery.png'); // Adjust the path to your gallery icon
 
 export default function EditDishPage() {
@@ -23,6 +27,7 @@ export default function EditDishPage() {
   const dishInfo = useLocalSearchParams()
   const [base64String, setBase64String] = useState("");
   const [dishIngredientList, setDishIngredientList] = useState<JoinedDishIngredient[]>([]);
+   const [showIngredientSelector, setShowIngredientSelector] = useState(false);
 
   useEffect(() => {
       setDishId(dishInfo.id as string)
@@ -85,11 +90,40 @@ export default function EditDishPage() {
 
     const updateDishSuccess = await updateDish(dish, base64Image);
 
-    if (updateDishSuccess){
+    const updateDishIngredientSuccess = await updateDishIngredient(dishId, dishIngredientList)
+
+    if (updateDishSuccess && updateDishIngredientSuccess){
       router.back()
       router.replace({pathname: "/initialmenu"})
     }
   }
+
+  const handleAddIngredient = async (dishIngredient: DishIngredient) => {
+    try {
+      // Fetch full ingredient info by ID
+      const ingredientName = await getIngredientName(dishIngredient.ingredient_id as string)
+  
+      // Build the JoinedDishIngredient format
+      const joinedIngredient: JoinedDishIngredient = {
+        ingredient_amount: dishIngredient.ingredient_amount as number,
+        ingredient: {
+          id: dishIngredient.ingredient_id as string,
+          ingredient_name: ingredientName?.[0]['ingredient_name']
+        }
+      };
+  
+      // Add to the state list
+      setDishIngredientList((prevList) => [...prevList, joinedIngredient]);
+
+      //console.log(`Current ingredient list: ${JSON.stringify(dishIngredientList)}`)
+
+
+      //console.log(`Current joined list: ${JSON.stringify([...ingredientList, joinedIngredient], null, 2)}`);
+    } catch (err) {
+      console.error('Failed to add ingredient:', err);
+    }
+  };
+  
 
   const removeIngredient = async (ingredientId: string) => {
     setDishIngredientList((ingredientList) => ingredientList.filter(allIngredient => allIngredient.ingredient.id !== ingredientId))
@@ -154,7 +188,7 @@ export default function EditDishPage() {
 
               {/* Ingredients Section */}
               
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 className="h-10 bg-[#74B318] rounded-md justify-center items-center mb-6"
                 onPress={() => {
                   // Logic for editing ingredients
@@ -162,7 +196,22 @@ export default function EditDishPage() {
                 }}
               >
                 <Text className="text-white text-base font-bold">Edit Ingredients</Text>
+              </TouchableOpacity> */}
+
+              <TouchableOpacity
+                className="h-10 bg-[#74B318] rounded-md justify-center items-center mb-6"
+                  onPress={() => {
+                  // Add functionality for adding ingredients
+                    setShowIngredientSelector(true);
+                    console.log("Add ingredients button pressed");
+                  }}
+                >
+                <Text className="text-white text-base font-bold">
+                    + Add ingredients
+                </Text>
               </TouchableOpacity>
+
+
               <Text className="text-base text-[#006400] mb-2">Edit Ingredients:</Text>
 
               <ScrollView className="h-60" showsVerticalScrollIndicator={false}>
@@ -198,6 +247,12 @@ export default function EditDishPage() {
           >
             <Text className="text-white text-lg font-bold">Save Changes</Text>
           </TouchableOpacity>
+
+          <IngredientSelector
+            showModal={showIngredientSelector}
+            handleShowModal={setShowIngredientSelector}
+            handleAddIngredient={(e: DishIngredient) => handleAddIngredient(e)}
+          ></IngredientSelector>
         </View>
       </View>
     </KeyboardAvoidingView>

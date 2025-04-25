@@ -266,7 +266,6 @@ export default function CreateDishPage() {
             showModal={showIngredientSelector}
             handleShowModal={setShowIngredientSelector}
             handleAddIngredient={(e: DishIngredient) => handleAddIngredient(e)}
-            
           ></IngredientSelector>
         </View>
       </View>

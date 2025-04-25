@@ -18,7 +18,6 @@ const DishIngredientItem: React.FC<DishIngredientItemProp> = ({ dishIngredient, 
   useEffect(() => {
       const fetchIngredientName = async () => {
         if(ingredientName){
-            console.log(`Current ingredient name: ${ingredientName}`)
             setIngredientName(ingredientName)
         }
         else if (ingredient_id) {

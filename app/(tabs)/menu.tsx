@@ -8,13 +8,14 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import {
-  RouteParamInput,
+  RouteParams,
   useGlobalSearchParams,
   useRouter,
   useFocusEffect,
 } from "expo-router";
 import { useCallback } from "react";
 import DishItem from "../../components/DishItem";
+import { getVendorByUser } from "../../controllers/vendorController";
 
 type Dish = {
   id: string;
@@ -24,9 +25,28 @@ type Dish = {
 };
 
 export default function Menu() {
-  // Getting parameters from Initial menu page
-  const { vendorName, vendorDesc, vendorUri, menudDishes, newDish } =
+
+   const [vendorName, setVendorName] = useState(""); // Vendor name state
+   const [vendorDesc, setVendorDescription] = useState(""); // Vendor description state
+   const [vendorUri, setUri] = useState(""); // Thumbnail image state
+   // Getting parameters from Initial menu page
+  const { menudDishes, newDish } =
     useGlobalSearchParams();
+
+    useEffect(() => {
+        const setVendorValues = async () => {
+          const result = await getVendorByUser();
+          if (result) {
+            setVendorName(result.vendor_name);
+            setVendorDescription(result.vendor_description);
+            if (result.vendor_image_url) {
+              setUri(result.vendor_image_url);
+              // console.log("thumbnailimage", editUri);
+            }
+          }
+        };
+        setVendorValues();
+      }, []);
 
   // Getting parameters from the editvendor Page
   const { newVendorName, newVendorDesc, newImg } = useGlobalSearchParams();
@@ -69,7 +89,7 @@ export default function Menu() {
   };
 
   // Function to edit a dish (Not functionable yet just redirect to different page)
-  const editDish = (dish: RouteParamInput<string> | undefined) => {
+  const editDish = (dish: RouteParams<string> | undefined) => {
     router.push({
       pathname: "/editdish",
       params: { ...dish },
@@ -166,7 +186,7 @@ export default function Menu() {
               key={dish.id}
               dish={dish}
               onDelete={() => deleteDish(dish.id)}
-              onEdit={() => editDish(dish)}
+              onEdit={() => {}}
             />
           ))
         )}
