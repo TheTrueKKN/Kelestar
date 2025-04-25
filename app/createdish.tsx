@@ -134,6 +134,10 @@ export default function CreateDishPage() {
     // }
   };
 
+  const removeIngredient = async (ingredientId: string) => {
+    setIngredientList((ingredientList) => ingredientList.filter(allIngredient => allIngredient.ingredient_id !== ingredientId))
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -222,8 +226,9 @@ export default function CreateDishPage() {
                   (
                     ingredientList.map((dishIngredient) => (
                     <DishIngredientItem
-                    key={dishIngredient.id}
+                    key={dishIngredient.ingredient_id}
                     dishIngredient={dishIngredient}
+                    onDelete={() => removeIngredient(dishIngredient.ingredient_id!)} 
 
                     />
                     ))
