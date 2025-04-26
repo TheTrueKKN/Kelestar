@@ -17,7 +17,7 @@ import { useCallback } from "react";
 import DishItem from "../../components/DishItem";
 import { getVendorByUser } from "../../controllers/vendorController";
 import { Dish } from "../../interfaces/dish";
-import { getDishes } from "../../controllers/dishController";
+import { deleteDish, getDishes } from "../../controllers/dishController";
 
 export default function Menu() {
 
@@ -51,6 +51,7 @@ export default function Menu() {
         }
         setVendorValues();
         setDishMenu();
+        console.log(`Refresh with new dish menu: ${JSON.stringify(vendorDishes)}`)
 
         console.log(`Curren dishes: ${JSON.stringify(vendorDishes)}`)
       }, []);
@@ -91,9 +92,10 @@ export default function Menu() {
   };
 
   // Function to delete a dish
-  const deleteDish = (id: string) => {
-    setDishes((prevDishes) => prevDishes.filter((dish) => dish.id !== id));
-  };
+  const removeDish = async (dish: Dish) => {
+      setVendorDishes((prevDishes) => prevDishes.filter(allDish => allDish.id !== dish.id));
+      const deleteDishSuccess = await deleteDish(dish)
+    };
 
   // Function to edit a dish (Not functionable yet just redirect to different page)
   const editDish = (dish: RouteParams<string> | undefined) => {
@@ -106,10 +108,18 @@ export default function Menu() {
   // Update vendor details when the screen is focused
   useFocusEffect(
     useCallback(() => {
-      console.log("WASSSUPPPPPPPPPPPPPP")
       setValidVendorName(validateParam(newVendorName || vendorName));
       setValidVendorDesc(validateParam(newVendorDesc || vendorDesc));
       setValidVendorUri(validateParam(newImg || vendorUri));
+
+      const setDishMenu = async () => {
+        const menu_result = await getDishes(vendorId)
+        if(menu_result){
+          setVendorDishes(menu_result)
+        }
+      }
+
+      setDishMenu()
 
       if (newDish) {
         const parsedDish =
@@ -172,7 +182,7 @@ export default function Menu() {
           onPress={() =>
             router.push({
               pathname: "/createdish",
-              params: { prevPage: "/menu" },
+              params: { prevPage: "/menu" , vendorId: vendorId},
             })
           }
         >
@@ -193,7 +203,7 @@ export default function Menu() {
             <DishItem
               key={dish.id}
               dish={dish}
-              onDelete={() => deleteDish(dish.id as string)}
+              onDelete={() => removeDish(dish)}
               onEdit={() => {}}
             />
           ))

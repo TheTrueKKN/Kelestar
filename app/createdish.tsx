@@ -93,7 +93,8 @@ export default function CreateDishPage() {
    const finalVendorId = Array.isArray(vendorId) ? vendorId[0] : vendorId;
   // console.log(`Current data, vendorId: ${finalVendorId}, curr dish: ${JSON.stringify(newDish)}`)
    const [dishId, insertDishSuccess] = await insertDish(finalVendorId, newDish, base64Image);
-    
+  
+   console.log(`Inserting dish: insertDishSuccess${insertDishSuccess}`)
    // Insert dishIngredient into Supabase
    
    if (dishId == null){

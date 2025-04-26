@@ -31,18 +31,18 @@ export async function insertDish(
     else {
         throw new Error("Please provide a dish photo")
     }
-    console.log(`Current dish insert: ${JSON.stringify(dish)}`);
+    //console.log(`Current dish insert: ${JSON.stringify(dish)}`);
     const {data, error} = await supabase
     .from("dish")
     .insert(dish)
     .select()
 
-    console.log(`Inserting new dish: ${JSON.stringify(data)}`);
+    console.log(`Inserting new dish: ${JSON.stringify(error)}`);
 
     if (error) {
         throw error;
       }
-      return [data?.[0]?.id ?? null, true];
+      return [data?.[0]?.id ?? null, true]; //
 
     } catch (error) {
     if (error instanceof Error) {
@@ -116,6 +116,7 @@ export async function deleteDish(
     {id, dish_image_name}: Dish
 ) {
     try {
+        console.log(`Current dish id: ${id}`)
         const{ data, error} = await supabase
            .from('dish')
            .delete()
