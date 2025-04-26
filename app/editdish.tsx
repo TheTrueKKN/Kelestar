@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, StatusBar, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
+import { useGlobalSearchParams, useRouter } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
 import { Dish } from '../interfaces/dish';
 import { JoinedDishIngredient } from '../interfaces/joinedDishIngredient'
@@ -24,20 +24,20 @@ export default function EditDishPage() {
   const router = useRouter(); // Initialize the router
   
   // Newly added 
-  const dishInfo = useLocalSearchParams()
+  const { id, dish_name, dish_price, dish_image_name, dish_url, dish_vendor_id, prev_page } = useGlobalSearchParams();
   const [base64String, setBase64String] = useState("");
   const [dishIngredientList, setDishIngredientList] = useState<JoinedDishIngredient[]>([]);
    const [showIngredientSelector, setShowIngredientSelector] = useState(false);
 
   useEffect(() => {
-      setDishId(dishInfo.id as string)
-      setDishName(dishInfo.dish_name as string)
-      setDishPrice(dishInfo.dish_price as string)
-      setDishImageName(dishInfo.dish_image_name as string)
-      setDishUri(dishInfo.dish_url as string)
+      setDishId(id as string)
+      setDishName(dish_name as string)
+      setDishPrice(dish_price as string)
+      setDishImageName(dish_image_name as string)
+      setDishUri(dish_url as string)
 
       const fetchDishIngredients = async () => {
-        const result = await joinDishIngredient(dishInfo.id as string);
+        const result = await joinDishIngredient(id as string);
         if (result) {
           setDishIngredientList(result);
         } else {
@@ -94,7 +94,7 @@ export default function EditDishPage() {
 
     if (updateDishSuccess && updateDishIngredientSuccess){
       router.back()
-      router.replace({pathname: "/initialmenu"})
+      router.replace({pathname: prev_page as string})
     }
   }
 

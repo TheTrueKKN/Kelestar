@@ -98,12 +98,17 @@ export default function Menu() {
     };
 
   // Function to edit a dish (Not functionable yet just redirect to different page)
-  const editDish = (dish: RouteParams<string> | undefined) => {
-    router.push({
-      pathname: "/editdish",
-      params: { ...dish },
-    });
-  };
+  const editDish = (dish: Dish | null, dish_url?: string) => {
+      router.push({
+        pathname: '/editdish',
+        params: {
+          ...dish,
+          dish_url: dish_url ?? '',
+          prev_page: "/menu"
+        }
+      });
+      console.log(`Current dish being edited: ${JSON.stringify(dish)}`)
+    };
 
   // Update vendor details when the screen is focused
   useFocusEffect(
@@ -204,7 +209,7 @@ export default function Menu() {
               key={dish.id}
               dish={dish}
               onDelete={() => removeDish(dish)}
-              onEdit={() => {}}
+              onEdit={(dish, dish_url) => editDish(dish, dish_url)}
             />
           ))
         )}

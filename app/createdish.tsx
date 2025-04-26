@@ -73,8 +73,6 @@ export default function CreateDishPage() {
    console.log(`Current ing list: ${JSON.stringify(newList, null, 2)} `);
   };
 
-
-
   const base64Image: Base64Image = {
         base64: base64String,
         uri: thumbnailImage
@@ -112,7 +110,6 @@ export default function CreateDishPage() {
       setThumbnailImage("");
 
       // Route back to previous
-      
       router.back();
       router.replace({pathname: prevPage as string})
       

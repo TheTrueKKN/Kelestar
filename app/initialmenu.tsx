@@ -95,7 +95,8 @@ const InitialMenu = () => {
       pathname: '/editdish',
       params: {
         ...dish,
-        dish_url: dish_url ?? ''
+        dish_url: dish_url ?? '',
+        prev_page: "/initialmenu"
       }
     });
     console.log(`Current dish being edited: ${JSON.stringify(dish)}`)
@@ -143,7 +144,7 @@ const InitialMenu = () => {
             <DishItem
               key={dish.id} 
               dish={dish}
-              onDelete={() => removeDish(dish!)} 
+              onDelete={() => removeDish(dish)} 
               onEdit={(dish, dish_url) => editDish(dish, dish_url)}
             />
           ))
