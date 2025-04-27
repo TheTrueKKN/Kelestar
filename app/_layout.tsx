@@ -1,9 +1,10 @@
 import React, { useEffect } from "react";
 import { SplashScreen, Stack } from "expo-router";
 import { useFonts } from "expo-font";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import "react-native-reanimated";
 
-const RootLayout = () => {
-
+export default function RootLayout() {
   const [fontLoaded, error] = useFonts({
     "Poppins-Black": require("../assets/fonts/Poppins-Black.ttf"),
     "Poppins-Bold": require("../assets/fonts/Poppins-Bold.ttf"),
@@ -25,18 +26,62 @@ const RootLayout = () => {
 
   useEffect(() => {
     if (error) throw error;
-    
+
     if (fontLoaded) SplashScreen.hideAsync();
   }, [fontLoaded, error]);
 
   if (!fontLoaded && !error) return null;
 
   return (
-    <Stack>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="register" options={{headerTitle: 'Hey'}}/>
-    </Stack>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="register" options={{ headerShown: false }} />
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="(customer-tabs)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="budget"
+          options={{
+            headerShown: true,
+            headerTitle: "Carbon Budget",
+          }}
+        />
+        <Stack.Screen
+          name="history"
+          options={{
+            headerShown: true,
+            headerTitle: "History",
+          }}
+        />
+        <Stack.Screen
+          name="faq"
+          options={{
+            headerShown: true,
+            headerTitle: "FAQs",
+          }}
+        />
+        <Stack.Screen
+          name="settings"
+          options={{
+            headerShown: true,
+            headerTitle: "Settings",
+          }}
+        />
+        <Stack.Screen
+          name="badge"
+          options={{
+            headerShown: true,
+            headerTitle: "Badges",
+          }}
+        />
+        <Stack.Screen
+          name="nutrition"
+          options={{
+            headerShown: true,
+            headerTitle: "Nutrition",
+          }}
+        />
+      </Stack>
+    </GestureHandlerRootView>
   );
-};
-
-export default RootLayout;
+}
