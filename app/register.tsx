@@ -94,7 +94,7 @@ const Register = () => {
             <Text className="font-urbanistmedium">
               Already have an account?
             </Text>
-            <Link href={"/login"} className="font-urbanistmedium text-green">
+            <Link href={"/role_page"} className="font-urbanistmedium text-green">
               Log in
             </Link>
           </View>
