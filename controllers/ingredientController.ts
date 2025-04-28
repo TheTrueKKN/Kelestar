@@ -21,3 +21,24 @@ export async function getIngredientListing(): Promise<Ingredient[] | null> {
     return null;
   }
 }
+
+export async function getIngredientName(
+  ingredientId: String 
+){
+  try {
+    const { data, error, status } = await supabase
+    .from("ingredient")
+    .select('ingredient_name')
+    .eq('id', ingredientId)
+
+    if (error && status !== 406) throw error;
+
+    return data
+
+  } catch (error) {
+    if (error instanceof Error) {
+      Alert.alert(error.message);
+    }
+    return null;
+  }
+}

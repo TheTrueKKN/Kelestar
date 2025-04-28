@@ -19,11 +19,9 @@ const RoleSelection = () => {
   };
 
   return (
-    <View className="space-y-2 justify-center display-flex alignItems-center">
-      <Text className="text-black text-2xl mt-10"> Are you</Text>
-
+    <View className="space-y-2 display-flex items-center flex-1">
       <TouchableOpacity
-        className={`border border-black-300 rounded-lg p-4 mb-4 ${
+        className={`border border-black-300 rounded-lg p-4 mb-1 w-full  ${
           selectedOption === UserRole.Customer
             ? "border-green-500 bg-green-100"
             : ""
@@ -36,7 +34,7 @@ const RoleSelection = () => {
         </Text>
       </TouchableOpacity>
 
-      <Text className="justify-center p-3 text-semibold font-psemibold text-base ">
+      <Text className="p-3 text-semibold font-psemibold text-base ">
         {" "}
         or{" "}
       </Text>
@@ -62,7 +60,7 @@ const RoleSelection = () => {
         disabled={!selectedOption}
         onPress={handlePress}
       >
-        <Text className="text-white text-lg text-semibold font-psemibold text-center">
+        <Text className="text-white text-lg text-semibold font-psemibold text-center w-full">
           Next step
         </Text>
       </TouchableOpacity>
