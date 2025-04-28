@@ -13,17 +13,29 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import IngredientSelector from "../components/IngredientSelector";
 import { useGlobalSearchParams, useRouter } from "expo-router";
+import { Ingredient } from "../interfaces/ingredient";
+import { DishIngredient } from "../interfaces/dishIngredient";
 const galleryIcon = require("../assets/icons/gallery.png"); // Adjust the path to your gallery icon
+
+// Newly added
+import { insertDish } from "../controllers/dishController";
+import { Base64Image } from '../interfaces/base64image';
+import { Dish } from "../interfaces/dish";
+import { insertDishIngredient } from "../controllers/dishIngredientController";
+import DishIngredientItem from "../components/DishIngredientItem";
+
 
 export default function CreateDishPage() {
   const [dishName, setDishName] = useState("");
   const [dishPrice, setDishPrice] = useState("");
   const [thumbnailImage, setThumbnailImage] = useState(""); // State for thumbnail image
-  const [ingredientList, setIngredientList] = useState<String[]>([]);
+  const [ingredientList, setIngredientList] = useState<DishIngredient[]>([]);
   const [showIngredientSelector, setShowIngredientSelector] = useState(false);
   const router = useRouter(); // Initialize router
 
-  const { prevPage } = useGlobalSearchParams();
+  const [base64String, setBase64String] = useState('');
+
+  const { prevPage, vendorId } = useGlobalSearchParams();
   const [dishes, setDishes] = useState([]);
 
   const pickImage = async () => {
@@ -37,52 +49,88 @@ export default function CreateDishPage() {
     }
 
     // Open the image picker
-    const result = await ImagePicker.launchImageLibraryAsync();
+    const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ['images'],
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 1,
+          base64: true, // Ensure the image is returned as a base64 string
+        });
 
-    if (!result.canceled) {
+    if (!result.canceled  && result.assets?.[0]?.base64) {
+      const {base64} = result.assets[0];
+      setBase64String(base64);
       setThumbnailImage(result.assets[0].uri); // Set the selected image URI
     }
   };
 
-  const handleAddIngredient = (ingredient: string) => {
-    ingredientList.push(ingredient);
-    console.log(ingredientList);
+  const handleAddIngredient = (dishIngredient: DishIngredient) => {
+  //  console.log("Adding into list")
+   const newList = [...ingredientList, dishIngredient]
+  //  setIngredientList(newList);
+   
+   setIngredientList((ingredientList) => [...ingredientList, dishIngredient]);
+   console.log(`Current ing list: ${JSON.stringify(newList, null, 2)} `);
   };
 
-  type Dish = {
-    id: string;
-    dishName: string;
-    dishPrice: string | number;
-    thumbnailImage: string;
-  };
+  const base64Image: Base64Image = {
+        base64: base64String,
+        uri: thumbnailImage
+  }
 
   // Function to handle Dish creation
-  const handleCreateDish = () => {
+  const handleCreateDish = async () => {
     const newDish: Dish = {
       id: Math.random().toString(), // Generate a unique ID
-      dishName, // Assuming dishName is already a string from input
-      dishPrice: Number(dishPrice), // Make sure the price is a number or string as per the type
-      thumbnailImage, // Assuming thumbnailImage is a string (URI to the image)
+      dish_name: dishName, // Assuming dishName is already a string from input
+      dish_price: Number(dishPrice), // Make sure the price is a number or string as per the type
+      dish_image_name: thumbnailImage, // Assuming thumbnailImage is a string (URI to the image)
     };
-
-    // Settign the attributes to empty after Dish creation
-    setDishName("");
-    setDishPrice("");
-    setThumbnailImage("");
+   
+   // 2. insert dish into supabase after "create dish" is pressed
+   const finalVendorId = Array.isArray(vendorId) ? vendorId[0] : vendorId;
+  // console.log(`Current data, vendorId: ${finalVendorId}, curr dish: ${JSON.stringify(newDish)}`)
+   const [dishId, insertDishSuccess] = await insertDish(finalVendorId, newDish, base64Image);
+  
+   console.log(`Inserting dish: insertDishSuccess${insertDishSuccess}`)
+   // Insert dishIngredient into Supabase
+   
+   if (dishId == null){
+     return 
+   }
+   
+   const insertDishIngredientSuccess = await insertDishIngredient(dishId, ingredientList)
 
     // Navigate back to the dishes page
-    const validPrevpage = Array.isArray(prevPage) ? prevPage[0] : prevPage;
-    if (newDish.dishName != "" || newDish.dishPrice != 0) {
-      router.replace({
-        pathname: validPrevpage, // Use the passed previous page
-        params: { newDish: JSON.stringify(newDish) },
-      });
-    } else {
-      // router.replace({
-      //   pathname:validPrevpage
-      // })
+
+    if(insertDishSuccess && insertDishIngredientSuccess){
+      // Settign the attributes to empty after Dish creation
+      setDishName("");
+      setDishPrice("");
+      setThumbnailImage("");
+
+      // Route back to previous
       router.back();
+      router.replace({pathname: prevPage as string})
+      
+      
     }
+    // const validPrevpage = Array.isArray(prevPage) ? prevPage[0] : prevPage;
+    // if (newDish.dishName != "" || newDish.dishPrice != 0) {
+    //   router.replace({
+    //     pathname: validPrevpage, // Use the passed previous page
+    //     params: { newDish: JSON.stringify(newDish) },
+    //   });
+    // } else {
+    //   // router.replace({
+    //   //   pathname:validPrevpage
+    //   // })
+    //   router.back();
+    // }
+  };
+
+  const removeIngredient = async (ingredientId: string) => {
+    setIngredientList((ingredientList) => ingredientList.filter(allIngredient => allIngredient.ingredient_id !== ingredientId))
   };
 
   return (
@@ -123,7 +171,7 @@ export default function CreateDishPage() {
 
               {/* Thumbnail Image Upload Box */}
               <Text className="text-base text-[#006400] mb-2">
-                Thumbnail image:
+                Dish image:
               </Text>
               <TouchableOpacity
                 className="h-40 bg-[#F9F9F9] border border-[#DDDDDD] rounded-md justify-center items-center mb-4"
@@ -149,9 +197,7 @@ export default function CreateDishPage() {
               </TouchableOpacity>
 
               {/* Ingredients Section */}
-              <Text className="text-base text-[#006400] mb-2">
-                Ingredients:
-              </Text>
+              
               <TouchableOpacity
                 className="h-10 bg-[#74B318] rounded-md justify-center items-center mb-6"
                 onPress={() => {
@@ -161,9 +207,29 @@ export default function CreateDishPage() {
                 }}
               >
                 <Text className="text-white text-base font-bold">
-                  + add ingredients
+                  + Add ingredients
                 </Text>
               </TouchableOpacity>
+
+              <Text className="text-base text-[#006400] mb-2">
+                Ingredient List:
+              </Text>
+              <ScrollView className="h-60" showsVerticalScrollIndicator={false}>
+                  {ingredientList.length === 0 ? (
+                    <Text className="text-gray-400 text-center mt-4">No ingredients added yet.</Text>
+                  ) : 
+                  (
+                    ingredientList.map((dishIngredient) => (
+                    <DishIngredientItem
+                    key={dishIngredient.ingredient_id}
+                    dishIngredient={dishIngredient}
+                    onDelete={() => removeIngredient(dishIngredient.ingredient_id!)} 
+
+                    />
+                    ))
+                  )
+                }
+              </ScrollView>
             </View>
           </View>
         </ScrollView>
@@ -183,18 +249,18 @@ export default function CreateDishPage() {
           </TouchableOpacity>
 
           {/* Button to navigate to EditDishPage */}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             className="h-12 bg-[#006400] rounded-md justify-center items-center"
             onPress={() => router.push("/editdish")} // Navigate to EditDishPage
           >
             <Text className="text-white text-lg font-bold">
               Edit Dish Details
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <IngredientSelector
             showModal={showIngredientSelector}
             handleShowModal={setShowIngredientSelector}
-            handleAddIngredient={(e: string) => handleAddIngredient(e)}
+            handleAddIngredient={(e: DishIngredient) => handleAddIngredient(e)}
           ></IngredientSelector>
         </View>
       </View>

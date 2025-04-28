@@ -6,7 +6,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import RoleSelection from '../components/RoleSelection'
 
 
-const role_page = () => {
+const RolePage = () => {
     return (
       <SafeAreaView className = "bg-custom_green h-full">
         <ScrollView>
@@ -14,6 +14,7 @@ const role_page = () => {
             <Text className="text-2xl text-black text-semibold font-psemibold ml-4">
               Select your Role
             </Text>
+            <Text className="text-black text-2xl mt-10 text-left mb-4"> Are you</Text>
   
             <RoleSelection/>
           </View>
@@ -24,5 +25,5 @@ const role_page = () => {
     )
   }
   
-  export default role_page
+  export default RolePage
   

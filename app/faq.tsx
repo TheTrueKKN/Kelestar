@@ -1,102 +1,175 @@
 import React, { useState } from "react";
-import { 
-  View, 
-  Text, 
-  ScrollView, 
-  TouchableOpacity,
-  SafeAreaView
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons"; // Make sure to install expo/vector-icons
+import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, ScrollView, TextInput, Image } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
-// FAQ item type
-type FAQItemProps = {
+// Types for FAQ items
+interface FAQItem {
+  id: string;
   question: string;
   answer: string;
-};
+  expanded: boolean;
+}
 
-// Individual FAQ item component
-const FAQItem = ({ question, answer }: FAQItemProps) => {
-  const [expanded, setExpanded] = useState(false);
+// Types for category
+interface Category {
+  id: string;
+  title: string;
+  subtitle: string;
+  color: string;
+  icon: string;
+}
 
-  return (
-    <View className="bg-emerald-50 rounded-xl mb-4 overflow-hidden border-l-4 border-l-emerald-500">
-      <TouchableOpacity 
-        className="flex-row justify-between items-center p-4"
-        onPress={() => setExpanded(!expanded)}
-        activeOpacity={0.7}
-      >
-        <Text className="text-base font-semibold text-gray-800 flex-1 pr-2">{question}</Text>
-        <Ionicons 
-          name={expanded ? "chevron-up" : "chevron-down"} 
-          size={22} 
-          color="#10B981" 
-        />
-      </TouchableOpacity>
-      
-      {expanded && (
-        <View className="p-4 pt-0 bg-white border-t border-t-gray-200">
-          <Text className="text-[15px] leading-6 text-gray-700">{answer}</Text>
-        </View>
-      )}
-    </View>
-  );
-};
-
-const FAQ = () => {
-  // FAQ data
-  const faqData: FAQItemProps[] = [
+const KnowledgeBase = () => {
+  // State for search input
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  
+  // Categories data
+  const categories: Category[] = [
     {
-      question: "What is Kelestar?",
-      answer: "Kelestar is a platform designed to help university students monitor the carbon footprint of their food choices at campus canteens. Each dish is assigned a carbon emission rating (A, B, C) based on its ingredients, preparation methods, and overall environmental impact. Our goal is to promote sustainable eating habits and environmental awareness within the university community."
+      id: "1",
+      title: "Questions about",
+      subtitle: "Getting Started",
+      color: "#E6F0FF",
+      icon: "help-circle-outline"
     },
     {
-      question: "How is the carbon footprint of dishes calculated?",
-      answer: "We calculate a dish's carbon footprint by analyzing multiple factors including: ingredient sourcing (local vs. imported), production methods, transportation, processing requirements, and cooking energy consumption. Our algorithm combines this data to generate a comprehensive CO₂e (carbon dioxide equivalent) measurement, which is then translated into our simplified A-C grading system for easy understanding."
+      id: "2",
+      title: "Questions about",
+      subtitle: "creating menu",
+      color: "#E6FFEE",
+      icon: "leaf-outline"
     },
     {
-      question: "What do the A, B, and C grades mean?",
-      answer: "Grade A (Green): Low carbon footprint dishes with minimal environmental impact. These typically include plant-based options with locally-sourced ingredients.\n\nGrade B (Yellow): Moderate carbon footprint dishes. These may include some animal products but in limited quantities or dishes with some imported ingredients.\n\nGrade C (Red): Higher carbon footprint dishes. These typically include red meat, dairy-heavy meals, or dishes with multiple imported ingredients."
-    },
-    {
-      question: "How do I create an account and log in?",
-      answer: "Creating an account is simple! Click the 'Sign Up' button on the login screen and enter your university email address. You'll be asked to create a password and complete a brief profile. Once registered, you can log in anytime using your email and password. Your history and preferences will be saved to your account, allowing you to track your progress over time."
-    },
-    {
-      question: "Can I see my carbon emission history?",
-      answer: "Yes! The History page shows your meal choices organized by date, complete with their carbon ratings. You can view daily, weekly, or monthly summaries of your carbon footprint. This feature helps you visualize your environmental impact over time and identify patterns in your eating habits."
+      id: "3",
+      title: "Questions about",
+      subtitle: "calculations",
+      color: "#FFE6E6",
+      icon: "calculator-outline"
     }
   ];
-
+  
+  // FAQ data
+  const [faqs, setFaqs] = useState<FAQItem[]>([
+    {
+      id: "1",
+      question: "How do we calculate carbon footprint?",
+      answer: "We use a method called life cycle assessment using data collected from state-of-the-art research. Each ingredient... bla bla bla",
+      expanded: true
+    },
+    {
+      id: "2",
+      question: "What is life cycle assessment?",
+      answer: "Life cycle assessment is a methodology... bla bla bla",
+      expanded: false
+    },
+    {
+      id: "3",
+      question: "What is carbon label?",
+      answer: "Carbon label discloses carbon footprint...bla bla bla",
+      expanded: false
+    },
+    {
+      id: "4",
+      question: "What are the benefits of plant-based diet?",
+      answer: "Plant-based diets offer numerous environmental and health benefits...bla bla bla",
+      expanded: false
+    }
+  ]);
+  
+  // Toggle FAQ expansion
+  const toggleExpand = (id: string) => {
+    setFaqs(faqs.map(faq => 
+      faq.id === id ? { ...faq, expanded: !faq.expanded } : faq
+    ));
+  };
+  
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 p-4">
-        <Text className="text-2xl font-bold text-emerald-700 mb-2">Frequently Asked Questions</Text>
-        <Text className="text-base text-gray-500 mb-6">
-          Find answers to common questions about our carbon tracking platform
-        </Text>
-        
-        <ScrollView 
-          className="flex-1"
-          showsVerticalScrollIndicator={false}
-        >
-          {faqData.map((item, index) => (
-            <FAQItem 
-              key={index} 
-              question={item.question} 
-              answer={item.answer} 
-            />
-          ))}
-          
-          <View className="bg-emerald-50 rounded-xl p-4 my-4">
-            <Text className="text-lg font-semibold text-emerald-700 mb-2">Still have questions?</Text>
-            <Text className="text-[15px] text-gray-700 leading-6">
-              Contact us at support@carbontrack.edu or visit the Sustainability Office in the Student Union Building.
-            </Text>
+    <SafeAreaView style={{ flex: 1 }} className="bg-white">
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <View className="flex-1 bg-white">
+          {/* Header */}
+          <View className="px-6 pt-12 pb-6 bg-white shadow-sm">
+            <View className="flex-row items-center mb-3">
+              <TouchableOpacity className="mr-3">
+                <Ionicons name="chevron-back" size={24} color="#006400" />
+              </TouchableOpacity>
+              <Text className="text-3xl font-bold text-[#006400]">
+                Knowledge Base
+              </Text>
+              <View className="flex-1" />
+              <TouchableOpacity>
+                <Ionicons name="search" size={24} color="#006400" />
+              </TouchableOpacity>
+            </View>
           </View>
-        </ScrollView>
-      </View>
+          
+          {/* Search Bar */}
+          <View className="px-6 py-2">
+            <View className="flex-row items-center bg-gray-100 rounded-lg px-3 py-2">
+              <Ionicons name="search" size={20} color="#999999" />
+              <TextInput
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder="Enter your keyword"
+                className="flex-1 ml-2 text-base text-gray-700"
+              />
+            </View>
+          </View>
+          
+          {/* Categories */}
+          <View className="px-6 py-4">
+            <View className="flex-row justify-between">
+              {categories.map((category) => (
+                <TouchableOpacity 
+                  key={category.id}
+                  className={`px-2 py-3 rounded-lg w-[30%]`}
+                  style={{ backgroundColor: category.color }}
+                >
+                  <View className="items-center">
+                    <Ionicons name={category.icon as any} size={24} color="#006400" />
+                    <Text className="text-xs text-gray-600 mt-1 text-center">{category.title}</Text>
+                    <Text className="font-semibold text-center text-[#006400]">{category.subtitle}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+          
+          {/* Top Questions */}
+          <View className="px-6 py-2">
+            <View className="flex-row justify-between items-center mb-2">
+              <Text className="text-lg font-semibold text-[#333333]">Top Questions</Text>
+              <TouchableOpacity>
+                <Text className="text-sm text-[#74B318]">View all</Text>
+              </TouchableOpacity>
+            </View>
+            
+            {/* FAQ Items */}
+            {faqs.map((faq) => (
+              <TouchableOpacity 
+                key={faq.id}
+                className="bg-gray-50 rounded-lg p-4 mb-3"
+                onPress={() => toggleExpand(faq.id)}
+              >
+                <View className="flex-row justify-between items-center">
+                  <Text className="text-base font-medium text-[#333333] flex-1 pr-2">{faq.question}</Text>
+                  <Ionicons 
+                    name={faq.expanded ? "remove-outline" : "add-outline"} 
+                    size={20} 
+                    color={faq.expanded ? "#74B318" : "#999999"} 
+                  />
+                </View>
+                {faq.expanded && (
+                  <Text className="text-sm text-gray-600 mt-2">{faq.answer}</Text>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
 
-export default FAQ;
+export default KnowledgeBase;

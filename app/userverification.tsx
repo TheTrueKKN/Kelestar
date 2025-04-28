@@ -26,11 +26,11 @@ export default function UserVerification() {
       if (!user) {
         throw new Error("Failed to get user!");
       }
-      router.dismissAll();
+      // router.dismissAll();
       if (!user.user_role) {
         router.replace({ pathname: "/role_page" });
       } else if (user.user_role == UserRole.Vendor) {
-        router.replace({ pathname: "/vendordetail" });
+        router.replace({ pathname: "/vendorhome" });
       } else if (user.user_role == UserRole.Customer) {
         router.replace({ pathname: "/faq" });
       }

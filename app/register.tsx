@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Image, AppState, Alert } from "react-native";
+import { View, Text, ScrollView, Image, AppState, Alert, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -94,9 +94,9 @@ const Register = () => {
             <Text className="font-urbanistmedium">
               Already have an account?
             </Text>
-            <Link href={"/role_page"} className="font-urbanistmedium text-green">
+            <Text onPress={()=>{router.push("/login")}} className="font-urbanistmedium text-green">
               Log in
-            </Link>
+            </Text>
           </View>
         </View>
       </ScrollView>

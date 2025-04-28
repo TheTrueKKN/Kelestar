@@ -8,25 +8,53 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import {
-  RouteParamInput,
+  RouteParams,
   useGlobalSearchParams,
   useRouter,
   useFocusEffect,
 } from "expo-router";
 import { useCallback } from "react";
 import DishItem from "../../components/DishItem";
-
-type Dish = {
-  id: string;
-  dishName: string;
-  dishPrice: number;
-  thumbnailImage: string;
-};
+import { getVendorByUser } from "../../controllers/vendorController";
+import { Dish } from "../../interfaces/dish";
+import { deleteDish, getDishes } from "../../controllers/dishController";
 
 export default function Menu() {
-  // Getting parameters from Initial menu page
-  const { vendorName, vendorDesc, vendorUri, menudDishes, newDish } =
+
+  const [vendorId, setVendorId] = useState("");
+   const [vendorName, setVendorName] = useState(""); // Vendor name state
+   const [vendorDesc, setVendorDescription] = useState(""); // Vendor description state
+   const [vendorUri, setUri] = useState(""); // Thumbnail image state
+   const [vendorDishes, setVendorDishes] = useState<Dish[]>([]);
+   // Getting parameters from Initial menu page
+  const { menudDishes, newDish } =
     useGlobalSearchParams();
+
+    useEffect(() => {
+        const setVendorValues = async () => {
+          const result = await getVendorByUser();
+          if (result) {
+            setVendorId(result.id!)
+            setVendorName(result.vendor_name);
+            setVendorDescription(result.vendor_description);
+            if (result.vendor_image_url) {
+              setUri(result.vendor_image_url);
+              // console.log("thumbnailimage", editUri);
+            }
+          }
+        };
+        const setDishMenu = async () => {
+          const menu_result = await getDishes(vendorId)
+          if(menu_result){
+            setVendorDishes(menu_result)
+          }
+        }
+        setVendorValues();
+        setDishMenu();
+        console.log(`Refresh with new dish menu: ${JSON.stringify(vendorDishes)}`)
+
+        console.log(`Curren dishes: ${JSON.stringify(vendorDishes)}`)
+      }, []);
 
   // Getting parameters from the editvendor Page
   const { newVendorName, newVendorDesc, newImg } = useGlobalSearchParams();
@@ -41,6 +69,7 @@ export default function Menu() {
   const [validVendorUri, setValidVendorUri] = useState<string | undefined>(
     undefined
   );
+  
 
   // Parsing the menu dishes item
   const parsedDishes = menudDishes
@@ -63,17 +92,23 @@ export default function Menu() {
   };
 
   // Function to delete a dish
-  const deleteDish = (id: string) => {
-    setDishes((prevDishes) => prevDishes.filter((dish) => dish.id !== id));
-  };
+  const removeDish = async (dish: Dish) => {
+      setVendorDishes((prevDishes) => prevDishes.filter(allDish => allDish.id !== dish.id));
+      const deleteDishSuccess = await deleteDish(dish)
+    };
 
   // Function to edit a dish (Not functionable yet just redirect to different page)
-  const editDish = (dish: RouteParamInput<string> | undefined) => {
-    router.push({
-      pathname: "/editdish",
-      params: { ...dish },
-    });
-  };
+  const editDish = (dish: Dish | null, dish_url?: string) => {
+      router.push({
+        pathname: '/editdish',
+        params: {
+          ...dish,
+          dish_url: dish_url ?? '',
+          prev_page: "/menu"
+        }
+      });
+      console.log(`Current dish being edited: ${JSON.stringify(dish)}`)
+    };
 
   // Update vendor details when the screen is focused
   useFocusEffect(
@@ -81,6 +116,15 @@ export default function Menu() {
       setValidVendorName(validateParam(newVendorName || vendorName));
       setValidVendorDesc(validateParam(newVendorDesc || vendorDesc));
       setValidVendorUri(validateParam(newImg || vendorUri));
+
+      const setDishMenu = async () => {
+        const menu_result = await getDishes(vendorId)
+        if(menu_result){
+          setVendorDishes(menu_result)
+        }
+      }
+
+      setDishMenu()
 
       if (newDish) {
         const parsedDish =
@@ -143,7 +187,7 @@ export default function Menu() {
           onPress={() =>
             router.push({
               pathname: "/createdish",
-              params: { prevPage: "/menu" },
+              params: { prevPage: "/menu" , vendorId: vendorId},
             })
           }
         >
@@ -155,17 +199,17 @@ export default function Menu() {
 
       {/* Dish list */}
       <ScrollView className="h-60 mt-5" showsVerticalScrollIndicator={false}>
-        {dishes.length === 0 ? (
+        {vendorDishes.length === 0 ? (
           <Text className="text-gray-400 text-center mt-4">
             No dishes added yet.
           </Text>
         ) : (
-          dishes.map((dish) => (
+          vendorDishes.map((dish) => (
             <DishItem
               key={dish.id}
               dish={dish}
-              onDelete={() => deleteDish(dish.id)}
-              onEdit={() => editDish(dish)}
+              onDelete={() => removeDish(dish)}
+              onEdit={(dish, dish_url) => editDish(dish, dish_url)}
             />
           ))
         )}
