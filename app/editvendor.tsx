@@ -110,7 +110,7 @@ export default function EditVendorPage() {
     };
     const updateVendorSuccess = await updateVendor(vendor, base64Image);
     if (updateVendorSuccess) {
-      router.dismissAll();
+      router.back();
       router.replace({
         pathname: validPrevpage, // Use the dynamically passed previous page
         params: {
