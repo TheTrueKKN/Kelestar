@@ -29,7 +29,7 @@ export default function Menu() {
    const { menudDishes, newDish } = useGlobalSearchParams();
 
   const setDishMenu = async () => {
-      const menu_result = await getDishes(vendorId)
+      const menu_result = await getDishes({vendor_id: vendorId})
       if(menu_result){
         setVendorDishes(menu_result)
       }

@@ -47,7 +47,7 @@ const InitialMenu = () => {
     try {
       // Fetch dishes from Supabase (Assuming getDishes is defined elsewhere)
       console.log(`VENDOR IDDDDDDDDDD: ${vendorId}`)
-      const fetchedDishes = await getDishes(vendorId); 
+      const fetchedDishes = await getDishes({vendor_id: vendorId}); 
       // console.log('Fetched dishes:', fetchedDishes);
 
       // If fetched data is valid, map it to the Dish format
