@@ -5,4 +5,5 @@ export interface Dish {
     dish_image_name?: string | null;
     dish_vendor_id?: string;
     dish_total_carbon?: number;
+    dish_vendor_name?: string | null;
   }

@@ -2,8 +2,25 @@ import { Alert } from "react-native";
 import { Vendor } from "../interfaces/vendor";
 import { supabase } from "../lib/supabase";
 import { getUserSession } from "./userController";
-import { getImage, updateBase64Image, uploadBase64Image } from "./fileController";
+import {
+  getImage,
+  updateBase64Image,
+  uploadBase64Image,
+} from "./fileController";
 import { Base64Image } from "../interfaces/base64image";
+
+export async function getVendors() {
+  try {
+    const { data, error, status } = await supabase.from("vendor").select("*");
+
+    if (error && status !== 406) throw error;
+    // console.log(`Data: ${JSON.stringify(data)}, error: ${JSON.stringify(error)}, status: ${JSON.stringify(status)}`)
+    return data as Vendor[];
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+}
 
 export async function getVendorByUser() {
   try {
@@ -52,9 +69,8 @@ export async function insertVendor(
       if (vendor_image_name != null) {
         vendor.vendor_image_name = vendor_image_name;
       }
-    }
-    else {
-      throw new Error("Please provide a vendor photo")
+    } else {
+      throw new Error("Please provide a vendor photo");
     }
 
     const { error } = await supabase.from("vendor").insert(vendor);
