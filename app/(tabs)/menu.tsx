@@ -44,7 +44,7 @@ export default function Menu() {
           }
         };
         const setDishMenu = async () => {
-          const menu_result = await getDishes(vendorId)
+          const menu_result = await getDishes({vendor_id: vendorId})
           if(menu_result){
             setVendorDishes(menu_result)
           }
@@ -118,7 +118,7 @@ export default function Menu() {
       setValidVendorUri(validateParam(newImg || vendorUri));
 
       const setDishMenu = async () => {
-        const menu_result = await getDishes(vendorId)
+        const menu_result = await getDishes({vendor_id: vendorId})
         if(menu_result){
           setVendorDishes(menu_result)
         }
