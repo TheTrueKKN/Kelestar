@@ -3,31 +3,51 @@ import { DishIngredient } from '../interfaces/dishIngredient';
 
 import { getIngredientCarbon } from '../controllers/ingredientController';
 import { ActivityIndicator, Text, View } from 'react-native';
+import { JoinedDishIngredient } from '../interfaces/joinedDishIngredient';
+import { joinDishIngredient } from '../controllers/dishIngredientJoinController';
 
 type CalculateCarbonProp = {
-    ingredientList: DishIngredient[];
+    ingredientList?: DishIngredient[];
+    joinedIngredientList?: JoinedDishIngredient[]
 }
 
-const CalculateTotalCarbon: React.FC<CalculateCarbonProp> = ({ ingredientList }) => {
+const CalculateTotalCarbon: React.FC<CalculateCarbonProp> = ({ ingredientList, joinedIngredientList }) => {
     const [totalCarbon, setTotalCarbon] = useState<number | null>(null);
-    const [loading, setLoading] = useState(true);
     useEffect(() =>{
-        const fetchCarbonData = async () => {
-            let total = 0;
 
-            for( const item of ingredientList){
-                const result = await getIngredientCarbon(item.ingredient_id as string)
-
-                const carbonValue = (result?.ingredient_footprint * item.ingredient_amount! as number) / 1000
-                total += carbonValue
-            }
-
-            setTotalCarbon(total)
-            setLoading(false)
-        };
-
-        fetchCarbonData()
-    }, [ingredientList])
+        if(ingredientList){
+            const fetchCarbonData = async () => {
+                let total = 0;
+    
+                for( const item of ingredientList){
+                    const result = await getIngredientCarbon(item.ingredient_id as string)
+    
+                    const carbonValue = (result?.ingredient_footprint * item.ingredient_amount! as number) / 1000
+                    total += carbonValue
+                }
+    
+                setTotalCarbon(total)
+            };
+    
+            fetchCarbonData()
+        }
+        else if(joinedIngredientList){
+            const fetchJoinedCarbonData = async () => {
+                let total = 0;
+    
+                for( const item of joinedIngredientList){
+                    const result = await getIngredientCarbon(item.ingredient.id as string)
+    
+                    const carbonValue = (result?.ingredient_footprint * item.ingredient_amount! as number) / 1000
+                    total += carbonValue
+                }
+    
+                setTotalCarbon(total)
+            };
+    
+            fetchJoinedCarbonData()
+        }
+    }, [ingredientList, joinedIngredientList])
     
     return(
         <View className="p-4">

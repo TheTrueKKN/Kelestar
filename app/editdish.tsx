@@ -13,6 +13,7 @@ import IngredientSelector from '../components/IngredientSelector';
 import { DishIngredient } from '../interfaces/dishIngredient';
 import { getIngredientName } from '../controllers/ingredientController';
 import { updateDishIngredient } from '../controllers/dishIngredientController';
+import CalculateTotalCarbon from '../components/CalculateTotalCarbon';
 const galleryIcon = require('../assets/icons/gallery.png'); // Adjust the path to your gallery icon
 
 export default function EditDishPage() {
@@ -237,6 +238,7 @@ export default function EditDishPage() {
 
         {/* Save Changes Button */}
         <View className="px-5 py-4 bg-white">
+          <CalculateTotalCarbon joinedIngredientList={dishIngredientList}/>
           <TouchableOpacity
             className="h-12 bg-[#74B318] rounded-md justify-center items-center"
             onPress={() => {
