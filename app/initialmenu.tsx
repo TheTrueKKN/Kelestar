@@ -1,16 +1,13 @@
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native'
+import { Text, View, TouchableOpacity, ScrollView } from 'react-native'
 import React, { useEffect, useState, useCallback } from 'react'
-import { useFocusEffect } from "@react-navigation/native";
-
 import DishItem from '../components/DishItem'
-import { useGlobalSearchParams, useRouter } from 'expo-router'
+import { useGlobalSearchParams, useRouter, useFocusEffect, } from 'expo-router'
 import { getVendorByUser } from '../controllers/vendorController';
 
 // Newly added
 import { getDishes, deleteDish } from "../controllers/dishController";
 import { Dish } from "../interfaces/dish";
-import { withRepeat } from 'react-native-reanimated';
-import { supabase } from '../lib/supabase';
+
 
 
 const InitialMenu = () => {
@@ -49,29 +46,34 @@ const InitialMenu = () => {
   const getVendorDishes = async () => {
     try {
       // Fetch dishes from Supabase (Assuming getDishes is defined elsewhere)
-      const fetchedDishes = await getDishes(vendorId); 
+      console.log(`VENDOR IDDDDDDDDDD: ${vendorId}`)
+      const fetchedDishes = await getDishes({vendor_id: vendorId}); 
       // console.log('Fetched dishes:', fetchedDishes);
 
       // If fetched data is valid, map it to the Dish format
       if (fetchedDishes && Array.isArray(fetchedDishes)) {
         const dishes = convertToDishFormat(fetchedDishes); // Convert to the correct format
         setDishes(dishes); // Set the fetched and converted dishes to the state
-        // console.log(`DEEEZ DISHES: ${JSON.stringify(dishes)}`)
       }
     } catch (error) {
       console.error('Error fetching dishes:', error);
     }
   };
+  
 
     useEffect(() => {
       const setVendorValues = async () => {
         const result = await getVendorByUser();
         
-        //console.log(`Vendor detail: ${JSON.stringify(result)}`)
+        console.log(`Vendor detail: ${JSON.stringify(result)}`)
         if (result) {
+          console.log('EYYYYYY YOOOOOOOOOOOOOO')
+          console.log(`Inserting id: ${result.id!}`)
+          setVendorId(result.id!);
           setVendorName(result.vendor_name);
           setVendorDescription(result.vendor_description);
-          setVendorId(result.id ?? "");
+          
+          
           if (result.vendor_image_url) {
             setThumbnailImage(result.vendor_image_url);
             // console.log("thumbnailimage", editThumbnailImage)
@@ -80,9 +82,13 @@ const InitialMenu = () => {
       };
       setVendorValues();
 
-      getVendorDishes();
+      
     }, []);
 
+    useEffect(() => {
+      getVendorDishes()
+    }, [vendorId]); // Runs whenever vendorId changes
+  
   // Function to delete a dish by ID
   const removeDish = async (dish: Dish) => {
     setDishes((prevDishes) => prevDishes.filter(allDish => allDish.id !== dish.id));
