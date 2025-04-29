@@ -10,11 +10,11 @@ const RolePage = () => {
     return (
       <SafeAreaView className = "bg-custom_green h-full">
         <ScrollView>
-          <View className="w-full justify-center h-full px-4 my-6">
-            <Text className="text-2xl text-black text-semibold font-psemibold">
+          <View className="w-full justify-center h-full my-6">
+            <Text className="text-2xl text-black text-semibold font-psemibold ml-4">
               Select your Role
             </Text>
-            <Text className="text-black text-2xl mt-10 text-left mb-4"> Are you</Text>
+            {/* <Text className="text-black text-2xl mt-10 text-left mb-4"> Are you</Text> */}
   
             <RoleSelection/>
           </View>
