@@ -147,7 +147,7 @@ export default function Menu() {
   return (
     <View className="bg-white flex-1">
       {/* Top Header with icon on the right */}
-      <View className="flex-row justify-between items-center mt-5 ml-3 mr-3">
+      <View className="flex-row justify-between items-center mt-12 ml-3 mr-3">
         {/* Checking if valid Vendor name, if not show the default version */}
         <Text className="font-bold text-2xl">
           {validVendorName ? `Hello ${validVendorName}!` : "Hello there!!"}

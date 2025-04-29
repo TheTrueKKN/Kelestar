@@ -42,3 +42,25 @@ export async function getIngredientName(
     return null;
   }
 }
+
+export async function getIngredientCarbon(
+  ingredientId: String 
+){
+  try {
+    const { data, error, status } = await supabase
+    .from("ingredient")
+    .select('ingredient_footprint')
+    .eq('id', ingredientId)
+    .single()
+
+    if (error && status !== 406) throw error;
+
+    return data
+
+  } catch (error) {
+    if (error instanceof Error) {
+      Alert.alert(error.message);
+    }
+    return null;
+  }
+}

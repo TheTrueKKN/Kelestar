@@ -23,6 +23,7 @@ import { Base64Image } from '../interfaces/base64image';
 import { Dish } from "../interfaces/dish";
 import { insertDishIngredient } from "../controllers/dishIngredientController";
 import DishIngredientItem from "../components/DishIngredientItem";
+import CalculateTotalCarbon from "../components/CalculateTotalCarbon";
 
 
 export default function CreateDishPage() {
@@ -236,6 +237,7 @@ export default function CreateDishPage() {
 
         {/* Create New Dish Button */}
         <View className="px-5 py-4 bg-white">
+          <CalculateTotalCarbon ingredientList={ingredientList}/>
           <TouchableOpacity
             className="h-12 bg-[#74B318] rounded-md justify-center items-center mb-4"
             onPress={() => {

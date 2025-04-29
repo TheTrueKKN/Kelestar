@@ -18,7 +18,7 @@ const galleryIcon = require('../assets/icons/gallery.png'); // Adjust the path t
 export default function EditDishPage() {
   const [dishId, setDishId] = useState(''); 
   const [dishName, setDishName] = useState(''); // State for the dish name
-  const [dishPrice, setDishPrice] = useState(''); // State for the dish price
+  const [dishPrice, setDishPrice] = useState(0); // State for the dish price
   const [dishImageName, setDishImageName] = useState('');
   const [dishUri, setDishUri] = useState(''); // State for the thumbnail image
   const router = useRouter(); // Initialize the router
@@ -32,7 +32,7 @@ export default function EditDishPage() {
   useEffect(() => {
       setDishId(id as string)
       setDishName(dish_name as string)
-      setDishPrice(dish_price as string)
+      setDishPrice(Number(dish_price))
       setDishImageName(dish_image_name as string)
       setDishUri(dish_url as string)
 
@@ -155,12 +155,12 @@ export default function EditDishPage() {
 
               {/* Dish Price Input */}
               <Text className="text-base text-[#006400] mb-2">Edit dish price:</Text>
-              <TextInput
+              <TextInput 
                 className="h-12 bg-[#F9F9F9] border border-[#DDDDDD] rounded-md px-4 mb-4"
-                placeholder={dishPrice ? dishPrice : 'Enter dish price'}
-                value={dishPrice}
-                onChangeText={setDishPrice}
-                keyboardType="numeric" // Numeric keyboard for price input
+                placeholder={dishPrice ? dishPrice.toString() : 'Enter dish price'}
+                value={dishPrice.toString()}
+                onChangeText={(text) => setDishPrice(Number(text) || 0)}
+                keyboardType="numeric"
               />
 
               {/* Thumbnail Image Upload Box */}
