@@ -8,7 +8,6 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import {
-  RouteParams,
   useGlobalSearchParams,
   useRouter,
   useFocusEffect,
@@ -27,33 +26,34 @@ export default function Menu() {
    const [vendorUri, setUri] = useState(""); // Thumbnail image state
    const [vendorDishes, setVendorDishes] = useState<Dish[]>([]);
    // Getting parameters from Initial menu page
-  const { menudDishes, newDish } =
-    useGlobalSearchParams();
+   const { menudDishes, newDish } = useGlobalSearchParams();
 
-    useEffect(() => {
-        const setVendorValues = async () => {
-          const result = await getVendorByUser();
-          if (result) {
-            setVendorId(result.id!)
-            setVendorName(result.vendor_name);
-            setVendorDescription(result.vendor_description);
-            if (result.vendor_image_url) {
-              setUri(result.vendor_image_url);
-              // console.log("thumbnailimage", editUri);
-            }
-          }
-        };
-        const setDishMenu = async () => {
-          const menu_result = await getDishes(vendorId)
-          if(menu_result){
-            setVendorDishes(menu_result)
+  const setDishMenu = async () => {
+      const menu_result = await getDishes(vendorId)
+      if(menu_result){
+        setVendorDishes(menu_result)
+      }
+  }
+
+  useEffect(() => {
+      const setVendorValues = async () => {
+        const result = await getVendorByUser();
+        console.log(`Testing result: ${result}`)
+        if (result) {
+          console.log("TESSSS VALID")
+          setVendorId(result.id!)
+          setVendorName(result.vendor_name);
+          setVendorDescription(result.vendor_description);
+          if (result.vendor_image_url) {
+            setUri(result.vendor_image_url);
+            // console.log("thumbnailimage", editUri);
           }
         }
-        setVendorValues();
-        setDishMenu();
-        console.log(`Refresh with new dish menu: ${JSON.stringify(vendorDishes)}`)
+      };
+      setVendorValues();  
+        //console.log(`Refresh with new dish menu: ${JSON.stringify(vendorDishes)}`)
 
-        console.log(`Curren dishes: ${JSON.stringify(vendorDishes)}`)
+        //console.log(`Curren dishes: ${JSON.stringify(vendorDishes)}`)
       }, []);
 
   // Getting parameters from the editvendor Page
@@ -84,13 +84,6 @@ export default function Menu() {
     return Array.isArray(param) ? param[0] : param;
   };
 
-  // Function to add dishes into the array
-  const addNewDish = (newDish: Dish) => {
-    if (!dishes.some((dish) => dish.id === newDish.id)) {
-      setDishes((prevDishes) => [...prevDishes, newDish]);
-    }
-  };
-
   // Function to delete a dish
   const removeDish = async (dish: Dish) => {
       setVendorDishes((prevDishes) => prevDishes.filter(allDish => allDish.id !== dish.id));
@@ -110,6 +103,7 @@ export default function Menu() {
       console.log(`Current dish being edited: ${JSON.stringify(dish)}`)
     };
 
+
   // Update vendor details when the screen is focused
   useFocusEffect(
     useCallback(() => {
@@ -117,31 +111,11 @@ export default function Menu() {
       setValidVendorDesc(validateParam(newVendorDesc || vendorDesc));
       setValidVendorUri(validateParam(newImg || vendorUri));
 
-      const setDishMenu = async () => {
-        const menu_result = await getDishes(vendorId)
-        if(menu_result){
-          setVendorDishes(menu_result)
-        }
-      }
-
       setDishMenu()
 
-      if (newDish) {
-        const parsedDish =
-          typeof newDish === "string" ? JSON.parse(newDish) : null;
-        if (parsedDish) {
-          addNewDish(parsedDish);
-        }
-      }
-    }, [
-      vendorName,
-      vendorDesc,
-      vendorUri,
-      newVendorName,
-      newVendorDesc,
-      newImg,
-      newDish,
-    ])
+      
+
+    }, [])
   );
 
   return (

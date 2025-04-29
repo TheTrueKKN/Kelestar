@@ -15,11 +15,11 @@ type DishItemProps = {
 };
 
 const DishItem: React.FC<DishItemProps> = ({ dish, onEdit, onDelete }) => {
-  const { dish_name, dish_price, dish_image_name } = dish;  // Destructure correctly
+  const { dish_name, dish_price, dish_image_name, dish_total_carbon } = dish;  // Destructure correctly
 
   const [dishUrl, setDishUrl] = useState<string | null>(null);
-  
-  useEffect(() => {
+    
+    useEffect(() => {
     const fetchImage = async () => {
       if (dish_image_name) {
         const url = await getDishImage(dish_image_name);
@@ -45,6 +45,7 @@ const DishItem: React.FC<DishItemProps> = ({ dish, onEdit, onDelete }) => {
       <View className="flex-1">
         <Text className="text-lg font-semibold">{dish_name}</Text>
         <Text className="text-gray-500">RM {dish_price}</Text>
+        <Text className="text-gray-500">{dish_total_carbon} gCO₂</Text>
       </View>
 
       {/* Edit and Delete buttons in a row */}
