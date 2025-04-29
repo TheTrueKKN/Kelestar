@@ -8,7 +8,7 @@ type InsertDishReturn = [number | null, boolean];
 
 export async function insertDish(
     vendor_id: string,
-    {dish_name, dish_price}: Dish,
+    {dish_name, dish_price, dish_total_carbon}: Dish,
     {base64, uri}: Base64Image
 ): Promise<InsertDishReturn> {
     try {
@@ -16,7 +16,8 @@ export async function insertDish(
             dish_name: dish_name,
             dish_price: dish_price,
             dish_image_name: "",
-            dish_vendor_id: vendor_id
+            dish_vendor_id: vendor_id,
+            dish_total_carbon:dish_total_carbon
         };
 
         if (base64) {
@@ -71,7 +72,7 @@ export async function getDishes(
 }
 
 export async function updateDish(
-    {id, dish_name, dish_price, dish_image_name}: Dish,
+    {id, dish_name, dish_price, dish_image_name, dish_total_carbon}: Dish,
     {base64, uri}: Base64Image
 ) {
     try {
@@ -79,7 +80,8 @@ export async function updateDish(
         id: id,
         dish_name: dish_name,
         dish_price: dish_price,
-        dish_image_name:dish_image_name
+        dish_image_name:dish_image_name,
+        dish_total_carbon: dish_total_carbon,
        };
 
        if (base64 && dish?.dish_image_name) {

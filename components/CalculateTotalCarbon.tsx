@@ -8,10 +8,11 @@ import { joinDishIngredient } from '../controllers/dishIngredientJoinController'
 
 type CalculateCarbonProp = {
     ingredientList?: DishIngredient[];
-    joinedIngredientList?: JoinedDishIngredient[]
+    joinedIngredientList?: JoinedDishIngredient[];
+    onCarbonCalculated?: (carbon: number) => void;  // Add callback prop
 }
 
-const CalculateTotalCarbon: React.FC<CalculateCarbonProp> = ({ ingredientList, joinedIngredientList }) => {
+const CalculateTotalCarbon: React.FC<CalculateCarbonProp> = ({ ingredientList, joinedIngredientList, onCarbonCalculated  }) => {
     const [totalCarbon, setTotalCarbon] = useState<number | null>(null);
     useEffect(() =>{
 
@@ -25,7 +26,8 @@ const CalculateTotalCarbon: React.FC<CalculateCarbonProp> = ({ ingredientList, j
                     const carbonValue = (result?.ingredient_footprint * item.ingredient_amount! as number) / 1000
                     total += carbonValue
                 }
-    
+                
+                onCarbonCalculated?.(total);
                 setTotalCarbon(total)
             };
     
@@ -41,7 +43,8 @@ const CalculateTotalCarbon: React.FC<CalculateCarbonProp> = ({ ingredientList, j
                     const carbonValue = (result?.ingredient_footprint * item.ingredient_amount! as number) / 1000
                     total += carbonValue
                 }
-    
+
+                onCarbonCalculated?.(total);
                 setTotalCarbon(total)
             };
     

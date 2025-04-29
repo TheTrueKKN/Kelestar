@@ -32,6 +32,7 @@ export default function CreateDishPage() {
   const [thumbnailImage, setThumbnailImage] = useState(""); // State for thumbnail image
   const [ingredientList, setIngredientList] = useState<DishIngredient[]>([]);
   const [showIngredientSelector, setShowIngredientSelector] = useState(false);
+  const [totalCarbon, setTotalCarbon] = useState(0);
   const router = useRouter(); // Initialize router
 
   const [base64String, setBase64String] = useState('');
@@ -81,11 +82,14 @@ export default function CreateDishPage() {
 
   // Function to handle Dish creation
   const handleCreateDish = async () => {
+
+    
     const newDish: Dish = {
       id: Math.random().toString(), // Generate a unique ID
       dish_name: dishName, // Assuming dishName is already a string from input
       dish_price: Number(dishPrice), // Make sure the price is a number or string as per the type
       dish_image_name: thumbnailImage, // Assuming thumbnailImage is a string (URI to the image)
+      dish_total_carbon: totalCarbon,
     };
    
    // 2. insert dish into supabase after "create dish" is pressed
@@ -237,7 +241,7 @@ export default function CreateDishPage() {
 
         {/* Create New Dish Button */}
         <View className="px-5 py-4 bg-white">
-          <CalculateTotalCarbon ingredientList={ingredientList}/>
+          <CalculateTotalCarbon ingredientList={ingredientList} onCarbonCalculated={setTotalCarbon}/>
           <TouchableOpacity
             className="h-12 bg-[#74B318] rounded-md justify-center items-center mb-4"
             onPress={() => {

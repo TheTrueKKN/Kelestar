@@ -23,6 +23,7 @@ export default function EditDishPage() {
   const [dishImageName, setDishImageName] = useState('');
   const [dishUri, setDishUri] = useState(''); // State for the thumbnail image
   const router = useRouter(); // Initialize the router
+  const [totalCarbon, setTotalCarbon] = useState(0)
   
   // Newly added 
   const { id, dish_name, dish_price, dish_image_name, dish_url, dish_vendor_id, prev_page } = useGlobalSearchParams();
@@ -81,7 +82,8 @@ export default function EditDishPage() {
       id: dishId,
       dish_name: dishName,
       dish_price: dishPrice,
-      dish_image_name: dishImageName
+      dish_image_name: dishImageName,
+      dish_total_carbon: totalCarbon,
     };
 
     const base64Image: Base64Image = {
@@ -238,7 +240,7 @@ export default function EditDishPage() {
 
         {/* Save Changes Button */}
         <View className="px-5 py-4 bg-white">
-          <CalculateTotalCarbon joinedIngredientList={dishIngredientList}/>
+          <CalculateTotalCarbon joinedIngredientList={dishIngredientList} onCarbonCalculated={setTotalCarbon}/>
           <TouchableOpacity
             className="h-12 bg-[#74B318] rounded-md justify-center items-center"
             onPress={() => {
