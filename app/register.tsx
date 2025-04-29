@@ -1,128 +1,107 @@
-import {
-  Alert,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  Image,
-} from "react-native";
+import { View, Text, ScrollView, Image, AppState, Alert, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
-import { icons } from "../constants";
-import { Link, useRouter } from "expo-router";
-import CustomButton from "../components/CustomButton";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function App() {
+import { images } from "../constants";
+import FormField from "../components/FormField";
+import CustomButton from "../components/CustomButton";
+import { Link, useRouter } from "expo-router";
+import { supabase } from "../lib/supabase";
+import { signInWithEmail, signInWithOtp } from "../controllers/authController";
+import { getUser, getUserByEmail, getUserByUsername } from "../controllers/userController";
+import { UserRole } from "../enums/userRole";
+
+AppState.addEventListener("change", (state) => {
+  if (state === "active") {
+    supabase.auth.startAutoRefresh();
+  } else {
+    supabase.auth.stopAutoRefresh();
+  }
+});
+
+const Register = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
 
-  const handleRegister = () => {
-    if (password !== confirmPassword) {
-      Alert.alert("Passwords do not match");
-    } else {
-      Alert.alert("Register successful");
-      router.push("/role_page");
+  const handleRegister = async () => {
+    setLoading(true);
+    if (!username || !email) {
+      Alert.alert("Please fill in both your username and email");
     }
+    else if (await getUserByUsername(username)) {
+      Alert.alert("Username has been taken,\nplease choose another username.");
+    }
+    else if (await getUserByEmail(email)) {
+      Alert.alert("Email has been registered,\nplease login instead.");
+    }
+    else if (await signInWithOtp(username, email)) {
+      // Alert.alert("Register successful");
+      const userDetails = {
+        username: username,
+        email: email,
+      };
+      router.dismissAll();
+      router.replace({ pathname: "/userverification", params: userDetails });
+    }
+    setLoading(false);
   };
 
   return (
-    <View className="flex-1 justify-center px-8 bg-white">
-      <Text className="text-3xl font-urbanistbold text mb-4">
-        Welcome to join the sustainable community
-      </Text>
-
-      <Text className="font-urbanistmedium mb-2">Username</Text>
-      <TextInput
-        className="font-urbanistmedium border border-gray-300 rounded-md p-3 mb-2"
-        placeholder="Enter your username"
-        value={username}
-        onChangeText={setUsername}
-      />
-
-      <Text className="font-urbanistmedium mb-2">Email</Text>
-      <TextInput
-        className="font-urbanistmedium border border-gray-300 rounded-md p-3 mb-2"
-        placeholder="Enter your email"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-
-      <Text className="font-urbanistmedium mb-2">Password</Text>
-      <View className="relative">
-        <TextInput
-          className="font-urbanistmedium border border-gray-300 rounded-md p-3 mb-2"
-          placeholder="Enter your password"
-          secureTextEntry={!passwordVisible}
-          value={password}
-          onChangeText={setPassword}
-        />
-        <TouchableOpacity
-          onPress={() => setPasswordVisible(!passwordVisible)}
-          className="absolute right-0 p-2 mt-2"
-        >
-          <Image
-            source={passwordVisible ? icons.eyeHide : icons.eye}
-            className="w-6 h-6"
-            resizeMode="contain"
+    <SafeAreaView className="bg-white h-full">
+      <ScrollView>
+        <View className="w-full h-full mb-6 flex-1 justify-center px-8 bg-white">
+          <Text className="text-3xl font-urbanistbold text mb-4 mt-10">
+            Welcome to join the sustainable community
+          </Text>
+          <FormField
+            title="Username"
+            value={username}
+            handleChangeText={setUsername}
+            otherStyles="mt-7"
+            placeholder="Enter your username"
           />
-        </TouchableOpacity>
-      </View>
-
-      <Text className="font-urbanistmedium mb-2">Confirm Password</Text>
-      <View className="relative">
-        <TextInput
-          className="font-urbanistmedium border border-gray-300 rounded-md p-3 mb-2"
-          placeholder="Confirm your password"
-          secureTextEntry={!confirmPasswordVisible}
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
-        <TouchableOpacity
-          onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
-          className="absolute right-0 p-2 mt-2"
-        >
-          <Image
-            source={confirmPasswordVisible ? icons.eyeHide : icons.eye}
-            className="w-6 h-6"
-            resizeMode="contain"
+          <FormField
+            title="Email"
+            value={email}
+            handleChangeText={setEmail}
+            otherStyles="mt-7"
+            keyboardType="email-address"
+            placeholder="Enter your email"
           />
-        </TouchableOpacity>
-      </View>
-
-      {/* <TouchableOpacity
-        className="bg-green text-white rounded-xl p-3 mt-4"
-        onPress={handleRegister}
-        activeOpacity={0.7}
-      >
-        <Text className="text-lg text-white font-psemibold text-center">
-          Register
-        </Text>
-      </TouchableOpacity> */}
-
-      <CustomButton
+          {/* <FormField
+            title="Password"
+            value={password}
+            handleChangeText={setPassword}
+            otherStyles="mt-7"
+            placeholder="Enter your password"
+          />
+          <View className="justify-end pt-4 flex-row gap-2 top-1">
+            <Text className="text-gray-100 font-urbanistmedium">
+              Forgot Password?
+            </Text>
+          </View> */}
+       <CustomButton
         title="Register"
         handlePress={handleRegister}
         containerStyles="mt-7"
+        isLoading={loading}
       />
-
-      <View className="flex-row justify-center mt-2.5">
-        <Text className="font-urbanistmedium">Already have an account? </Text>
-        {/* <TouchableOpacity
-          activeOpacity={0.3}
-          onPress={() => Alert.alert("Navigate to Login")}
-        > */}
-        {/* <Text className="font-urbanistmedium text-green">Log in</Text> */}
-        <Link href={"/login"} className="font-urbanistmedium text-green">
-          Log in
-        </Link>
-        {/* </TouchableOpacity> */}
-      </View>
-    </View>
+          <View className="justify-center pt-4 flex-row gap-2 top-4">
+            <Text className="font-urbanistmedium">
+              Already have an account?
+            </Text>
+            <Text onPress={()=>{router.push("/login")}} className="font-urbanistmedium text-green">
+              Log in
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
-}
+};
+
+export default Register;
