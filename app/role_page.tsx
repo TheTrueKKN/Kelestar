@@ -14,7 +14,7 @@ const RolePage = () => {
             <Text className="text-2xl text-black text-semibold font-psemibold ml-4">
               Select your Role
             </Text>
-            <Text className="text-black text-2xl mt-10 text-left mb-4"> Are you</Text>
+            {/* <Text className="text-black text-2xl mt-10 text-left mb-4"> Are you</Text> */}
   
             <RoleSelection/>
           </View>

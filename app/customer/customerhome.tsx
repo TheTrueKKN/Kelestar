@@ -1,7 +1,28 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, Image } from 'react-native';
+import { UserRole } from '../../enums/userRole';
+import { getUser } from '../../controllers/userController';
 
 export default function CustomerHome() {
+    useEffect(() => {
+      const initUserRole = async () => {
+        const fetchedUser = await getUser();
+        // setUser(fetchedUser);
+  
+        // if (fetchedUser?.user_role) {
+        //   setUserRole(fetchedUser.user_role);
+        // }
+  
+      if (fetchedUser) {
+        
+      }
+
+    }
+  
+        // console.log(fetchedUser, fetchedUser?.user_role);
+      initUserRole();
+    }, []);
+
   return (
     <View className="flex-1 justify-center items-center">
       {/* Good Morning text */}
@@ -92,3 +113,4 @@ export default function CustomerHome() {
     </View>
   );
 }
+

@@ -47,7 +47,7 @@ const SignIn = () => {
     <SafeAreaView className="bg-white h-full">
       <ScrollView>
         <View className="w-full h-full mb-6 flex-1 justify-center px-8 bg-white">
-          <Text className="text-3xl font-urbanistbold text mb-4">
+          <Text className="text-3xl font-urbanistbold text mb-4 mt-10">
             Start tracking your meal footprint today
           </Text>
           {/* <FormField

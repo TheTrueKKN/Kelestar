@@ -62,8 +62,8 @@ export async function getDishes(
         const { data, error, status} = await supabase
         .from("dish")
         .select('*')
-        // .eq("dish_vendor_id", vendor_id)
-        console.log(`Data: ${JSON.stringify(data)}, error: ${JSON.stringify(error)}, status: ${JSON.stringify(status)}`)
+        .eq("dish_vendor_id", vendor_id)
+        // console.log(`Data: ${JSON.stringify(data)}, error: ${JSON.stringify(error)}, status: ${JSON.stringify(status)}`)
         return data
     } catch (error) {
         return null

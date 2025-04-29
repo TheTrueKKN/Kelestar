@@ -15,7 +15,7 @@ const RoleSelection = () => {
   const handlePress = async () => {
     await updateUser({ user_role: selectedOption });
     if (selectedOption === UserRole.Customer) {
-      router.push("/(customer-tabs)/home");
+      router.replace("/(customer-tabs)/home");
     } else if (selectedOption === UserRole.Vendor) {
       router.push("/vendordetail");
     }
