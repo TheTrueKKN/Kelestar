@@ -9,7 +9,8 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator , 
+  ActivityIndicator, 
+  Alert, 
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import IngredientSelector from "../components/IngredientSelector";
@@ -67,12 +68,24 @@ export default function CreateDishPage() {
   };
 
   const handleAddIngredient = (dishIngredient: DishIngredient) => {
-  //  console.log("Adding into list")
-   const newList = [...ingredientList, dishIngredient]
-  //  setIngredientList(newList);
-   
-   setIngredientList((ingredientList) => [...ingredientList, dishIngredient]);
-   console.log(`Current ing list: ${JSON.stringify(newList, null, 2)} `);
+    // Check if ingredient already exists in the list
+    const alreadyExists = ingredientList.some(
+      item => item.ingredient_id === dishIngredient.ingredient_id
+    );
+  
+    if (alreadyExists) {
+      // Show warning that ingredient is already added
+      Alert.alert(
+        "Ingredient Exists",
+        "This ingredient has already been added to your dish.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+  
+    // If not exists, add to list
+    setIngredientList(prev => [...prev, dishIngredient]);
+    console.log(`Current ing list: ${JSON.stringify([...ingredientList, dishIngredient], null, 2)}`);
   };
 
   const base64Image: Base64Image = {
@@ -175,6 +188,14 @@ export default function CreateDishPage() {
                 onChangeText={setDishPrice}
                 keyboardType="numeric" // Numeric keyboard for price input
               />
+              {loading && (
+                <View className="absolute inset-0 bg-white z-50 justify-center items-center">
+                  <View className="flex-row items-center space-x-3">
+                    <ActivityIndicator size="small" color="#74B318" />
+                    <Text className="text-base font-medium text-black">Creating dish...</Text>
+                  </View>
+                </View>
+              )}
               
               {/* Thumbnail Image Upload Box */}
               <Text className="text-base text-[#006400] mb-2">
@@ -272,14 +293,6 @@ export default function CreateDishPage() {
           ></IngredientSelector>
         </View>
       </View>
-      {loading && (
-  <View className="absolute inset-0 bg-white z-50 justify-center items-center">
-    <View className="flex-row items-center space-x-3">
-      <ActivityIndicator size="small" color="#74B318" />
-      <Text className="text-base font-medium text-black">Creating dish...</Text>
-    </View>
-  </View>
-)}
     </KeyboardAvoidingView>
   );
 }

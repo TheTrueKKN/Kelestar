@@ -71,9 +71,9 @@ export async function getDishes({vendor_id, dish_name}: getDishesParams) {
     queryBuilder.ilike("dish_name", `%${dish_name}%`)
     : queryBuilder
 
-    console.log("Running query with filters:", queryBuilder);
+    //console.log("Running query with filters:", queryBuilder);
     const { data, error, status } = await queryBuilder;
-    console.log(`Data: ${JSON.stringify(data)}, error: ${JSON.stringify(error)}, status: ${JSON.stringify(status)}`)
+    //console.log(`Data: ${JSON.stringify(data)}, error: ${JSON.stringify(error)}, status: ${JSON.stringify(status)}`)
     return data as Dish[];
   } catch (error) {
     console.log(error);
