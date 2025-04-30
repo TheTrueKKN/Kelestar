@@ -57,7 +57,7 @@ const DishCard = ({ dish, onPress }: { dish: Dish; onPress: () => void }) => {
         <Text className="font-pregular text-[14px] text-gray-500 mt-1">
           {dish.dish_vendor_name}
         </Text>
-        <Text className="font-pbold text-[16px] text-green mt-2">{`RM ${dish.dish_price.toFixed(
+        <Text className="font-pbold text-[16px] text-green mt-2">{`RM ${dish.dish_price!.toFixed(
           2
         )}`}</Text>
       </View>
