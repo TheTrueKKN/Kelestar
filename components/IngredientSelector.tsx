@@ -79,7 +79,7 @@ const IngredientSelector = ({
       handleShowModal(false);
       setIngredientName("");
       setIngredientWeight(0);
-      Alert.alert(`${ingredientWeight}g of ${ingredientName} added`);
+      //Alert.alert(`${ingredientWeight}g of ${ingredientName} added`);
     } 
     else if (!searchedIngredient){
       Alert.alert("Please enter a valid ingredient");

@@ -66,7 +66,7 @@ export default function VendorDetailPage() {
     }
     const insertVendorSuccess = await insertVendor(vendor, base64Image);
     if (insertVendorSuccess) {
-      router.dismissAll();
+      // router.dismissAll();
       router.replace({ pathname: '/initialmenu', params: { vendorName:vendorName, vendorDesc: vendorDescription, vendorUri: uri }});
     }
   }

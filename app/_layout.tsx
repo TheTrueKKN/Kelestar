@@ -109,6 +109,13 @@ export default function RootLayout() {
             headerTitle: "Creating Menu",
           }}
         />
+        <Stack.Screen
+          name="vendordetail"
+          options={{
+            headerShown: true,
+            headerTitle: "Insert vendor detail",
+          }}
+        />
       </Stack>
     </GestureHandlerRootView>
   );
