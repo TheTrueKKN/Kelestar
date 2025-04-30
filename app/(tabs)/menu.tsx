@@ -58,18 +58,8 @@ export default function Menu() {
 
   // Getting parameters from the editvendor Page
   const { newVendorName, newVendorDesc, newImg } = useGlobalSearchParams();
+  console.log(`name: ${newVendorName}`)
   const router = useRouter();
-
-  const [validVendorName, setValidVendorName] = useState<string | undefined>(
-    undefined
-  );
-  const [validVendorDesc, setValidVendorDesc] = useState<string | undefined>(
-    undefined
-  );
-  const [validVendorUri, setValidVendorUri] = useState<string | undefined>(
-    undefined
-  );
-  
 
   // Parsing the menu dishes item
   const parsedDishes = menudDishes
@@ -107,15 +97,14 @@ export default function Menu() {
   // Update vendor details when the screen is focused
   useFocusEffect(
     useCallback(() => {
-      setValidVendorName(validateParam(newVendorName || vendorName));
-      setValidVendorDesc(validateParam(newVendorDesc || vendorDesc));
-      setValidVendorUri(validateParam(newImg || vendorUri));
+      setVendorName(validateParam(newVendorName || vendorName) as string);
+      setVendorDescription(validateParam(newVendorDesc || vendorDesc) as string);
+      setUri(validateParam(newImg || vendorUri) as string);
 
       setDishMenu()
 
-      
 
-    }, [])
+    }, [newVendorName, vendorName, newVendorDesc, vendorDesc, newImg, vendorUri])
   );
 
   return (
@@ -124,7 +113,7 @@ export default function Menu() {
       <View className="flex-row justify-between items-center mt-12 ml-3 mr-3">
         {/* Checking if valid Vendor name, if not show the default version */}
         <Text className="font-bold text-2xl">
-          {validVendorName ? `Hello ${validVendorName}!` : "Hello there!!"}
+          {vendorName ? `Hello ${vendorName}!` : "Hello there!!"}
         </Text>
         <TouchableOpacity
           onPress={() =>
@@ -144,14 +133,14 @@ export default function Menu() {
       {/* Same goes for the thumbnail image */}
       <View className="space-y-2 justify-center items-center">
         <Image
-          source={{ uri: validVendorUri || "https://via.placeholder.com/150" }}
+          source={{ uri: vendorUri || "https://via.placeholder.com/150" }}
           className="w-40 h-40 mt-10"
         />
       </View>
 
       {/* Display the previously given vendor description, if not valud then display a default version */}
       <Text className="font-bold text-center px-5 mt-4">
-        {validVendorDesc || "Happy to serve you"}
+        {vendorDesc || "We serve because we served"}
       </Text>
 
       {/* Create new dish button */}

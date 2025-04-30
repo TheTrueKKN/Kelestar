@@ -9,6 +9,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator , 
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import IngredientSelector from "../components/IngredientSelector";
@@ -34,11 +35,10 @@ export default function CreateDishPage() {
   const [showIngredientSelector, setShowIngredientSelector] = useState(false);
   const [totalCarbon, setTotalCarbon] = useState(0);
   const router = useRouter(); // Initialize router
-
   const [base64String, setBase64String] = useState('');
-
   const { prevPage, vendorId } = useGlobalSearchParams();
   const [dishes, setDishes] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const pickImage = async () => {
     // Request permission to access the media library
@@ -82,7 +82,7 @@ export default function CreateDishPage() {
 
   // Function to handle Dish creation
   const handleCreateDish = async () => {
-
+    setLoading(true)
     
     const newDish: Dish = {
       id: Math.random().toString(), // Generate a unique ID
@@ -114,11 +114,13 @@ export default function CreateDishPage() {
       setDishPrice("");
       setThumbnailImage("");
 
+      setLoading(false);
       // Route back to previous
       router.back();
       router.replace({pathname: prevPage as string})
-      
-      
+    }
+    else{
+      setLoading(false);
     }
     // const validPrevpage = Array.isArray(prevPage) ? prevPage[0] : prevPage;
     // if (newDish.dishName != "" || newDish.dishPrice != 0) {
@@ -173,7 +175,7 @@ export default function CreateDishPage() {
                 onChangeText={setDishPrice}
                 keyboardType="numeric" // Numeric keyboard for price input
               />
-
+              
               {/* Thumbnail Image Upload Box */}
               <Text className="text-base text-[#006400] mb-2">
                 Dish image:
@@ -270,6 +272,14 @@ export default function CreateDishPage() {
           ></IngredientSelector>
         </View>
       </View>
+      {loading && (
+  <View className="absolute inset-0 bg-white z-50 justify-center items-center">
+    <View className="flex-row items-center space-x-3">
+      <ActivityIndicator size="small" color="#74B318" />
+      <Text className="text-base font-medium text-black">Creating dish...</Text>
+    </View>
+  </View>
+)}
     </KeyboardAvoidingView>
   );
 }
