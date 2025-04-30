@@ -40,6 +40,7 @@ const InitialMenu = () => {
       dish_price: item.dish_price,
       dish_image_name: item.dish_image_name,
       dish_vendor_id: item.dish_vendor_id,
+      dish_total_carbon: item.dish_total_carbon
     }));
   };
 

@@ -45,7 +45,7 @@ const DishItem: React.FC<DishItemProps> = ({ dish, onEdit, onDelete }) => {
       <View className="flex-1">
         <Text className="text-lg font-semibold">{dish_name}</Text>
         <Text className="text-gray-500">RM {dish_price}</Text>
-        <Text className="text-gray-500">{dish_total_carbon} gCO₂</Text>
+        <Text className="text-gray-500">{dish_total_carbon?.toFixed(3)} gCO₂</Text>
       </View>
 
       {/* Edit and Delete buttons in a row */}
