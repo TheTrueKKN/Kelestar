@@ -110,10 +110,10 @@ export default function Menu() {
   return (
     <View className="bg-white flex-1">
       {/* Top Header with icon on the right */}
-      <View className="flex-row justify-between items-center mt-12 ml-3 mr-3">
+      <View className="flex-row justify-between items-center mt-14 px-5">
         {/* Checking if valid Vendor name, if not show the default version */}
-        <Text className="font-bold text-2xl">
-          {vendorName ? `Hello ${vendorName}!` : "Hello there!!"}
+        <Text className="text-3xl font-psemibold text-primary mb-2">
+          {vendorName ? `Hello, ${vendorName}!` : "Hello there!"}
         </Text>
         <TouchableOpacity
           onPress={() =>
@@ -122,46 +122,47 @@ export default function Menu() {
               params: { prevPage: "/menu" },
             })
           }
+          style={{ backgroundColor: '#e0e7ef', borderRadius: 999, padding: 8 }}
         >
           <Image
-            className="w-5 h-5 tintColour-white"
-            source={require("../../assets/icons/pen.png")} // Replace with your icon
+            style={{ width: 22, height: 22, tintColor: '#74B318' }}
+            source={require("../../assets/icons/pen.png")}
           />
         </TouchableOpacity>
       </View>
 
-      {/* Same goes for the thumbnail image */}
-      <View className="space-y-2 justify-center items-center">
+      {/* Vendor thumbnail image */}
+      <View className="justify-center items-center mt-8 mb-2">
         <Image
           source={{ uri: vendorUri || "https://via.placeholder.com/150" }}
-          className="w-40 h-40 mt-10"
+          style={{ width: 120, height: 120, borderRadius: 10, borderWidth: 3, borderColor: '#e0e7ef', backgroundColor: '#f3f4f6' }}
         />
       </View>
 
-      {/* Display the previously given vendor description, if not valud then display a default version */}
-      <Text className="font-bold text-center px-5 mt-4">
+      {/* Vendor description */}
+      <Text className="font-semibold text-center px-8 mt-2 text-gray-700 text-base">
         {vendorDesc || "We serve because we served"}
       </Text>
 
       {/* Create new dish button */}
-      <View className="px-4 mt-6">
+      <View className="px-6 mt-7">
         <TouchableOpacity
-          className="bg-[#74B318] py-3 rounded-md justify-center items-center"
+          style={{ backgroundColor: '#74B318', paddingVertical: 14, borderRadius: 12, alignItems: 'center', shadowColor: '#74B318', shadowOpacity: 0.12, shadowOffset: { width: 0, height: 2 }, shadowRadius: 6, elevation: 2 }}
           onPress={() =>
             router.push({
               pathname: "/createdish",
-              params: { prevPage: "/menu" , vendorId: vendorId},
+              params: { prevPage: "/menu", vendorId: vendorId },
             })
           }
         >
-          <Text className="text-white text-lg font-bold">
+          <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', letterSpacing: 0.5 }}>
             Create new dish +
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* Dish list */}
-      <ScrollView className="h-60 mt-5" showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ flex: 1, marginTop: 24, paddingHorizontal: 12 }} showsVerticalScrollIndicator={false}>
         {vendorDishes.length === 0 ? (
           <Text className="text-gray-400 text-center mt-4">
             No dishes added yet.
