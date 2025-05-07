@@ -15,6 +15,7 @@ import { Vendor } from "../../interfaces/vendor";
 import { getDishImage, getImage } from "../../controllers/fileController";
 import { getDishes } from "../../controllers/dishController";
 import { Dish } from "../../interfaces/dish";
+import DishCard from "../../components/DishCard";
 
 // // Dish data type definition
 // type Dish = {
@@ -24,46 +25,6 @@ import { Dish } from "../../interfaces/dish";
 //   store: string;
 //   price: string;
 // };
-
-// Dish card component - reused from home.tsx
-const DishCard = ({ dish, onPress }: { dish: Dish; onPress: () => void }) => {
-  const [dishUrl, setDishUrl] = useState<string>();
-  useEffect(() => {
-    const initDishImage = async () => {
-      if (dish.dish_image_name) {
-        const dishImage = await getDishImage(dish.dish_image_name);
-        if (dishImage) {
-          setDishUrl(dishImage);
-        }
-      }
-    };
-    initDishImage();
-  }, []);
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      className="mx-[19px] mt-[15px] w-auto h-[128px] p-3 bg-[#F2F2F2] rounded-2xl flex-row"
-    >
-      <Image
-        source={{ uri: dishUrl }}
-        className="w-[100px] h-[100px] rounded-l-md"
-        resizeMode="cover"
-      />
-
-      <View className="flex-1 p-4 justify-center">
-        <Text className="font-psemibold text-[18px] text-[#1E1F1F]">
-          {dish.dish_name}
-        </Text>
-        <Text className="font-pregular text-[14px] text-gray-500 mt-1">
-          {dish.dish_vendor_name}
-        </Text>
-        <Text className="font-pbold text-[16px] text-green mt-2">{`RM ${dish.dish_price!.toFixed(
-          2
-        )}`}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-};
 
 export default function ChooseMeal() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
@@ -159,18 +120,27 @@ export default function ChooseMeal() {
   //   }
   // ];
 
-  const handleDishPress = (dish: Dish) => {
-    router.push({
-      pathname: "/tracking",
-      params: {
-        name: dish.dish_name,
-        // Convert the required image to a string ID that can be used to identify which image to display
-        imageId: dish.id,
-        store: dish.dish_vendor_name,
-        price: dish.dish_price,
-      },
-    });
-  };
+  // const handleDishPress = (dish: Dish) => {
+  //   router.push({
+  //     pathname: "/tracking",
+  //     params: {
+  //       name: dish.dish_name,
+  //       // Convert the required image to a string ID that can be used to identify which image to display
+  //       imageId: dish.id,
+  //       store: dish.dish_vendor_name,
+  //       price: dish.dish_price,
+  //     },
+  //   });
+  // };
+
+    const handleDishPress = (dish: Dish) => {
+      router.push({
+        pathname: "/tracking",
+        params: {
+          dish: JSON.stringify(dish)
+        },
+      });
+    };
 
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-white">
