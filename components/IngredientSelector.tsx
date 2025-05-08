@@ -112,7 +112,7 @@ const IngredientSelector = ({
           <View className="bg-white w-80 p-6 rounded-lg shadow-lg shadow-gray-200">
             <TouchableOpacity
               onPress={handleCloseButtonPressed}
-              className="absolute top-0 right-0 h-20 w-20 rounded-full z-100"
+              className="absolute top-0 right-0 h-20 w-20 rounded-full z-10"
             >
               <Text className="text-black text-xl font-bold absolute top-4 right-4">
                 ✕

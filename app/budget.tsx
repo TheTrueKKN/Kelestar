@@ -1,22 +1,43 @@
 import Slider from "@react-native-community/slider";
 import { View, Text, TouchableOpacity } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import {
+  getCustomerByUser,
+  updateCustomer,
+} from "../controllers/customerController";
 
-export default function Budget() {
+const Budget = ({ handleBudgetSaved }: { handleBudgetSaved: () => void }) => {
   const [carbonBudget, setCarbonBudget] = useState(5.5);
   const [localValue, setLocalValue] = useState(5.5);
 
-  const handleSave = () => {
-    console.log("Carbon budget saved:", carbonBudget);
+  useEffect(() => {
+    const initCarbonBudget = async () => {
+      const retrievedCustomer = await getCustomerByUser();
+      if (retrievedCustomer && retrievedCustomer.customer_carbon_budget) {
+        // console.log("retrievedCustomer", retrievedCustomer);
+        setCarbonBudget(retrievedCustomer.customer_carbon_budget);
+      }
+    };
+    initCarbonBudget();
+  }, []);
+
+  const handleSave = async () => {
+    const updateCarbonBudgetSuccess = await updateCustomer({
+      customer_carbon_budget: carbonBudget,
+    });
+    if (updateCarbonBudgetSuccess) {
+      // console.log("Carbon budget saved:", carbonBudget);
+      handleBudgetSaved();
+    }
   };
 
   return (
     <View className="flex-1 bg-white">
       <View className="px-[19px] mt-[20px]">
         <Text className="font-psemibold text-[28px] leading-[42px] text-[#1E1F1F]">
-          Set up daily carbon budget
+          Set up your daily carbon budget
         </Text>
-        
+
         <View className="mt-[40px]">
           <Slider
             style={{ width: "100%", height: 40 }}
@@ -33,7 +54,9 @@ export default function Budget() {
             <Text className="text-sm font-pregular">0kg</Text>
             <Text className="text-sm font-pregular">10kg</Text>
           </View>
-          <Text className="text-lg font-psemibold my-4 text-center">{localValue.toFixed(1)}kg CO₂e</Text>
+          <Text className="text-lg font-psemibold my-4 text-center">
+            {localValue.toFixed(1)}kg CO₂e
+          </Text>
           <TouchableOpacity
             onPress={handleSave}
             className="bg-green py-3 rounded-lg"
@@ -44,4 +67,6 @@ export default function Budget() {
       </View>
     </View>
   );
-}
+};
+
+export default Budget;

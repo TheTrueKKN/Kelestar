@@ -27,7 +27,7 @@ const Tracking = () => {
   const params = useLocalSearchParams();
   const dish: Dish = params.dish ? JSON.parse(params.dish as string) : null;
   // console.log(dish);
-  const [date, setDate] = useState(new Date("2025-04-10T22:50:53Z")); // Using current date/time
+  const [date, setDate] = useState(new Date()); // Using current date/time
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showGradeTooltip, setShowGradeTooltip] = useState(false);
   const [dishIngredients, setDishIngredients] = useState<
@@ -52,7 +52,6 @@ const Tracking = () => {
     const initDishIngredients = async () => {
       const fetchedIngredients = await joinDishIngredient(dish.id!);
       if (fetchedIngredients) {
-        console.log("fetchedIngredients");
         setDishIngredients(fetchedIngredients);
         initPieData(fetchedIngredients);
       }
@@ -61,7 +60,7 @@ const Tracking = () => {
   }, []);
 
   const initPieData = (dishIngredientList: JoinedDishIngredient[]) => {
-    console.log("dishIngredientList", dishIngredientList);
+    // console.log("dishIngredientList", dishIngredientList);
     const pieDataTemp = dishIngredientList.map(
       (dishIngredient, index) =>
         ({
