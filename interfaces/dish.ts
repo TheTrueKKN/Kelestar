@@ -1,3 +1,4 @@
+import { DishRating } from "../enums/dishRating";
 import { Vendor } from "./vendor";
 
 export interface Dish {
@@ -9,5 +10,5 @@ export interface Dish {
     dish_vendor_id?: string;
     dish_vendor?: Vendor;
     dish_total_carbon?: number;
-
+    dish_rating?: DishRating
   }

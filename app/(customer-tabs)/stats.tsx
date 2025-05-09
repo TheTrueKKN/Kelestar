@@ -1,16 +1,26 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, ChevronRight, Share2, BarChart2 } from 'lucide-react-native';
-import Svg, { Path, Circle, Line, Text as SvgText } from 'react-native-svg';
+import React, { useState, useMemo, useEffect } from "react";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Share2,
+  BarChart2,
+} from "lucide-react-native";
+import Svg, { Path, Circle, Line, Text as SvgText } from "react-native-svg";
+import { getMealListingByCustomer } from "../../controllers/mealController";
+import { getCustomerByUser } from "../../controllers/customerController";
+import { Meal } from "../../interfaces/meal";
+import { useFocusEffect } from "expo-router";
+import { getCarbonRating } from "../utils/carbonRating";
 
 // Types
-type Meal = {
-  id: string;
-  name: string;
-  carbon: number;
-  rating: 'A' | 'B' | 'C' | 'D';
-};
+// type Meal = {
+//   id: string;
+//   name: string;
+//   carbon: number;
+//   rating: "A" | "B" | "C" | "D";
+// };
 
 type DayData = {
   date: Date;
@@ -18,90 +28,125 @@ type DayData = {
   meals: Meal[];
 };
 
-// Sample data
-const generateSampleData = (): Record<string, DayData> => {
-  const today = new Date();
+function isSameDate(date1: Date, date2: Date): boolean {
+  return (
+    date1.toISOString().split("T")[0] === date2.toISOString().split("T")[0]
+  );
+}
+
+const generateMealData = (meals: Meal[]): Record<string, DayData> => {
   const data: Record<string, DayData> = {};
-  
+
+  let mealIndex = 0;
+  const totalMeals = meals.length;
+
   // Generate data for the current month
-  for (let i = 1; i <= 28; i++) {
-    const date = new Date(today.getFullYear(), today.getMonth(), i);
-    const dateKey = date.toISOString().split('T')[0];
-    
-    // Generate random meals
-    const numMeals = Math.floor(Math.random() * 3) + 1;
-    const meals: Meal[] = [];
-    let totalCarbon = 0;
-    
-    const mealOptions = [
-      { name: 'Tofu Buddha Bowl', carbon: 1.4, rating: 'A' as const },
-      { name: 'Chicken Rice', carbon: 2.9, rating: 'B' as const },
-      { name: 'Beef Burger', carbon: 5.8, rating: 'C' as const },
-      { name: 'Vegetable Pasta', carbon: 1.8, rating: 'A' as const },
-      { name: 'Fish and Chips', carbon: 3.5, rating: 'B' as const },
-      { name: 'Quinoa Salad', carbon: 1.2, rating: 'A' as const },
-    ];
-    
-    for (let j = 0; j < numMeals; j++) {
-      const meal = mealOptions[Math.floor(Math.random() * mealOptions.length)];
-      meals.push({
-        id: `meal-${i}-${j}`,
-        ...meal
-      });
-      totalCarbon += meal.carbon;
+  for (let i = 0; i <= 30; i++) {
+    if (mealIndex >= totalMeals) {
+      break;
     }
-    
+
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    const dateKey = date.toISOString().split("T")[0];
+
+    const mealsToday: Meal[] = [];
+    let totalCarbon = 0;
+
+    while (
+      mealIndex < totalMeals &&
+      isSameDate(meals[mealIndex].meal_datetime!, date)
+    ) {
+      mealsToday.push({
+        id: meals[mealIndex].id,
+        ...meals[mealIndex],
+      });
+      totalCarbon += meals[mealIndex].meal_dish?.dish_total_carbon ?? 0;
+
+      mealIndex++;
+    }
+
     data[dateKey] = {
       date,
       totalCarbon,
-      meals
+      meals: mealsToday,
     };
   }
-  
+
   return data;
 };
 
 export default function Statistics() {
-  const mealData = useMemo(() => generateSampleData(), []);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const dailyBudget = 7.5; // Daily carbon budget in kg CO2e
-  
+  const [carbonBudget, setCarbonBudget] = useState(7.5);
+  const [meals, setMeals] = useState<Meal[]>([]);
+  // let mealData = useMemo(() => generateSampleData(meals), []);
+  const [mealData, setMealData] = useState<Record<string, DayData>>({});
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const initCarbonBudget = async () => {
+        const retrievedCustomer = await getCustomerByUser();
+        if (retrievedCustomer && retrievedCustomer.customer_carbon_budget) {
+          setCarbonBudget(retrievedCustomer.customer_carbon_budget);
+        }
+      };
+      initCarbonBudget();
+    }, [])
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const initMeals = async () => {
+        const fetchedMeals = await getMealListingByCustomer();
+        if (fetchedMeals) {
+          setMeals(fetchedMeals);
+          setMealData(generateMealData(fetchedMeals));
+        }
+      };
+      initMeals();
+    }, [])
+  );
+
   // Format date to YYYY-MM-DD for lookup
-  const selectedDateKey = selectedDate.toISOString().split('T')[0];
-  const selectedDayData = mealData[selectedDateKey] || { totalCarbon: 0, meals: [] };
-  
+  const selectedDateKey = selectedDate.toISOString().split("T")[0];
+  const selectedDayData = mealData[selectedDateKey] || {
+    totalCarbon: 0,
+    meals: [],
+  };
+
   // Get start and end of week for current view
   const getWeekDates = () => {
     const startDate = new Date(currentDate);
     const day = startDate.getDay();
     const diff = startDate.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
     startDate.setDate(diff);
-    
+
     const dates = [];
     for (let i = 0; i < 7; i++) {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
       dates.push(date);
     }
-    
+
     return dates;
   };
-  
+
   const weekDates = getWeekDates();
-  
+
   // Handle week navigation
-  const navigateWeek = (direction: 'prev' | 'next') => {
+  const navigateWeek = (direction: "prev" | "next") => {
     const newDate = new Date(currentDate);
-    const daysToAdd = direction === 'next' ? 7 : -7;
+    const daysToAdd = direction === "next" ? 7 : -7;
     newDate.setDate(newDate.getDate() + daysToAdd);
     setCurrentDate(newDate);
   };
-  
+
   // Get weekly data for the graph
   const weeklyData = useMemo(() => {
-    return weekDates.map(date => {
-      const dateKey = date.toISOString().split('T')[0];
+    return weekDates.map((date) => {
+      const dateKey = date.toISOString().split("T")[0];
       return mealData[dateKey]?.totalCarbon || 0;
     });
   }, [weekDates, mealData]);
@@ -116,28 +161,35 @@ export default function Statistics() {
   // Generate SVG path for the curve
   const generateCurvePath = () => {
     if (weeklyData.length === 0) return "";
-    
+
     const maxValue = Math.max(...weeklyData, 1); // Prevent division by zero
-    
+
     // Calculate points
     const points = weeklyData.map((value, index) => {
-      const x = chartPadding + (index * ((chartWidth - (chartPadding * 2)) / (weeklyData.length - 1)));
-      const y = chartHeight - chartPadding - ((value / maxValue) * (chartHeight - (chartPadding * 2)));
+      const x =
+        chartPadding +
+        index * ((chartWidth - chartPadding * 2) / (weeklyData.length - 1));
+      const y =
+        chartHeight -
+        chartPadding -
+        (value / maxValue) * (chartHeight - chartPadding * 2);
       return { x, y };
     });
-    
+
     // Create SVG path
     let path = `M ${points[0].x} ${points[0].y}`;
-    
+
     for (let i = 0; i < points.length - 1; i++) {
       const controlPointX1 = (points[i].x + points[i + 1].x) / 2;
       const controlPointY1 = points[i].y;
       const controlPointX2 = (points[i].x + points[i + 1].x) / 2;
       const controlPointY2 = points[i + 1].y;
-      
-      path += ` C ${controlPointX1} ${controlPointY1}, ${controlPointX2} ${controlPointY2}, ${points[i + 1].x} ${points[i + 1].y}`;
+
+      path += ` C ${controlPointX1} ${controlPointY1}, ${controlPointX2} ${controlPointY2}, ${
+        points[i + 1].x
+      } ${points[i + 1].y}`;
     }
-    
+
     return path;
   };
 
@@ -149,47 +201,62 @@ export default function Statistics() {
 
   // Calculate the x position for each day label
   const getDayXPosition = (index: number) => {
-    return chartPadding + (index * ((chartWidth - (chartPadding * 2)) / (weeklyData.length - 1)));
+    return (
+      chartPadding +
+      index * ((chartWidth - chartPadding * 2) / (weeklyData.length - 1))
+    );
   };
 
   // Get day abbreviation (M, T, W, etc.)
   const getDayAbbreviation = (date: Date) => {
-    const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    const days = ["S", "M", "T", "W", "T", "F", "S"];
     return days[date.getDay()];
   };
 
   // Calculate budget percentage
-  const budgetPercentage = Math.min((selectedDayData.totalCarbon / dailyBudget) * 100, 100);
+  const budgetPercentage = Math.min(
+    (selectedDayData.totalCarbon / carbonBudget) * 100,
+    100
+  );
 
   // Get rating badge color
   const getRatingBadgeColor = (rating: string) => {
     switch (rating) {
-      case 'A': return 'bg-green-500';
-      case 'B': return 'bg-yellow-400';
-      case 'C': return 'bg-orange-500';
-      case 'D': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      case "A":
+        return "bg-green-500";
+      case "B":
+        return "bg-yellow-400";
+      case "C":
+        return "bg-orange-500";
+      case "D":
+        return "bg-red-500";
+      default:
+        return "bg-gray-500";
     }
   };
 
   // Render rating badge
   const renderRatingBadge = (rating: string) => {
     const bgColor = getRatingBadgeColor(rating);
-    
+
     return (
-      <View className={`${bgColor} w-8 h-8 rounded-full justify-center items-center`}>
+      <View
+        className={`${bgColor} w-8 h-8 rounded-full justify-center items-center`}
+      >
         <Text className="text-white font-bold">{rating}</Text>
       </View>
     );
   };
 
   return (
-    <SafeAreaView edges={['top']} className="flex-1 bg-white">
+    <SafeAreaView edges={["top"]} className="flex-1 bg-white">
       <ScrollView className="flex-1">
         {/* Header */}
         <View className="px-4 pt-2 pb-6">
           <View className="flex-row justify-between items-center">
-            <Text className="h-[42px] font-psemibold text-[28px] leading-[42px] text-[#1E1F1F]">My Meal Footprint</Text>
+            <Text className="h-[42px] font-psemibold text-[28px] leading-[42px] text-[#1E1F1F]">
+              My Meal Footprint
+            </Text>
             <TouchableOpacity>
               <Share2 size={20} color="#666" />
             </TouchableOpacity>
@@ -198,28 +265,35 @@ export default function Statistics() {
           {/* Date selector */}
           <View className="flex-row justify-between items-center mt-6">
             <View className="flex-row space-x-4 items-center">
-              <TouchableOpacity onPress={() => navigateWeek('prev')}>
+              <TouchableOpacity onPress={() => navigateWeek("prev")}>
                 <ChevronLeft size={24} color="#666" />
               </TouchableOpacity>
 
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View className="flex-row space-x-3">
                   {weekDates.map((date) => {
-                    const day = ['M', 'T', 'W', 'T', 'F', 'S', 'S'][date.getDay() === 0 ? 6 : date.getDay() - 1];
+                    const day = ["M", "T", "W", "T", "F", "S", "S"][
+                      date.getDay() === 0 ? 6 : date.getDay() - 1
+                    ];
                     const dateNum = date.getDate();
-                    const isSelected = date.toDateString() === selectedDate.toDateString();
+                    const isSelected =
+                      date.toDateString() === selectedDate.toDateString();
 
                     return (
                       <View key={date.toISOString()} className="items-center">
                         <Text className="text-gray-400 mb-1">{day}</Text>
                         <TouchableOpacity
                           className={`w-8 h-8 rounded-full justify-center items-center ${
-                            isSelected ? 'bg-green-500' : 'bg-transparent'
+                            isSelected ? "bg-green-500" : "bg-transparent"
                           }`}
                           onPress={() => setSelectedDate(date)}
                         >
                           <Text
-                            className={isSelected ? 'text-white font-semibold' : 'text-gray-600 font-semibold'}
+                            className={
+                              isSelected
+                                ? "text-white font-semibold"
+                                : "text-gray-600 font-semibold"
+                            }
                           >
                             {dateNum}
                           </Text>
@@ -230,59 +304,76 @@ export default function Statistics() {
                 </View>
               </ScrollView>
 
-              <TouchableOpacity onPress={() => navigateWeek('next')}>
+              <TouchableOpacity onPress={() => navigateWeek("next")}>
                 <ChevronRight size={24} color="#666" />
               </TouchableOpacity>
             </View>
           </View>
         </View>
-        
+
         {/* Carbon budget */}
         <View className="px-4 mb-6">
           <View className="flex-row justify-between items-center mb-2">
             <Text className="text-gray-600">Daily Carbon budget</Text>
             <Text className="text-gray-600 font-semibold">
-              {selectedDayData.totalCarbon.toFixed(1)}/{dailyBudget} kg CO₂e
+              {selectedDayData.totalCarbon.toFixed(1)}/{carbonBudget} kg CO₂e
             </Text>
           </View>
-          
+
           <View className="h-6 bg-gray-200 rounded-full overflow-hidden">
-            <View 
-              className="h-full bg-green-500 rounded-full" 
-              style={{ width: `${budgetPercentage}%` }} 
+            <View
+              className="h-full bg-green-500 rounded-full"
+              style={{ width: `${budgetPercentage}%` }}
             />
           </View>
         </View>
-        
+
         {/* Meals */}
         <View className="px-4 mb-6">
-          <Text className="text-gray-600 mb-3">Here's what you have eaten today...</Text>
-          
+          <Text className="text-gray-600 mb-3">
+            Here's what you have eaten on {selectedDate.toLocaleDateString()}
+          </Text>
+
           {selectedDayData.meals.length > 0 ? (
             selectedDayData.meals.map((meal) => (
-              <View key={meal.id} className="bg-gray-100 rounded-xl p-4 flex-row justify-between items-center mb-3">
+              <View
+                key={meal.id}
+                className="bg-gray-100 rounded-xl p-4 flex-row justify-between items-center mb-3"
+              >
                 <View>
-                  <Text className="font-semibold text-base">{meal.name}</Text>
-                  <Text className="text-gray-500">{meal.carbon.toFixed(1)}kg CO₂e</Text>
+                  <Text className="font-semibold text-base">
+                    {meal.meal_dish?.dish_name}
+                  </Text>
+                  <Text className="text-gray-500">
+                    {meal.meal_dish?.dish_total_carbon?.toFixed(1)}kg CO₂e
+                  </Text>
                 </View>
-                {renderRatingBadge(meal.rating)}
+                {renderRatingBadge(
+                  getCarbonRating(meal.meal_dish?.dish_total_carbon ?? 0)
+                )}
               </View>
             ))
           ) : (
             <View className="bg-gray-100 rounded-xl p-4 mb-3">
-              <Text className="text-gray-500">No meals recorded for this day</Text>
+              <Text className="text-gray-500">
+                No meals recorded for this day
+              </Text>
             </View>
           )}
-          
+
           {selectedDayData.totalCarbon > 0 && (
             <View className="mt-2">
               <Text className="text-gray-600">
-                In total <Text className="font-semibold">{selectedDayData.totalCarbon.toFixed(1)}kg CO₂e</Text> is equivalent to...
+                In total{" "}
+                <Text className="font-semibold">
+                  {selectedDayData.totalCarbon.toFixed(1)}kg CO₂e
+                </Text>{" "}
+                is equivalent to...
               </Text>
             </View>
           )}
         </View>
-        
+
         {/* Equivalent - Only show if there are meals */}
         {selectedDayData.totalCarbon > 0 && (
           <View className="px-4 mb-6">
@@ -303,20 +394,27 @@ export default function Statistics() {
               </View>
               <View className="flex-1">
                 <Text className="text-gray-700">
-                  Driving {Math.round(selectedDayData.totalCarbon * 2.7)} miles in{'\n'}
+                  Driving {Math.round(selectedDayData.totalCarbon * 2.7)} miles
+                  in{"\n"}
                   an average car
                 </Text>
               </View>
             </View>
           </View>
         )}
-        
+
         {/* Weekly footprint */}
         <View className="px-4 mb-20">
-          <Text className="text-gray-600 font-semibold text-lg mb-4">Weekly footprint</Text>
-          
+          <Text className="text-gray-600 font-semibold text-lg mb-4">
+            Weekly footprint
+          </Text>
+
           <View className="h-36 w-full">
-            <Svg height="100%" width="100%" viewBox={`0 0 ${chartWidth} ${totalHeight}`}>
+            <Svg
+              height="100%"
+              width="100%"
+              viewBox={`0 0 ${chartWidth} ${totalHeight}`}
+            >
               {/* Main curve */}
               <Path
                 d={generateCurvePath()}
@@ -324,17 +422,23 @@ export default function Statistics() {
                 stroke="#7CD026"
                 strokeWidth={3}
               />
-              
+
               {/* Highlight point */}
               {weeklyData.length > 0 && (
                 <Circle
                   cx={getDayXPosition(getMaxValueIndex())}
-                  cy={chartHeight - chartPadding - ((weeklyData[getMaxValueIndex()] / Math.max(...weeklyData, 1)) * (chartHeight - (chartPadding * 2)))}
+                  cy={
+                    chartHeight -
+                    chartPadding -
+                    (weeklyData[getMaxValueIndex()] /
+                      Math.max(...weeklyData, 1)) *
+                      (chartHeight - chartPadding * 2)
+                  }
                   r={5}
                   fill="#7332ff"
                 />
               )}
-              
+
               {/* X-Axis line */}
               <Line
                 x1={chartPadding}
@@ -344,7 +448,7 @@ export default function Statistics() {
                 stroke="#DDDDDD"
                 strokeWidth={1}
               />
-              
+
               {/* X-Axis day markers and labels */}
               {weekDates.map((date, index) => (
                 <React.Fragment key={date.toISOString()}>
@@ -371,7 +475,7 @@ export default function Statistics() {
           </View>
         </View>
       </ScrollView>
-      
+
       {/* Bottom navigation indicator only */}
       <View className="h-12 bg-gray-100 border-t border-gray-200">
         <View className="absolute left-1/2 top-0 transform -translate-x-1/2 -translate-y-1/2">
