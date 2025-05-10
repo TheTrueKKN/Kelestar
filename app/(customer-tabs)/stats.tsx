@@ -12,7 +12,7 @@ import { getMealListingByCustomer } from "../../controllers/mealController";
 import { getCustomerByUser } from "../../controllers/customerController";
 import { Meal } from "../../interfaces/meal";
 import { useFocusEffect } from "expo-router";
-import { getCarbonRating } from "../utils/carbonRating";
+import { getCarbonRating, getRatingBadgeColor } from "../../lib/utils/carbonRating";
 
 // Types
 // type Meal = {
@@ -81,8 +81,8 @@ export default function Statistics() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [carbonBudget, setCarbonBudget] = useState(7.5);
   const [meals, setMeals] = useState<Meal[]>([]);
-  // let mealData = useMemo(() => generateSampleData(meals), []);
-  const [mealData, setMealData] = useState<Record<string, DayData>>({});
+  const mealData = useMemo(() => generateMealData(meals), [meals]);
+  // const [mealData, setMealData] = useState<Record<string, DayData>>({});
 
   useFocusEffect(
     React.useCallback(() => {
@@ -102,7 +102,7 @@ export default function Statistics() {
         const fetchedMeals = await getMealListingByCustomer();
         if (fetchedMeals) {
           setMeals(fetchedMeals);
-          setMealData(generateMealData(fetchedMeals));
+          // setMealData(generateMealData(fetchedMeals));
         }
       };
       initMeals();
@@ -219,21 +219,7 @@ export default function Statistics() {
     100
   );
 
-  // Get rating badge color
-  const getRatingBadgeColor = (rating: string) => {
-    switch (rating) {
-      case "A":
-        return "bg-green-500";
-      case "B":
-        return "bg-yellow-400";
-      case "C":
-        return "bg-orange-500";
-      case "D":
-        return "bg-red-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
+
 
   // Render rating badge
   const renderRatingBadge = (rating: string) => {
@@ -241,7 +227,8 @@ export default function Statistics() {
 
     return (
       <View
-        className={`${bgColor} w-8 h-8 rounded-full justify-center items-center`}
+        className={`w-8 h-8 rounded-full justify-center items-center`}
+        style={{ backgroundColor: bgColor }}
       >
         <Text className="text-white font-bold">{rating}</Text>
       </View>

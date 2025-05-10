@@ -19,6 +19,10 @@ import { Dish } from "../interfaces/dish";
 import { joinDishIngredient } from "../controllers/dishIngredientJoinController";
 import { JoinedDishIngredient } from "../interfaces/joinedDishIngredient";
 import { insertMeal } from "../controllers/mealController";
+import {
+  getCarbonRating,
+  getRatingBadgeColor,
+} from "../lib/utils/carbonRating";
 
 const Tracking = () => {
   const { width } = useWindowDimensions();
@@ -34,6 +38,8 @@ const Tracking = () => {
     JoinedDishIngredient[]
   >([]);
   const [pieData, setPieData] = useState<PieData[]>([]);
+  const carbonRating = getCarbonRating(dish.dish_total_carbon ?? 0);
+  const bgColor = getRatingBadgeColor(carbonRating);
 
   // const getImage = (id: string) => {
   //   switch(id) {
@@ -198,8 +204,13 @@ const Tracking = () => {
               )}`}</Text>
             </View>
             <View className="flex-row items-center">
-              <View className="bg-green w-10 h-10 rounded-full items-center justify-center shadow-sm">
-                <Text className="text-white font-bold text-lg">A</Text>
+              <View
+                className="w-10 h-10 rounded-full items-center justify-center shadow-sm"
+                style={{ backgroundColor: bgColor }}
+              >
+                <Text className="text-white font-bold text-lg">
+                  {carbonRating}
+                </Text>
               </View>
               <Tooltip
                 isVisible={showGradeTooltip}
