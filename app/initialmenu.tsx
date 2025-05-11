@@ -98,10 +98,12 @@ const InitialMenu = () => {
 
   // Function to edit a dish (navigates to edit page)
   const editDish = (dish: Dish | null, dish_url?: string) => {
+    if (!dish) return; 
+     const { dish_vendor, dish_ingredient, ...serializableDish } = dish;
     router.push({
       pathname: '/editdish',
       params: {
-        ...dish,
+        ...serializableDish,
         dish_url: dish_url ?? '',
         prev_page: "/initialmenu"
       }
