@@ -111,7 +111,8 @@ export default function EditDishPage() {
         ingredient_amount: dishIngredient.ingredient_amount as number,
         ingredient: {
           id: dishIngredient.ingredient_id as string,
-          ingredient_name: ingredientName?.[0]['ingredient_name']
+          ingredient_name: ingredientName?.[0]['ingredient_name'],
+          ingredient_footprint: totalCarbon
         }
       };
   

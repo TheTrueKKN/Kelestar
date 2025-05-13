@@ -1,37 +1,51 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, ScrollView, useWindowDimensions } from "react-native";
 import { PieChart, BarChart } from "react-native-chart-kit";
-import { Link } from "expo-router";
+import { Link, useFocusEffect } from "expo-router";
+import { getVendorByUser } from "../../controllers/vendorController";
+import { joinVendorDishIng } from "../../controllers/vendorDishIngJoinController";
+import { Dish } from "../../interfaces/dish";
+import { PieData } from "../../interfaces/pieData";
+import { BarData } from "../../interfaces/barData";
+import { getDishes } from "../../controllers/dishController";
 
-const pieData = [
-  {
-    name: "Beef",
-    population: 30,
-    color: "#3B82F6", // blue
-    legendFontColor: "#54595E",
-    legendFontSize: 15,
-  },
-  {
-    name: "Poultry",
-    population: 20,
-    color: "#22C55E", // green
-    legendFontColor: "#54595E",
-    legendFontSize: 15,
-  },
-  {
-    name: "Mutton",
-    population: 35,
-    color: "#FACC15", // yellow
-    legendFontColor: "#54595E",
-    legendFontSize: 15,
-  },
-  {
-    name: "Others",
-    population: 15,
-    color: "#38BDF8", // light blue
-    legendFontColor: "#54595E",
-    legendFontSize: 15,
-  },
+// const pieData = [
+//   {
+//     name: "Beef",
+//     population: 30,
+//     color: "#3B82F6", // blue
+//     legendFontColor: "#54595E",
+//     legendFontSize: 15,
+//   },
+//   {
+//     name: "Poultry",
+//     population: 20,
+//     color: "#22C55E", // green
+//     legendFontColor: "#54595E",
+//     legendFontSize: 15,
+//   },
+//   {
+//     name: "Mutton",
+//     population: 35,
+//     color: "#FACC15", // yellow
+//     legendFontColor: "#54595E",
+//     legendFontSize: 15,
+//   },
+//   {
+//     name: "Others",
+//     population: 15,
+//     color: "#38BDF8", // light blue
+//     legendFontColor: "#54595E",
+//     legendFontSize: 15,
+//   },
+// ];
+
+const chartColors = [
+  "#3B82F6", // blue
+  "#22C55E", // green
+  "#FACC15", // yellow
+  "#38BDF8", // light blue
+  "#0EA5E9", // sky blue
 ];
 
 const chartColors = [
@@ -57,8 +71,148 @@ const barData = {
   ],
 };
 
+
+
 const Dashboard = () => {
   const { width } = useWindowDimensions();
+  const [vendorId, setVendorId] = useState("");
+  const [dishes, setDishes] = useState<Dish[]>([]);
+  const [totalCarbon, setTotalCarbon] = useState(0);
+  const [totalDishes, setTotalDishes] = useState(0);
+  // Chart related
+  const [pieData, setPieData] = useState<PieData[]>([]);
+  const [barData, setBarData] = useState<BarData>({
+    labels: [],
+    datasets: [{ data: [] }],
+  });
+  const assignedColors: Record<string, string> = {};
+  const barColors: Record<string, string> = {};
+  
+
+  useEffect(() => {
+        const getVendorValues = async () => {
+          const result = await getVendorByUser();
+
+          if(result){
+            setVendorId(result.id!)
+          }
+        };
+        getVendorValues()
+      }, []);
+
+    useEffect(()=> {
+        const vendorDishIngredient = async () => {
+          if (!vendorId) return;
+          //console.log(`Current vendor id: ${vendorId}`)
+          const result = await joinVendorDishIng(vendorId)
+          console.log(`Testing vendor dish and ingredientr: ${JSON.stringify(result)}`)
+          if(Array.isArray(result)){
+            setDishes(result)
+          } 
+          else{
+            setDishes([])
+          }
+        }
+
+        vendorDishIngredient()
+      }, [vendorId]);
+
+    // Changes when dishes data updated
+    useEffect(() => {
+      // Set pie chart data
+      
+      
+      // Set total carbon footprint from all dishes
+      const totalCarbon = dishes.reduce((sum, dish) => sum + dish.dish_total_carbon!, 0)
+      setTotalCarbon(Number(totalCarbon.toFixed(2)));
+
+      setTotalDishes(dishes.length);
+
+      setPieData(getPieChartData(dishes));
+      setBarData(getBarChartData(dishes))
+      
+    }, [dishes])
+
+    useFocusEffect(
+      useCallback(() => {
+        if (vendorId) {
+          setDishMenu();
+          console.log(`Current vendor: ${vendorId}`);
+        }
+      }, [vendorId])
+    );
+      
+    const setDishMenu = async () => {
+          const menu_result = await joinVendorDishIng(vendorId)
+          if(Array.isArray(menu_result)){
+            setDishes(menu_result)
+          } 
+          else{
+            setDishes([])
+          }
+      }
+      
+      const getRandomColor = (): string => {
+        const letters = "0123456789ABCDEF";
+        return "#" + Array.from({ length: 6 }, () =>
+          letters[Math.floor(Math.random() * 16)]
+      ).join("");
+    };
+    
+    const getColorForIngredient = (ingredientName: string): string => {
+      if (!assignedColors[ingredientName]) {
+        assignedColors[ingredientName] = getRandomColor();
+      }
+      return assignedColors[ingredientName];
+    };
+
+    const getColorForDish = (dishName: string): string => {
+      if (!barColors[dishName]) {
+        barColors[dishName] = getRandomColor();;
+      }
+      return barColors[dishName];
+    };
+
+    const getPieChartData = (dishes: Dish[]): PieData[] => {
+      const ingredientTotals: Record<string, number> = {};
+      
+      dishes.forEach(dish => {
+        dish.dish_ingredient?.forEach(ing => {
+          const name = ing.ingredient.ingredient_name;
+          const amount = ing.ingredient_amount;
+          ingredientTotals[name] = (ingredientTotals[name] || 0) + amount;
+        });
+      });
+      
+      return Object.entries(ingredientTotals).map(([name, total]) => ({
+        name,
+        population: total,
+        color: getColorForIngredient(name),
+        legendFontColor: "#54595E",
+        legendFontSize: 15,
+      }));
+    };
+    
+    const getBarChartData = (dishes: Dish[]): BarData => {
+  const labels = dishes.map((dish) => dish.dish_name!);
+  const data = dishes.map((dish) => dish.dish_total_carbon!);
+  const colors = dishes.map((dish) => () => getColorForDish(dish.dish_name!));
+
+  return {
+    labels,
+    datasets: [
+      {
+        data,
+        colors,
+      },
+    ],
+  };
+};
+
+
+    
+    console.log(`Content in dishs: ${JSON.stringify(dishes)}`)
+    console.log(`WTF inside of pie data: ${JSON.stringify(pieData)}`)
 
   return (
     <ScrollView className="bg-white h-full">
@@ -89,7 +243,7 @@ const Dashboard = () => {
             <Text className="text-xs text-green font-psemibold mb-1">
               Total Footprint
             </Text>
-            <Text className="text-xl font-bold text-primary">1673 Kg</Text>
+            <Text className="text-xl font-bold text-primary">{totalCarbon} Kg</Text>
           </View>
         </View>
 
@@ -116,7 +270,7 @@ const Dashboard = () => {
             <Text className="text-xs text-green font-psemibold mb-1">
               Green Meals
             </Text>
-            <Text className="text-xl font-bold text-primary">10</Text>
+            <Text className="text-xl font-bold text-primary">{totalDishes}</Text>
           </View>
         </View>
 
@@ -150,15 +304,7 @@ const Dashboard = () => {
         </Text>
         <View className="bg-white rounded-2xl shadow-sm border border-gray-100 p-2">
           <BarChart
-            data={{
-              labels: barData.labels.map(() => ""), // Hide x-axis labels
-              datasets: [
-                {
-                  data: barData.datasets[0].data,
-                  colors: chartColors.map((color) => () => color),
-                },
-              ],
-            }}
+            data={barData}
             width={width - 60}
             height={220}
             yAxisLabel=""

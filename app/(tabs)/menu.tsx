@@ -38,9 +38,9 @@ export default function Menu() {
   useEffect(() => {
       const setVendorValues = async () => {
         const result = await getVendorByUser();
-        console.log(`Testing result: ${result}`)
+        //console.log(`Testing result: ${result}`)
         if (result) {
-          console.log("TESSSS VALID")
+          //console.log("TESSSS VALID")
           setVendorId(result.id!)
           setVendorName(result.vendor_name);
           setVendorDescription(result.vendor_description);
@@ -58,7 +58,7 @@ export default function Menu() {
 
   // Getting parameters from the editvendor Page
   const { newVendorName, newVendorDesc, newImg } = useGlobalSearchParams();
-  console.log(`name: ${newVendorName}`)
+  //console.log(`vendor name: ${newVendorName}`)
   const router = useRouter();
 
   // Parsing the menu dishes item
@@ -82,10 +82,12 @@ export default function Menu() {
 
   // Function to edit a dish (Not functionable yet just redirect to different page)
   const editDish = (dish: Dish | null, dish_url?: string) => {
+    if (!dish) return; 
+     const { dish_vendor, dish_ingredient, ...serializableDish } = dish;
       router.push({
         pathname: '/editdish',
         params: {
-          ...dish,
+          ...serializableDish,
           dish_url: dish_url ?? '',
           prev_page: "/menu"
         }

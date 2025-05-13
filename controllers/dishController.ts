@@ -6,23 +6,62 @@ import {
   updateBase64DishImage,
   uploadBase64ImageDishes,
   deleteDishImage,
+  getDishImage,
 } from "./fileController";
 
 type InsertDishReturn = [number | null, boolean];
 
+export async function getDishes({
+  vendor_id,
+  dish_name,
+}: {
+  vendor_id?: string;
+  dish_name?: string;
+}) {
+  try {
+    // console.log(`Curr vendor id: ${vendor_id}`)
+
+    let queryBuilder = supabase
+      .from("dish")
+      .select("*, dish_vendor: dish_vendor_id(vendor_name)");
+
+    queryBuilder = vendor_id
+      ? queryBuilder.eq("dish_vendor_id", vendor_id)
+      : queryBuilder;
+
+    queryBuilder = dish_name
+      ? queryBuilder.ilike("dish_name", `%${dish_name}%`)
+      : queryBuilder;
+
+    //console.log("Running query with filters:", queryBuilder);
+    const { data, error, status } = await queryBuilder;
+    // console.log(`Data: ${JSON.stringify(data)}, error: ${JSON.stringify(error)}, status: ${JSON.stringify(status)}`)
+    if (error && status !== 406) throw error;
+
+    data?.map(async (dish: Dish) => {
+      dish.dish_image_url = await getDishImage(dish.dish_image_name!) ?? "";
+    });
+
+    return data as Dish[];
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+}
+
 export async function insertDish(
-    vendor_id: string,
-    {dish_name, dish_price, dish_total_carbon}: Dish,
-    {base64, uri}: Base64Image
+  vendor_id: string,
+  { dish_name, dish_price, dish_total_carbon }: Dish,
+  { base64, uri }: Base64Image
 ): Promise<InsertDishReturn> {
-    try {
-        const dish: Dish = {
-            dish_name: dish_name,
-            dish_price: dish_price,
-            dish_image_name: "",
-            dish_vendor_id: vendor_id,
-            dish_total_carbon:dish_total_carbon
-        };
+  try {
+    const dish: Dish = {
+      dish_name: dish_name,
+      dish_price: dish_price,
+      dish_image_name: "",
+      dish_vendor_id: vendor_id,
+      dish_total_carbon: dish_total_carbon,
+    };
 
     if (base64) {
       const dish_image_name = await uploadBase64ImageDishes({
@@ -38,7 +77,7 @@ export async function insertDish(
     //console.log(`Current dish insert: ${JSON.stringify(dish)}`);
     const { data, error } = await supabase.from("dish").insert(dish).select();
 
-    console.log(`Inserting new dish: ${JSON.stringify(error)}`);
+    // console.log(`Inserting new dish: ${JSON.stringify(error)}`);
 
     if (error) {
       throw error;
@@ -52,47 +91,18 @@ export async function insertDish(
   }
 }
 
-interface getDishesParams {
-    vendor_id?: string;
-    dish_name?: string;
-}
-
-export async function getDishes({vendor_id, dish_name}: getDishesParams) {
-  try {
-    console.log(`Curr vendor id: ${vendor_id}`)
-
-    let queryBuilder = supabase.from("dish").select("*");
-
-    queryBuilder = vendor_id
-      ? queryBuilder.eq("dish_vendor_id", vendor_id)
-      : queryBuilder;
-
-    queryBuilder = dish_name ?
-    queryBuilder.ilike("dish_name", `%${dish_name}%`)
-    : queryBuilder
-
-    //console.log("Running query with filters:", queryBuilder);
-    const { data, error, status } = await queryBuilder;
-    //console.log(`Data: ${JSON.stringify(data)}, error: ${JSON.stringify(error)}, status: ${JSON.stringify(status)}`)
-    return data as Dish[];
-  } catch (error) {
-    console.log(error);
-    return null;
-  }
-}
-
 export async function updateDish(
-    {id, dish_name, dish_price, dish_image_name, dish_total_carbon}: Dish,
-    {base64, uri}: Base64Image
+  { id, dish_name, dish_price, dish_image_name, dish_total_carbon }: Dish,
+  { base64, uri }: Base64Image
 ) {
-    try {
-       const dish: Dish = {
-        id: id,
-        dish_name: dish_name,
-        dish_price: dish_price,
-        dish_image_name:dish_image_name,
-        dish_total_carbon: dish_total_carbon,
-       };
+  try {
+    const dish: Dish = {
+      id: id,
+      dish_name: dish_name,
+      dish_price: dish_price,
+      dish_image_name: dish_image_name,
+      dish_total_carbon: dish_total_carbon,
+    };
 
     if (base64 && dish?.dish_image_name) {
       const dish_image_name = await updateBase64DishImage({
@@ -114,7 +124,7 @@ export async function updateDish(
       throw error;
     }
 
-    console.log(`Checking update data: ${JSON.stringify(data)}`);
+    // console.log(`Checking update data: ${JSON.stringify(data)}`);
     return true;
   } catch (error) {
     if (error instanceof Error) {
