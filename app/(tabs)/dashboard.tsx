@@ -71,6 +71,9 @@ const Dashboard = () => {
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [totalCarbon, setTotalCarbon] = useState(0);
   const [totalDishes, setTotalDishes] = useState(0);
+  const [carbonScore, setCarbonScore] = useState(0);
+  const best_case_footprint = 0.5
+  const worst_case_footprint = 10
   // Chart related
   const [pieData, setPieData] = useState<PieData[]>([]);
   const [barData, setBarData] = useState<BarData>({
@@ -122,6 +125,8 @@ const Dashboard = () => {
 
       setPieData(getPieChartData(dishes));
       setBarData(getBarChartData(dishes))
+
+      setVendorGrade()
       
     }, [dishes])
 
@@ -133,6 +138,25 @@ const Dashboard = () => {
         }
       }, [vendorId])
     );
+
+    const setVendorGrade = () => {
+      if (totalDishes == 0){
+        setCarbonScore(0);
+        return;
+      }
+
+      const avgFootprint = totalCarbon / totalDishes
+      
+      // Normalize the score: higher score means greener
+      let normalizedScore = 
+      ((worst_case_footprint - avgFootprint) / (worst_case_footprint - best_case_footprint)) * 100;
+
+      console.log(`Current normalised score: ${normalizedScore}`)
+      // Clamp between 0 and 100
+      normalizedScore = Math.max(0, Math.min(100, normalizedScore));
+
+      setCarbonScore(Number(normalizedScore.toFixed(2)));
+    }
       
     const setDishMenu = async () => {
           const menu_result = await joinVendorDishIng(vendorId)
@@ -203,8 +227,8 @@ const Dashboard = () => {
 
 
     
-    console.log(`Content in dishs: ${JSON.stringify(dishes)}`)
-    console.log(`WTF inside of pie data: ${JSON.stringify(pieData)}`)
+    //console.log(`Content in dishs: ${JSON.stringify(dishes)}`)
+    //console.log(`WTF inside of pie data: ${JSON.stringify(pieData)}`)
 
   return (
     <ScrollView className="bg-white h-full">
@@ -221,9 +245,9 @@ const Dashboard = () => {
             elevation: 8,
           }}>
             <Text className="text-xs text-secondary font-psemibold mb-1">
-              My Income
+              Green Score
             </Text>
-            <Text className="text-xl font-bold text-primary">RM12,750</Text>
+            <Text className="text-xl font-bold text-primary">{carbonScore}%</Text>
           </View>
           <View className="bg-[#F8F9FA] p-4 rounded-2xl flex-1 ml-1 border border-gray-100" style={{
             shadowColor: '#000',
