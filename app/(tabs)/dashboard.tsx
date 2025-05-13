@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, ScrollView, useWindowDimensions } from "react-native";
 import { PieChart, BarChart } from "react-native-chart-kit";
 import { Link, useFocusEffect } from "expo-router";
-import { getVendorByUser } from "../../controllers/vendorController";
+import { getVendorByUser, getVendorRank } from "../../controllers/vendorController";
 import { joinVendorDishIng } from "../../controllers/vendorDishIngJoinController";
 import { Dish } from "../../interfaces/dish";
 import { PieData } from "../../interfaces/pieData";
@@ -72,6 +72,7 @@ const Dashboard = () => {
   const [totalCarbon, setTotalCarbon] = useState(0);
   const [totalDishes, setTotalDishes] = useState(0);
   const [carbonScore, setCarbonScore] = useState(0);
+  const [vendorRank, setVendorRank] = useState(0);
   const best_case_footprint = 0.5
   const worst_case_footprint = 10
   // Chart related
@@ -99,10 +100,13 @@ const Dashboard = () => {
         const vendorDishIngredient = async () => {
           if (!vendorId) return;
           //console.log(`Current vendor id: ${vendorId}`)
+          const ranking = await getVendorRank(vendorId)
           const result = await joinVendorDishIng(vendorId)
-          console.log(`Testing vendor dish and ingredientr: ${JSON.stringify(result)}`)
-          if(Array.isArray(result)){
+          
+          //console.log(`Testing vendor dish and ingredientr: ${JSON.stringify(result)}`)
+          if(Array.isArray(result) && ranking){
             setDishes(result)
+            setVendorRank(ranking)
           } 
           else{
             setDishes([])
@@ -143,26 +147,6 @@ const Dashboard = () => {
         }
       }, [vendorId])
     );
-
-    const setVendorGrade = () => {
-      if (totalDishes == 0){
-        setCarbonScore(0);
-        return;
-      }
-
-      const avgFootprint = totalCarbon / totalDishes
-
-      // Normalize the score: higher score means greener
-      let normalizedScore = 
-      ((worst_case_footprint - avgFootprint) / (worst_case_footprint - best_case_footprint)) * 100;
-
-      console.log(`Current normalised score: ${normalizedScore}`)
-      // Clamp between 0 and 100
-      normalizedScore = Math.max(0, Math.min(100, normalizedScore));
-
-      setCarbonScore(Number(normalizedScore.toFixed(2)));
-      //
-    }
       
     const setDishMenu = async () => {
           const menu_result = await joinVendorDishIng(vendorId)
@@ -280,7 +264,7 @@ const Dashboard = () => {
             <Text className="text-xs text-yellow-500 font-psemibold mb-1">
               Ranking
             </Text>
-            <Text className="text-xl font-bold text-primary">#1</Text>
+            <Text className="text-xl font-bold text-primary">#{vendorRank}</Text>
           </View>
           <View className="bg-[#F8F9FA] p-4 rounded-2xl flex-1 ml-1 border border-gray-100" style={{
             shadowColor: '#000',

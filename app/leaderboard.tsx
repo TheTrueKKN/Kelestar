@@ -80,7 +80,7 @@ const Leaderboard = () => {
             </View>
             <Text style={{ fontSize: 32, fontFamily: "Poppins-Bold", color: "#161622", flex: 1 }}>Leaderboard</Text>
           </View>
-          <Text style={{ fontSize: 16, fontFamily: "Poppins-Regular", color: "#74B318", textAlign: "left" }}>Top Vendors by Green Meals</Text>
+          <Text style={{ fontSize: 16, fontFamily: "Poppins-Regular", color: "#74B318", textAlign: "left" }}>Top Vendors by Green Scores</Text>
         </View>
 
         {/* Leaderboard List */}
