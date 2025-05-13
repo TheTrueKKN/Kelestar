@@ -48,14 +48,6 @@ const chartColors = [
   "#0EA5E9", // sky blue
 ];
 
-const chartColors = [
-  "#3B82F6", // blue
-  "#22C55E", // green
-  "#FACC15", // yellow
-  "#38BDF8", // light blue
-  "#0EA5E9", // sky blue
-];
-
 const barData = {
   labels: [
     "Chicken Rice",
