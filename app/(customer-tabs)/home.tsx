@@ -58,7 +58,8 @@ export default function CustomerHome() {
     }, [])
   );
 
-  useEffect(() => {
+  useFocusEffect(
+    React.useCallback(() => {
     const initDishes = async () => {
       const fetchedDishes = await getDishes({});
       if (fetchedDishes) {
@@ -66,7 +67,9 @@ export default function CustomerHome() {
       }
     };
     initDishes();
-  }, []);
+    }, [])
+  );
+
 
   // Dish data array
   // const dishes: Dish[] = [
