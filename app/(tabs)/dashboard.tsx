@@ -114,21 +114,26 @@ const Dashboard = () => {
 
     // Changes when dishes data updated
     useEffect(() => {
-      // Set pie chart data
       
+      const totalCarbon = dishes.reduce((sum, dish) => sum + dish.dish_total_carbon!, 0);
+      const totalDishes = dishes.length;
+      const avgFootprint = totalCarbon / totalDishes;
       
-      // Set total carbon footprint from all dishes
-      const totalCarbon = dishes.reduce((sum, dish) => sum + dish.dish_total_carbon!, 0)
       setTotalCarbon(Number(totalCarbon.toFixed(2)));
+      setTotalDishes(totalDishes);
+      
 
-      setTotalDishes(dishes.length);
+      // Normalize the score
+      let normalizedScore = 
+      ((worst_case_footprint - avgFootprint) / (worst_case_footprint - best_case_footprint)) * 100;
+      
+      normalizedScore = Math.max(0, Math.min(100, normalizedScore));
+      setCarbonScore(Number(normalizedScore.toFixed(2)));
 
       setPieData(getPieChartData(dishes));
-      setBarData(getBarChartData(dishes))
+      setBarData(getBarChartData(dishes));
+    }, [dishes]);
 
-      setVendorGrade()
-      
-    }, [dishes])
 
     useFocusEffect(
       useCallback(() => {
@@ -146,7 +151,7 @@ const Dashboard = () => {
       }
 
       const avgFootprint = totalCarbon / totalDishes
-      
+
       // Normalize the score: higher score means greener
       let normalizedScore = 
       ((worst_case_footprint - avgFootprint) / (worst_case_footprint - best_case_footprint)) * 100;
@@ -156,6 +161,7 @@ const Dashboard = () => {
       normalizedScore = Math.max(0, Math.min(100, normalizedScore));
 
       setCarbonScore(Number(normalizedScore.toFixed(2)));
+      //
     }
       
     const setDishMenu = async () => {
