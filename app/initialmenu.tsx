@@ -47,7 +47,7 @@ const InitialMenu = () => {
   const getVendorDishes = async () => {
     try {
       // Fetch dishes from Supabase (Assuming getDishes is defined elsewhere)
-      console.log(`VENDOR IDDDDDDDDDD: ${vendorId}`)
+      // console.log(`VENDOR IDDDDDDDDDD: ${vendorId}`)
       const fetchedDishes = await getDishes({vendor_id: vendorId}); 
       // console.log('Fetched dishes:', fetchedDishes);
 
@@ -98,15 +98,17 @@ const InitialMenu = () => {
 
   // Function to edit a dish (navigates to edit page)
   const editDish = (dish: Dish | null, dish_url?: string) => {
+    if (!dish) return; 
+     const { dish_vendor, dish_ingredient, ...serializableDish } = dish;
     router.push({
       pathname: '/editdish',
       params: {
-        ...dish,
+        ...serializableDish,
         dish_url: dish_url ?? '',
         prev_page: "/initialmenu"
       }
     });
-    console.log(`Current dish being edited: ${JSON.stringify(dish)}`)
+    // console.log(`Current dish being edited: ${JSON.stringify(dish)}`)
   };
 
   // Whenever got an update to new Dish, add the dish into the array
@@ -120,9 +122,9 @@ const InitialMenu = () => {
   }, [newDish]);
 
   // Just for checking it the dish has been added into the array or not (Can be commented out if not required)
-  useEffect(() => {
-    console.log("Current Dishes:", JSON.stringify(dishes, null, 2));
-  }, [dishes]);
+  // useEffect(() => {
+  //   console.log("Current Dishes:", JSON.stringify(dishes, null, 2));
+  // }, [dishes]);
 
 
   return (

@@ -116,6 +116,13 @@ export default function RootLayout() {
             headerTitle: "Insert vendor detail",
           }}
         />
+        <Stack.Screen
+          name="calculator"
+          options={{
+            headerShown: true,
+            headerTitle: "Footprint Calculator",
+          }}
+        />
       </Stack>
     </GestureHandlerRootView>
   );

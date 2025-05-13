@@ -44,23 +44,6 @@ const IngredientSelector = ({
     retrieveIngredients();
   }, []);
 
-  // const ingredientsAvailable = [
-  //   "banana",
-  //   "rice",
-  //   "corn",
-  //   "potato",
-  //   "chicken",
-  //   "curry",
-  //   "fish",
-  //   "pop corn",
-  //   "corn dog",
-  //   "corn fish",
-  //   "corn chicken",
-  //   "corn rice",
-  //   "corn human",
-  //   "corn cat",
-  //   "corn banana",
-  // ];
   const handleSavePressed = () => {
     console.log("search term:", ingredientName);
     const searchedIngredient = ingredientList
@@ -102,7 +85,7 @@ const IngredientSelector = ({
       <Modal
         transparent={true}
         visible={showModal}
-        animationType="fade"
+        animationType="slide"
         onRequestClose={() => {
           handleShowModal(false);
         }}
@@ -112,7 +95,7 @@ const IngredientSelector = ({
           <View className="bg-white w-80 p-6 rounded-lg shadow-lg shadow-gray-200">
             <TouchableOpacity
               onPress={handleCloseButtonPressed}
-              className="absolute top-0 right-0 h-20 w-20 rounded-full z-100"
+              className="absolute top-0 right-0 h-20 w-20 rounded-full z-10"
             >
               <Text className="text-black text-xl font-bold absolute top-4 right-4">
                 ✕
@@ -126,6 +109,7 @@ const IngredientSelector = ({
               placeholder="Search for an ingredient"
               options={selectOptions}
               handleChangeText={(e: string) => {
+                console.log(e)
                 setIngredientName(e);
               }}
             />
