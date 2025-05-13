@@ -6,9 +6,48 @@ import {
   updateBase64DishImage,
   uploadBase64ImageDishes,
   deleteDishImage,
+  getDishImage,
 } from "./fileController";
 
 type InsertDishReturn = [number | null, boolean];
+
+export async function getDishes({
+  vendor_id,
+  dish_name,
+}: {
+  vendor_id?: string;
+  dish_name?: string;
+}) {
+  try {
+    // console.log(`Curr vendor id: ${vendor_id}`)
+
+    let queryBuilder = supabase
+      .from("dish")
+      .select("*, dish_vendor: dish_vendor_id(vendor_name)");
+
+    queryBuilder = vendor_id
+      ? queryBuilder.eq("dish_vendor_id", vendor_id)
+      : queryBuilder;
+
+    queryBuilder = dish_name
+      ? queryBuilder.ilike("dish_name", `%${dish_name}%`)
+      : queryBuilder;
+
+    //console.log("Running query with filters:", queryBuilder);
+    const { data, error, status } = await queryBuilder;
+    // console.log(`Data: ${JSON.stringify(data)}, error: ${JSON.stringify(error)}, status: ${JSON.stringify(status)}`)
+    if (error && status !== 406) throw error;
+
+    data?.map(async (dish: Dish) => {
+      dish.dish_image_url = await getDishImage(dish.dish_image_name!) ?? "";
+    });
+
+    return data as Dish[];
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+}
 
 export async function insertDish(
   vendor_id: string,
@@ -49,39 +88,6 @@ export async function insertDish(
       Alert.alert(error.message);
     }
     return [null, false];
-  }
-}
-
-interface getDishesParams {
-  vendor_id?: string;
-  dish_name?: string;
-}
-
-export async function getDishes({ vendor_id, dish_name }: getDishesParams) {
-  try {
-    // console.log(`Curr vendor id: ${vendor_id}`)
-
-    let queryBuilder = supabase
-      .from("dish")
-      .select("*, dish_vendor: dish_vendor_id(vendor_name)");
-
-    queryBuilder = vendor_id
-      ? queryBuilder.eq("dish_vendor_id", vendor_id)
-      : queryBuilder;
-
-    queryBuilder = dish_name
-      ? queryBuilder.ilike("dish_name", `%${dish_name}%`)
-      : queryBuilder;
-
-    //console.log("Running query with filters:", queryBuilder);
-    const { data, error, status } = await queryBuilder;
-    // console.log(`Data: ${JSON.stringify(data)}, error: ${JSON.stringify(error)}, status: ${JSON.stringify(status)}`)
-    if (error && status !== 406) throw error;
-
-    return data as Dish[];
-  } catch (error) {
-    console.log(error);
-    return null;
   }
 }
 

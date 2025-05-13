@@ -1,5 +1,5 @@
 // History.tsx
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -19,16 +19,14 @@ import Animated, {
   interpolate,
 } from "react-native-reanimated";
 import { PanGestureHandler } from "react-native-gesture-handler";
-
-// TypeScript interface for Dish
-interface Dish {
-  id: string;
-  name: string;
-  image: any;
-  price: string;
-  grade: string;
-  gradeColor: string;
-}
+import { useFocusEffect } from "expo-router";
+import { getMealListingByCustomer } from "../controllers/mealController";
+import { Meal } from "../interfaces/meal";
+import { Dish } from "../interfaces/dish";
+import {
+  getCarbonRating,
+  getRatingBadgeColor,
+} from "../lib/utils/carbonRating";
 
 interface SwipeableItemProps {
   children: React.ReactNode;
@@ -37,7 +35,7 @@ interface SwipeableItemProps {
 }
 
 /**
- * SwipeableItem Component using Tailwind classes for static styling 
+ * SwipeableItem Component using Tailwind classes for static styling
  * and inline animated style for dynamic opacity.
  */
 const SwipeableItem = ({ children, onEdit, onDelete }: SwipeableItemProps) => {
@@ -112,58 +110,122 @@ const SwipeableItem = ({ children, onEdit, onDelete }: SwipeableItemProps) => {
   );
 };
 
+function isSameDate(date1: Date, date2: Date): boolean {
+  return (
+    date1.toISOString().split("T")[0] === date2.toISOString().split("T")[0]
+  );
+}
+
+type DayData = {
+  date: Date;
+  totalCarbon: number;
+  meals: Meal[];
+};
+
+const generateMealData = (meals: Meal[]): Record<string, DayData> => {
+  const data: Record<string, DayData> = {};
+
+  let mealIndex = 0;
+  const totalMeals = meals.length;
+  let currentDate = new Date();
+
+  // Generate data for the current month
+  while (mealIndex < totalMeals) {
+    const mealsToday: Meal[] = [];
+    currentDate = meals[mealIndex].meal_datetime!;
+    let totalCarbon = 0;
+
+    while (
+      mealIndex < totalMeals &&
+      isSameDate(meals[mealIndex].meal_datetime!, currentDate)
+    ) {
+      mealsToday.push({
+        id: meals[mealIndex].id,
+        ...meals[mealIndex],
+      });
+      totalCarbon += meals[mealIndex].meal_dish?.dish_total_carbon ?? 0;
+
+      mealIndex++;
+    }
+
+    const dateKey = currentDate.toISOString().split("T")[0];
+    data[dateKey] = {
+      date: currentDate,
+      totalCarbon,
+      meals: mealsToday,
+    };
+  }
+
+  return data;
+};
+
 const History = () => {
   const [selectedOption, setSelectedOption] = useState("Month");
   const [isAscending, setIsAscending] = useState(true);
   const [showPicker, setShowPicker] = useState(false);
   const timeOptions = ["Week", "Month", "Year"];
+  const [meals, setMeals] = useState<Meal[]>([]);
+  const mealData = useMemo(() => generateMealData(meals), [meals]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const initMeals = async () => {
+        const fetchedMeals = await getMealListingByCustomer();
+        if (fetchedMeals) {
+          setMeals(fetchedMeals);
+          const mealTemp = generateMealData(fetchedMeals);
+        }
+      };
+      initMeals();
+    }, [])
+  );
 
   // Sample dish data.
-  const [todayDishes] = useState<Dish[]>([
-    {
-      id: "1",
-      name: "Tofu Buddha Bowl",
-      image: require("../assets/images/tofu_bowl_pic.png"),
-      price: "RM 12",
-      grade: "A",
-      gradeColor: "#8DC63F",
-    },
-    {
-      id: "2",
-      name: "Chicken Rice",
-      image: require("../assets/images/chicken_rice.png"),
-      price: "RM 10",
-      grade: "B",
-      gradeColor: "#F8D15B",
-    },
-    {
-      id: "3",
-      name: "Beef Sharwama set",
-      image: require("../assets/images/beef_shawarma_set.png"),
-      price: "RM 18",
-      grade: "C",
-      gradeColor: "#ED1C24",
-    },
-  ]);
+  // const [todayDishes] = useState<Dish[]>([
+  //   {
+  //     id: "1",
+  //     name: "Tofu Buddha Bowl",
+  //     image: require("../assets/images/tofu_bowl_pic.png"),
+  //     price: "RM 12",
+  //     grade: "A",
+  //     gradeColor: "#8DC63F",
+  //   },
+  //   {
+  //     id: "2",
+  //     name: "Chicken Rice",
+  //     image: require("../assets/images/chicken_rice.png"),
+  //     price: "RM 10",
+  //     grade: "B",
+  //     gradeColor: "#F8D15B",
+  //   },
+  //   {
+  //     id: "3",
+  //     name: "Beef Sharwama set",
+  //     image: require("../assets/images/beef_shawarma_set.png"),
+  //     price: "RM 18",
+  //     grade: "C",
+  //     gradeColor: "#ED1C24",
+  //   },
+  // ]);
 
-  const [yesterdayDishes] = useState<Dish[]>([
-    {
-      id: "4",
-      name: "Tofu Buddha Bowl",
-      image: require("../assets/images/tofu_bowl_pic.png"),
-      price: "RM 12",
-      grade: "A",
-      gradeColor: "#8DC63F",
-    },
-    {
-      id: "5",
-      name: "Chicken Rice",
-      image: require("../assets/images/chicken_rice.png"),
-      price: "RM 10",
-      grade: "B",
-      gradeColor: "#F8D15B",
-    },
-  ]);
+  // const [yesterdayDishes] = useState<Dish[]>([
+  //   {
+  //     id: "4",
+  //     name: "Tofu Buddha Bowl",
+  //     image: require("../assets/images/tofu_bowl_pic.png"),
+  //     price: "RM 12",
+  //     grade: "A",
+  //     gradeColor: "#8DC63F",
+  //   },
+  //   {
+  //     id: "5",
+  //     name: "Chicken Rice",
+  //     image: require("../assets/images/chicken_rice.png"),
+  //     price: "RM 10",
+  //     grade: "B",
+  //     gradeColor: "#F8D15B",
+  //   },
+  // ]);
 
   const toggleSortOrder = useCallback(() => {
     setIsAscending((prev) => !prev);
@@ -179,46 +241,51 @@ const History = () => {
   const yesterdayDate = formatDate(yesterday);
 
   // Action handlers.
-  const handleEdit = (dish: Dish) => {
-    Alert.alert("Edit", `Edit ${dish.name}`);
+  const handleEdit = (meal: Meal) => {
+    Alert.alert("Edit", `Edit ${meal.meal_dish?.dish_name}`);
   };
 
-  const handleDelete = (dish: Dish) => {
-    Alert.alert("Delete", `Delete ${dish.name}`);
+  const handleDelete = (meal: Meal) => {
+    Alert.alert("Delete", `Delete ${meal.meal_dish?.dish_name}`);
   };
 
   // Render each dish item with swipe functionality.
-  const renderFoodItem = useCallback((dish: Dish) => (
-    <SwipeableItem
-      key={dish.id}
-      onEdit={() => handleEdit(dish)}
-      onDelete={() => handleDelete(dish)}
-    >
-      <View className="flex-row items-center justify-between p-3">
-        <View className="flex-row items-center">
-          <Image
-            source={dish.image}
-            className="w-12 h-12 rounded-full"
-            resizeMode="cover"
-          />
-          <View className="ml-3">
-            <Text className="font-semibold text-base text-black">
-              {dish.name}
-            </Text>
-            <Text className="font-normal text-gray-500">
-              {dish.price}
-            </Text>
+  const renderFoodItem = useCallback((meal_id: string, dish: Dish) => {
+    const carbonRating = getCarbonRating(dish.dish_total_carbon ?? 0);
+    const bgColor = getRatingBadgeColor(carbonRating);
+
+    return (
+      <SwipeableItem
+        key={meal_id}
+        onEdit={() => handleEdit(dish)}
+        onDelete={() => handleDelete(dish)}
+      >
+        <View className="flex-row items-center justify-between p-3">
+          <View className="flex-row items-center">
+            <Image
+              source={{ uri: dish.dish_image_url }}
+              className="w-12 h-12 rounded-full"
+              resizeMode="cover"
+            />
+            <View className="ml-3">
+              <Text className="font-semibold text-base text-black">
+                {dish.dish_name}
+              </Text>
+              <Text className="font-normal text-gray-500">{`RM ${dish.dish_price?.toFixed(
+                2
+              )}`}</Text>
+            </View>
+          </View>
+          <View
+          className="w-8 h-8 rounded-full items-center justify-center"
+          style={{ backgroundColor: bgColor }}
+          >
+            <Text className="text-white font-bold">{carbonRating}</Text>
           </View>
         </View>
-        <View
-          className="w-8 h-8 rounded-full items-center justify-center"
-          style={{ backgroundColor: dish.gradeColor }}
-        >
-          <Text className="text-white font-bold">{dish.grade}</Text>
-        </View>
-      </View>
-    </SwipeableItem>
-  ), []);
+      </SwipeableItem>
+    );
+  }, []);
 
   const renderIOSPicker = () => (
     <View className="z-20">
@@ -258,9 +325,7 @@ const History = () => {
     <View className="ml-[-10px]">
       <Picker
         selectedValue={selectedOption}
-        onValueChange={(itemValue) =>
-          setSelectedOption(itemValue.toString())
-        }
+        onValueChange={(itemValue) => setSelectedOption(itemValue.toString())}
         style={{ height: 50, width: 120 }}
         dropdownIconColor="#000000"
       >
@@ -283,9 +348,12 @@ const History = () => {
           />
         </TouchableOpacity>
       </View>
-      <ScrollView className="mt-4" contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView
+        className="mt-4"
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
         {/* Today's Section */}
-        <View>
+        {/* <View>
           <View className="flex-row justify-between px-4 mb-2">
             <Text className="text-lg font-semibold">Today</Text>
             <Text className="text-gray-500 font-normal">{todayDate}</Text>
@@ -296,15 +364,31 @@ const History = () => {
               Total: 7.8 Kg CO₂e
             </Text>
           </View>
-        </View>
+        </View> */}
         {/* Yesterday's Section */}
-        <View>
+        {/* <View>
           <View className="flex-row justify-between px-4 mb-2">
             <Text className="text-lg font-semibold">Yesterday</Text>
             <Text className="text-gray-500 font-normal">{yesterdayDate}</Text>
           </View>
           {yesterdayDishes.map(renderFoodItem)}
-        </View>
+        </View> */}
+        {Object.keys(mealData).map((date) => (
+          <View key={date}>
+            <View className="flex-row justify-between px-4 mb-2">
+              <Text className="text-lg font-semibold">{date}</Text>
+              {/* <Text className="text-gray-500 font-normal">{todayDate}</Text> */}
+            </View>
+            {mealData[date].meals.map((meal) =>
+              renderFoodItem(meal.id!, meal.meal_dish!)
+            )}
+            <View className="px-4 mt-2 mb-6 items-end">
+              <Text className="text-gray-500 font-normal">
+                Total: {mealData[date].totalCarbon.toFixed(2)} Kg CO₂e
+              </Text>
+            </View>
+          </View>
+        ))}
       </ScrollView>
     </SafeAreaView>
   );

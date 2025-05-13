@@ -8,7 +8,7 @@ import {
   Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { getDishes } from "../../controllers/dishController";
 import { Dish } from "../../interfaces/dish";
 import { getDishImage } from "../../controllers/fileController";
@@ -36,27 +36,30 @@ export default function CustomerHome() {
 
   const router = useRouter();
 
-  useEffect(() => {
-    const initCustomer = async () => {
-      let fetchedCustomer = await getCustomerByUser();
-      if (!fetchedCustomer) {
-        const insertCustomerSuccess = await insertCustomer();
-        if (insertCustomerSuccess) {
-          fetchedCustomer = await getCustomerByUser();
+  useFocusEffect(
+    React.useCallback(() => {
+      const initCustomer = async () => {
+        let fetchedCustomer = await getCustomerByUser();
+        if (!fetchedCustomer) {
+          const insertCustomerSuccess = await insertCustomer();
+          if (insertCustomerSuccess) {
+            fetchedCustomer = await getCustomerByUser();
+          }
         }
-      }
-      setCustomer(fetchedCustomer);
-      if (!fetchedCustomer?.customer_carbon_budget) {
-        // router.push("/budget")
-        setShowModal(true);
-      }
+        setCustomer(fetchedCustomer);
+        if (!fetchedCustomer?.customer_carbon_budget) {
+          // router.push("/budget")
+          setShowModal(true);
+        }
 
-      // console.log("Fetched customer:", fetchedCustomer);
-    };
-    initCustomer();
-  }, []);
+        // console.log("Fetched customer:", fetchedCustomer);
+      };
+      initCustomer();
+    }, [])
+  );
 
-  useEffect(() => {
+  useFocusEffect(
+    React.useCallback(() => {
     const initDishes = async () => {
       const fetchedDishes = await getDishes({});
       if (fetchedDishes) {
@@ -64,7 +67,9 @@ export default function CustomerHome() {
       }
     };
     initDishes();
-  }, []);
+    }, [])
+  );
+
 
   // Dish data array
   // const dishes: Dish[] = [

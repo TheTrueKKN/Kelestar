@@ -14,7 +14,6 @@ const Budget = ({ handleBudgetSaved }: { handleBudgetSaved: () => void }) => {
     const initCarbonBudget = async () => {
       const retrievedCustomer = await getCustomerByUser();
       if (retrievedCustomer && retrievedCustomer.customer_carbon_budget) {
-        // console.log("retrievedCustomer", retrievedCustomer);
         setCarbonBudget(retrievedCustomer.customer_carbon_budget);
       }
     };

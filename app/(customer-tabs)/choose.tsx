@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { icons } from "../../constants";
 import { getVendors } from "../../controllers/vendorController";
 import { Vendor } from "../../interfaces/vendor";
@@ -34,26 +34,30 @@ export default function ChooseMeal() {
   const [vendorDesc, setVendorDesc] = useState<string>();
   const [searchTerm, setSearchTerm] = useState<string>();
 
-  useEffect(() => {
-    const initVendors = async () => {
-      const fetchedVendors = await getVendors();
-      if (fetchedVendors) {
-        setVendors(fetchedVendors);
-      }
-      const fetchedDishes = await getDishes({});
-      if (fetchedDishes) {
-        setDishes(fetchedDishes);
-      }
-    };
-    initVendors();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      const initVendors = async () => {
+        const fetchedVendors = await getVendors();
+        if (fetchedVendors) {
+          setVendors(fetchedVendors);
+        }
+        const fetchedDishes = await getDishes({});
+        if (fetchedDishes) {
+          setDishes(fetchedDishes);
+        }
+      };
+      initVendors();
+    }, [])
+  );
 
   useEffect(() => {
     const handleSelectVendor = async () => {
       if (selectedVendor) {
         initVendorImage(selectedVendor);
         setVendorDesc(selectedVendor.vendor_description);
-        const fetchedDishes = await getDishes({vendor_id: selectedVendor?.id});
+        const fetchedDishes = await getDishes({
+          vendor_id: selectedVendor?.id,
+        });
         if (fetchedDishes) {
           setDishes(fetchedDishes);
         }
@@ -61,7 +65,6 @@ export default function ChooseMeal() {
     };
     handleSelectVendor();
   }, [selectedVendor]);
-
 
   const router = useRouter();
 
@@ -74,15 +77,14 @@ export default function ChooseMeal() {
     }
   };
 
-  const handleSearchItem = async(searchTerm: string) => {
+  const handleSearchItem = async (searchTerm: string) => {
     setSearchTerm(searchTerm);
     setSelectedVendor(null);
-    const fetchedDishes = await getDishes({dish_name: searchTerm});
+    const fetchedDishes = await getDishes({ dish_name: searchTerm });
     if (fetchedDishes) {
       setDishes(fetchedDishes);
     }
-  }
-
+  };
 
   // Store categories data
   // const storeCategories = [
@@ -133,14 +135,14 @@ export default function ChooseMeal() {
   //   });
   // };
 
-    const handleDishPress = (dish: Dish) => {
-      router.push({
-        pathname: "/tracking",
-        params: {
-          dish: JSON.stringify(dish)
-        },
-      });
-    };
+  const handleDishPress = (dish: Dish) => {
+    router.push({
+      pathname: "/tracking",
+      params: {
+        dish: JSON.stringify(dish),
+      },
+    });
+  };
 
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-white">
@@ -161,7 +163,9 @@ export default function ChooseMeal() {
               className="flex-1 font-pregular text-base mt-2 h-10 text-left"
               onChangeText={(e: string) => handleSearchItem(e)}
             />
-            <TouchableOpacity onPress={() => handleSearchItem(searchTerm ?? "")}>
+            <TouchableOpacity
+              onPress={() => handleSearchItem(searchTerm ?? "")}
+            >
               <Image
                 source={icons.search}
                 className="w-5 h-5"

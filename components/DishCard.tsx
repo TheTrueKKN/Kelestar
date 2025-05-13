@@ -4,26 +4,26 @@ import { getDishImage } from "../controllers/fileController";
 import { Dish } from "../interfaces/dish";
 
 const DishCard = ({ dish, onPress }: { dish: Dish; onPress: () => void }) => {
-  const [dishUrl, setDishUrl] = useState<string>();
-  useEffect(() => {
-    const initDishImage = async () => {
-      if (dish.dish_image_name) {
-        const dishImage = await getDishImage(dish.dish_image_name);
-        if (dishImage) {
-          setDishUrl(dishImage);
-          dish.dish_image_url = dishImage;
-        }
-      }
-    };
-    initDishImage();
-  }, []);
+  // const [dishUrl, setDishUrl] = useState<string>();
+  // useEffect(() => {
+  //   const initDishImage = async () => {
+  //     if (dish.dish_image_name) {
+  //       const dishImage = await getDishImage(dish.dish_image_name);
+  //       if (dishImage) {
+  //         setDishUrl(dishImage);
+  //         dish.dish_image_url = dishImage;
+  //       }
+  //     }
+  //   };
+  //   initDishImage();
+  // }, []);
   return (
     <TouchableOpacity
       onPress={onPress}
       className="mx-[19px] mt-[15px] w-auto h-[128px] p-3 bg-[#F2F2F2] rounded-2xl flex-row"
     >
       <Image
-        source={{ uri: dishUrl }}
+        source={{ uri: dish.dish_image_url }}
         className="w-[100px] h-[100px] rounded-l-md"
         resizeMode="cover"
       />

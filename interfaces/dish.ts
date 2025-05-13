@@ -1,4 +1,5 @@
 import { JoinedDishIngredient } from "./joinedDishIngredient";
+import { CarbonRating } from "../enums/carbonRating";
 import { Vendor } from "./vendor";
 
 export interface Dish {
@@ -11,4 +12,5 @@ export interface Dish {
     dish_vendor?: Vendor;
     dish_total_carbon?: number;
     dish_ingredient?: JoinedDishIngredient[]
+    dish_rating?: CarbonRating
   }

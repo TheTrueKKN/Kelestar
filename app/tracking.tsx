@@ -7,6 +7,7 @@ import {
   ScrollView,
   Platform,
   useWindowDimensions,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PieChart } from "react-native-chart-kit";
@@ -15,10 +16,13 @@ import Tooltip from "react-native-walkthrough-tooltip";
 import { icons } from "../constants";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Dish } from "../interfaces/dish";
-import { Ingredient } from "../interfaces/ingredient";
-import { getIngredientListing } from "../controllers/ingredientController";
 import { joinDishIngredient } from "../controllers/dishIngredientJoinController";
 import { JoinedDishIngredient } from "../interfaces/joinedDishIngredient";
+import { insertMeal } from "../controllers/mealController";
+import {
+  getCarbonRating,
+  getRatingBadgeColor,
+} from "../lib/utils/carbonRating";
 
 const Tracking = () => {
   const { width } = useWindowDimensions();
@@ -34,6 +38,8 @@ const Tracking = () => {
     JoinedDishIngredient[]
   >([]);
   const [pieData, setPieData] = useState<PieData[]>([]);
+  const carbonRating = getCarbonRating(dish.dish_total_carbon ?? 0);
+  const bgColor = getRatingBadgeColor(carbonRating);
 
   // const getImage = (id: string) => {
   //   switch(id) {
@@ -108,6 +114,17 @@ const Tracking = () => {
     "#B78BFF", // Lavender (softer purple)
     "#FFD166", // Sunflower yellow (softer gold)
   ];
+
+  const handleStartTracking = async () => {
+    const insertMealSuccess = await insertMeal({
+      meal_datetime: date,
+      meal_dish_id: dish.id,
+    });
+    if (insertMealSuccess) {
+      Alert.alert(`${dish.dish_name} added on ${date}`);
+      router.back();
+    }
+  };
 
   // Chart data for carbon footprint breakdown
   // const pieData = [
@@ -187,8 +204,13 @@ const Tracking = () => {
               )}`}</Text>
             </View>
             <View className="flex-row items-center">
-              <View className="bg-green w-10 h-10 rounded-full items-center justify-center shadow-sm">
-                <Text className="text-white font-bold text-lg">A</Text>
+              <View
+                className="w-10 h-10 rounded-full items-center justify-center shadow-sm"
+                style={{ backgroundColor: bgColor }}
+              >
+                <Text className="text-white font-bold text-lg">
+                  {carbonRating}
+                </Text>
               </View>
               <Tooltip
                 isVisible={showGradeTooltip}
@@ -314,7 +336,8 @@ const Tracking = () => {
                       - {dishIngredient.ingredient_amount}g{" "}
                       {dishIngredient.ingredient.ingredient_name}{" "}
                       <Text className="text-sm text-gray-500">
-                        ({calcIndividualIngredientFootprint(dishIngredient)} CO₂e)
+                        ({calcIndividualIngredientFootprint(dishIngredient)}{" "}
+                        CO₂e)
                       </Text>
                     </Text>
                   ))}
@@ -344,7 +367,8 @@ const Tracking = () => {
                   </Text> */}
                 </View>
                 <Text className="text-lg font-bold text-gray-800 mt-4">
-                  Total Estimated Carbon Emission: {dish.dish_total_carbon}kg CO₂e
+                  Total Estimated Carbon Emission: {dish.dish_total_carbon}kg
+                  CO₂e
                 </Text>
               </View>
             )}
@@ -405,9 +429,7 @@ const Tracking = () => {
           <View className="px-4 mt-8 mb-4">
             <TouchableOpacity
               className="bg-green py-4 rounded-xl shadow-sm active:opacity-90"
-              onPress={() => {
-                // Add tracking logic here
-              }}
+              onPress={() => handleStartTracking()}
               accessibilityLabel="Start tracking this meal"
               accessibilityRole="button"
             >
