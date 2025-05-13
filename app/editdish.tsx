@@ -215,11 +215,11 @@ export default function EditDishPage() {
               </TouchableOpacity>
 
 
-              <Text className="text-base text-[#006400] mb-2">Edit Ingredients:</Text>
+              <Text className="text-base text-[#006400] mb-4">Edit Ingredients:</Text>
 
               <ScrollView className="h-60" showsVerticalScrollIndicator={false}>
                   {dishIngredientList.length === 0 ? (
-                    <Text className="text-gray-400 text-center mt-4">No ingredients added yet.</Text>
+                    <Text className="text-gray-400 text-center mt-2">No ingredients added yet.</Text>
                   ) : 
                   (
                     dishIngredientList.map((dishIngredient) => (
@@ -242,7 +242,7 @@ export default function EditDishPage() {
         <View className="px-5 py-4 bg-white">
           <CalculateTotalCarbon joinedIngredientList={dishIngredientList} onCarbonCalculated={setTotalCarbon}/>
           <TouchableOpacity
-            className="h-12 bg-[#74B318] rounded-md justify-center items-center"
+            className="h-12 bg-[#74B318] rounded-md justify-center items-center mb-12"
             onPress={() => {
               // Logic for saving the changes
               alert('Dish details updated successfully!');
