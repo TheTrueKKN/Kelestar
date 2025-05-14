@@ -126,7 +126,7 @@ const Dashboard = () => {
       const totalDishes = dishes.length;
       const avgFootprint = totalDishes > 0 ? totalCarbon / totalDishes : 0;
       
-      console.log(`Carbon total value: ${totalCarbon}`)
+      //console.log(`Carbon total value: ${totalCarbon}`)
       setTotalCarbon(isNaN(totalCarbon) ? 0 : Number(totalCarbon.toFixed(2)));
       setTotalDishes(totalDishes);
       

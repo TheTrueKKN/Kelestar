@@ -63,7 +63,7 @@ export async function refreshVendorRank() {
             }
 
         //  Upsert leaderboard entry
-            console.log(`Current vendor: ${vendor.id}, rank change: ${vendor.current_rank}, rank status: ${rankChange}`)
+            //console.log(`Current vendor: ${vendor.id}, rank change: ${vendor.current_rank}, rank status: ${rankChange}`)
             const { error: upsertError } = await supabase
             .from("leaderboard")
             .upsert(
@@ -102,7 +102,7 @@ export async function fetchLeaderboard(
         `)
         .order("rank", { ascending: true });
 
-        console.log(`Leaderboard data: ${JSON.stringify(data)}`)
+        //console.log(`Leaderboard data: ${JSON.stringify(data)}`)
         if (error) {
             console.error("Error fetching leaderboard:", error.message);
             return;
@@ -124,7 +124,7 @@ export async function fetchLeaderboard(
             })
         );
 
-        console.log(`Returned leaderboard data: ${JSON.stringify(leaderboard)}`)
+        //console.log(`Returned leaderboard data: ${JSON.stringify(leaderboard)}`)
         return leaderboard;
     } catch (error) {
         console.error("Unexpected error:", error);

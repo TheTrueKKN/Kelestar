@@ -233,7 +233,7 @@ export default function CreateDishPage() {
                 onPress={() => {
                   // Add functionality for adding ingredients
                   setShowIngredientSelector(true);
-                  console.log("Add ingredients button pressed");
+                  //console.log("Add ingredients button pressed");
                 }}
               >
                 <Text className="text-white text-base font-bold">

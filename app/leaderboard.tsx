@@ -6,46 +6,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { LeaderboardData } from "../interfaces/leaderboardData";
 import { fetchLeaderboard, refreshVendorRank } from "../controllers/leaderboardController";
 
-
-// Hardcoded leaderboard data
-const leaderboardData = [
-  {
-    id: 1,
-    name: "Poke2U",
-    logo: require("../assets/images/poke2u_logo.png"),
-    greenMeals: 32,
-    change: "up",
-  },
-  {
-    id: 2,
-    name: "Vendor A",
-    logo: require("../assets/images/vendor_logo.png"),
-    greenMeals: 28,
-    change: "down",
-  },
-  {
-    id: 3,
-    name: "Vendor B",
-    logo: require("../assets/images/chicken_rice.png"),
-    greenMeals: 25,
-    change: "neutral",
-  },
-  {
-    id: 4,
-    name: "Vendor C",
-    logo: require("../assets/images/beef_shawarma_set.png"),
-    greenMeals: 21,
-    change: "up",
-  },
-  {
-    id: 5,
-    name: "Vendor D",
-    logo: require("../assets/images/egg_salad_pic.png"),
-    greenMeals: 18,
-    change: "down",
-  },
-];
-
 function getArrow(change: string) {
   if (change === "Up") {
     return (
@@ -60,33 +20,27 @@ function getArrow(change: string) {
   }
 }
 
-
-
 const Leaderboard = () => {
-
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [leaderboardData, setLeaderboardData] = useState<LeaderboardData[]>([])
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardData[]>([]);
 
   const router = useRouter();
 
-
   const refreshLeaderboard = async () => {
-  setRefreshing(true);
-  await refreshVendorRank(); // Assuming this updates ranks in DB
-  const data = await fetchLeaderboard(); // Refetch the new data
-  if (data) setLeaderboardData(data);
-  setRefreshing(false);
-};
-
+    setRefreshing(true);
+    await refreshVendorRank(); // Updates ranks in DB
+    const data = await fetchLeaderboard(); // Refetch the new data
+    if (data) setLeaderboardData(data);
+    setRefreshing(false);
+  };
 
   // Initial fetch on mount
   useEffect(() => {
     const loadInitialLeaderboard = async () => {
       setLoading(true);
-      await refreshVendorRank()
+      await refreshVendorRank();
       const data = await fetchLeaderboard();
-      //console.log(`Current leaderboard data: ${JSON.stringify(data)}`)
       if (data) setLeaderboardData(data);
       setLoading(false);
     };
@@ -94,12 +48,18 @@ const Leaderboard = () => {
     loadInitialLeaderboard();
   }, []);
 
+  if (loading) {
+    return <Text style={{ textAlign: "center", marginTop: 32 }}>Loading leaderboard...</Text>;
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}
-      refreshControl={
-    <RefreshControl refreshing={refreshing} onRefresh={refreshLeaderboard} />
-    }>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 32 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={refreshLeaderboard} />
+        }
+      >
         {/* Back Button and Header */}
         <View style={{ paddingTop: 48, paddingBottom: 8, paddingHorizontal: 18 }}>
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
@@ -157,7 +117,7 @@ const Leaderboard = () => {
               {/* Name and Meals */}
               <View style={{ flex: 1, justifyContent: "center" }}>
                 <Text style={{ fontSize: 18, fontFamily: "Poppins-SemiBold", color: "#22223b" }}>{vendor.vendor_name}</Text>
-                <Text style={{ fontSize: 14, color: "#64748b", marginTop: 2 }}>Green Score: <Text style={{ color: "#22C55E", fontWeight: "bold" }}>{vendor.vendor_green_score}</Text></Text>
+                <Text style={{ fontSize: 14, color: "#64748b", marginTop: 2 }}>Green Score: <Text style={{ color: "#22C55E", fontWeight: "bold" }}>{vendor.vendor_green_score}%</Text></Text>
               </View>
               {/* Arrow */}
               <View style={{ width: 28, alignItems: "center" }}>{getArrow(vendor.rank_change)}</View>
