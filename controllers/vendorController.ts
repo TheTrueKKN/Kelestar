@@ -8,6 +8,7 @@ import {
   uploadBase64Image,
 } from "./fileController";
 import { Base64Image } from "../interfaces/base64image";
+import { insertLeaderboard } from "./leaderboardController";
 
 export async function getVendors() {
   try {
@@ -73,10 +74,17 @@ export async function insertVendor(
       throw new Error("Please provide a vendor photo");
     }
 
-    const { error } = await supabase.from("vendor").insert(vendor);
+    const { data, error } = await supabase
+    .from("vendor")
+    .insert(vendor)
+    .select();
 
     if (error) {
       throw error;
+    }
+    //console.log(`Data after insert vendor: ${JSON.stringify(data)}`)
+    if(data){
+      const result = await insertLeaderboard(data[0].id) 
     }
     return true;
   } catch (error) {
@@ -184,6 +192,7 @@ export async function getVendorRank(
 
   const sortedVendors = vendors.sort((a,b) => b.vendor_green_score - a.vendor_green_score);
 
+  //console.log(`sortedVendor: ${JSON.stringify(sortedVendors)}`)
   const rank = sortedVendors.findIndex(v =>v.id === vendorId);
 
   if(rank === -1){

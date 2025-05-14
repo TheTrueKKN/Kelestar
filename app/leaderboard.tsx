@@ -1,8 +1,10 @@
 import { useRouter } from "expo-router";
 import { icons } from "../constants";
-import React from "react";
-import { View, Text, Image, ScrollView } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, Image, ScrollView, RefreshControl } from "react-native";
 import { MaterialIcons } from '@expo/vector-icons';
+import { LeaderboardData } from "../interfaces/leaderboardData";
+import { fetchLeaderboard, refreshVendorRank } from "../controllers/leaderboardController";
 
 
 // Hardcoded leaderboard data
@@ -45,11 +47,11 @@ const leaderboardData = [
 ];
 
 function getArrow(change: string) {
-  if (change === "up") {
+  if (change === "Up") {
     return (
       <MaterialIcons name="keyboard-arrow-up" size={24} color="#22C55E" style={{ marginTop: 2 }} />
     );
-  } else if (change === "down") {
+  } else if (change === "Down") {
     return (
       <MaterialIcons name="keyboard-arrow-down" size={24} color="#EF4444" style={{ marginTop: 2 }} />
     );
@@ -61,10 +63,43 @@ function getArrow(change: string) {
 
 
 const Leaderboard = () => {
+
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardData[]>([])
+
   const router = useRouter();
+
+
+  const refreshLeaderboard = async () => {
+  setRefreshing(true);
+  await refreshVendorRank(); // Assuming this updates ranks in DB
+  const data = await fetchLeaderboard(); // Refetch the new data
+  if (data) setLeaderboardData(data);
+  setRefreshing(false);
+};
+
+
+  // Initial fetch on mount
+  useEffect(() => {
+    const loadInitialLeaderboard = async () => {
+      setLoading(true);
+      await refreshVendorRank()
+      const data = await fetchLeaderboard();
+      //console.log(`Current leaderboard data: ${JSON.stringify(data)}`)
+      if (data) setLeaderboardData(data);
+      setLoading(false);
+    };
+
+    loadInitialLeaderboard();
+  }, []);
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}
+      refreshControl={
+    <RefreshControl refreshing={refreshing} onRefresh={refreshLeaderboard} />
+    }>
         {/* Back Button and Header */}
         <View style={{ paddingTop: 48, paddingBottom: 8, paddingHorizontal: 18 }}>
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
@@ -87,7 +122,7 @@ const Leaderboard = () => {
         <View style={{ paddingHorizontal: 18 }}>
           {leaderboardData.map((vendor, idx) => (
             <View
-              key={vendor.id}
+              key={vendor.vendor_id}
               style={{
                 flexDirection: "row",
                 alignItems: "center",
@@ -115,17 +150,17 @@ const Leaderboard = () => {
               </View>
               {/* Logo */}
               <Image
-                source={vendor.logo}
+                source={{ uri: vendor.imageUrl || "https://via.placeholder.com/150" }}
                 style={{ width: 54, height: 54, borderRadius: 16, marginHorizontal: 12, backgroundColor: "#f3f4f6", borderWidth: 2, borderColor: "#e5e7eb" }}
                 resizeMode="contain"
               />
               {/* Name and Meals */}
               <View style={{ flex: 1, justifyContent: "center" }}>
-                <Text style={{ fontSize: 18, fontFamily: "Poppins-SemiBold", color: "#22223b" }}>{vendor.name}</Text>
-                <Text style={{ fontSize: 14, color: "#64748b", marginTop: 2 }}>Green Meals: <Text style={{ color: "#22C55E", fontWeight: "bold" }}>{vendor.greenMeals}</Text></Text>
+                <Text style={{ fontSize: 18, fontFamily: "Poppins-SemiBold", color: "#22223b" }}>{vendor.vendor_name}</Text>
+                <Text style={{ fontSize: 14, color: "#64748b", marginTop: 2 }}>Green Score: <Text style={{ color: "#22C55E", fontWeight: "bold" }}>{vendor.vendor_green_score}</Text></Text>
               </View>
               {/* Arrow */}
-              <View style={{ width: 28, alignItems: "center" }}>{getArrow(vendor.change)}</View>
+              <View style={{ width: 28, alignItems: "center" }}>{getArrow(vendor.rank_change)}</View>
             </View>
           ))}
         </View>

@@ -119,19 +119,26 @@ const Dashboard = () => {
     // Changes when dishes data updated
     useEffect(() => {
       
-      const totalCarbon = dishes.reduce((sum, dish) => sum + dish.dish_total_carbon!, 0);
+      const totalCarbon = dishes.reduce(
+        (sum, dish) => sum + (typeof dish.dish_total_carbon === "number" ? dish.dish_total_carbon : 0),
+        0
+      );
       const totalDishes = dishes.length;
-      const avgFootprint = totalCarbon / totalDishes;
+      const avgFootprint = totalDishes > 0 ? totalCarbon / totalDishes : 0;
       
-      setTotalCarbon(Number(totalCarbon.toFixed(2)));
+      console.log(`Carbon total value: ${totalCarbon}`)
+      setTotalCarbon(isNaN(totalCarbon) ? 0 : Number(totalCarbon.toFixed(2)));
       setTotalDishes(totalDishes);
       
 
       // Normalize the score
-      let normalizedScore = 
-      ((worst_case_footprint - avgFootprint) / (worst_case_footprint - best_case_footprint)) * 100;
-      
-      normalizedScore = Math.max(0, Math.min(100, normalizedScore));
+      let normalizedScore = 0;
+      if (totalDishes > 0) {
+        normalizedScore =
+        ((worst_case_footprint - avgFootprint) / (worst_case_footprint - best_case_footprint)) * 100;
+        normalizedScore = Math.max(0, Math.min(100, normalizedScore));
+      }
+
       setCarbonScore(Number(normalizedScore.toFixed(2)));
 
       setPieData(getPieChartData(dishes));
@@ -150,8 +157,10 @@ const Dashboard = () => {
       
     const setDishMenu = async () => {
           const menu_result = await joinVendorDishIng(vendorId)
-          if(Array.isArray(menu_result)){
+          const ranking = await getVendorRank(vendorId)
+          if(Array.isArray(menu_result) && ranking){
             setDishes(menu_result)
+            setVendorRank(ranking)
           } 
           else{
             setDishes([])
