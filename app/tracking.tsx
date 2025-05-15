@@ -121,7 +121,7 @@ const Tracking = () => {
       meal_dish_id: dish.id,
     });
     if (insertMealSuccess) {
-      Alert.alert(`${dish.dish_name} added on ${date}`);
+      Alert.alert(`New dish added`,`Dish name: ${dish.dish_name}\nFootprint: ${dish.dish_total_carbon} gCO₂`);
       router.back();
     }
   };

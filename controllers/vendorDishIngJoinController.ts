@@ -19,7 +19,8 @@ export async function joinVendorDishIng(
                 )
             )
         `)
-        .eq('dish_vendor_id', vendorId);
+        .eq('dish_vendor_id', vendorId)
+        .eq('active', true);
 
   if (error) {
     console.error('Error fetching dishes:', error);

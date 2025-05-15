@@ -164,10 +164,6 @@ export default function CreateDishPage() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
-    >
       <View style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} nestedScrollEnabled = {true}>
           <View className="flex-1 bg-white">
@@ -304,6 +300,5 @@ export default function CreateDishPage() {
           ></IngredientSelector>
         </View>
       </View>
-    </KeyboardAvoidingView>
   );
 }
