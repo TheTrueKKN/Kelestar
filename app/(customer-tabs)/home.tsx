@@ -33,6 +33,7 @@ export default function CustomerHome() {
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [customer, setCustomer] = useState<Customer | null>();
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
 
@@ -60,16 +61,35 @@ export default function CustomerHome() {
 
   useFocusEffect(
     React.useCallback(() => {
-    const initDishes = async () => {
-      const fetchedDishes = await getDishes({active: true});
-      if (fetchedDishes) {
-        setDishes(fetchedDishes);
-      }
-    };
-    initDishes();
+      const initDishes = async () => {
+        setLoading(true);
+        const fetchedDishes = await getDishes({ active: true });
+        if (fetchedDishes) {
+          setDishes(fetchedDishes);
+        }
+        setLoading(false);
+      };
+      initDishes();
+      greetingTime();
     }, [])
   );
 
+  const greetingTime = () => {
+    const date = new Date();
+    const hour = date.getHours();
+
+    if (hour >= 5 && hour < 12) {
+      return "Morning";
+    } else if (hour >= 12 && hour < 17) {
+      return "Afternoon";
+    } else if (hour >= 17 && hour < 22) {
+      return "Evening";
+    } else {
+      return "Night";
+    }
+
+    // console.log(date.getHours());
+  };
 
   // Dish data array
   // const dishes: Dish[] = [
@@ -110,6 +130,14 @@ export default function CustomerHome() {
     });
   };
 
+  if (loading) {
+    return (
+      <Text style={{ textAlign: "center", marginTop: 32 }}>
+        Loading menu...
+      </Text>
+    );
+  }
+
   return (
     <>
       <SafeAreaView edges={["top"]} className="flex-1 bg-white">
@@ -118,7 +146,7 @@ export default function CustomerHome() {
             {/* Good Morning text with notification icon */}
             <View className="flex-row justify-between items-start px-[19px] mt-[20px]">
               <Text className="w-[202px] h-[42px] font-psemibold text-[28px] leading-[42px] text-[#1E1F1F]">
-                Good Morning
+                Good {greetingTime()}
               </Text>
               <TouchableOpacity
                 onPress={handleNotificationPress}

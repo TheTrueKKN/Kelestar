@@ -1,5 +1,5 @@
 // History.tsx
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -243,25 +243,40 @@ const History = () => {
   const [selectedOption, setSelectedOption] = useState(periodOptions.Day);
   const [isAscending, setIsAscending] = useState(true);
   const [showPicker, setShowPicker] = useState(false);
+  const [loading, setLoading] = useState(false);
   // const timeOptions = ["Day", "Week", "Month"];
   const [meals, setMeals] = useState<Meal[]>([]);
-  const mealData = useMemo(
-    () => generateMealData(meals, selectedOption),
-    [meals, selectedOption]
-  );
+  const [mealData, setMealData] = useState<Record<string, PeriodData>>({});
+
   const router = useRouter();
+
+  // const mealData = useMemo(() => {
+  //   setLoading(true);
+  //   return generateMealData(meals, selectedOption);
+  //   setLoading(false);
+  // }, [meals, selectedOption]);
 
   useFocusEffect(
     React.useCallback(() => {
       const initMeals = async () => {
+        setLoading(true);
         const fetchedMeals = await getMealListingByCustomer();
         if (fetchedMeals) {
           setMeals(fetchedMeals);
         }
+        setLoading(false);
       };
+
       initMeals();
     }, [])
   );
+
+useEffect(() => {
+  setLoading(true);
+  const data = generateMealData(meals, selectedOption);
+  setMealData(data);
+  setLoading(false);
+}, [meals, selectedOption]);
 
   // Sample dish data.
   // const [todayDishes] = useState<Dish[]>([
@@ -333,50 +348,55 @@ const History = () => {
   };
 
   // Render each dish item with swipe functionality.
-  const renderFoodItem = useCallback((meal_id: string, dish: Dish, router: Router) => {
-    const carbonRating = getCarbonRating(dish.dish_total_carbon ?? 0);
-    const bgColor = getRatingBadgeColor(carbonRating);
+  const renderFoodItem = useCallback(
+    (meal_id: string, dish: Dish, router: Router) => {
+      const carbonRating = getCarbonRating(dish.dish_total_carbon ?? 0);
+      const bgColor = getRatingBadgeColor(carbonRating);
 
-    return (
-      <SwipeableItem
-        key={meal_id}
-        onEdit={() => handleEdit(dish)}
-        onDelete={() => handleDelete(dish)}
-      >
-        
-        <TouchableOpacity className="flex-row items-center justify-between p-3" onPress={() => {
-            router.push({
-              pathname: "/tracking",
-              params: {
-                dish: JSON.stringify(dish),
-              },
-            });
-          }}>
-          <View className="flex-row items-center">
-            <Image
-              source={{ uri: dish.dish_image_url }}
-              className="w-12 h-12 rounded-full"
-              resizeMode="cover"
-            />
-            <View className="ml-3">
-              <Text className="font-semibold text-base text-black">
-                {dish.dish_name}
-              </Text>
-              <Text className="font-normal text-gray-500">{`RM ${dish.dish_price?.toFixed(
-                2
-              )}`}</Text>
-            </View>
-          </View>
-          <View
-            className="w-8 h-8 rounded-full items-center justify-center"
-            style={{ backgroundColor: bgColor }}
+      return (
+        <SwipeableItem
+          key={meal_id}
+          onEdit={() => handleEdit(dish)}
+          onDelete={() => handleDelete(dish)}
+        >
+          <TouchableOpacity
+            className="flex-row items-center justify-between p-3"
+            onPress={() => {
+              router.push({
+                pathname: "/tracking",
+                params: {
+                  dish: JSON.stringify(dish),
+                },
+              });
+            }}
           >
-            <Text className="text-white font-bold">{carbonRating}</Text>
-          </View>
-        </TouchableOpacity>
-      </SwipeableItem>
-    );
-  }, []);
+            <View className="flex-row items-center">
+              <Image
+                source={{ uri: dish.dish_image_url }}
+                className="w-12 h-12 rounded-full"
+                resizeMode="cover"
+              />
+              <View className="ml-3">
+                <Text className="font-semibold text-base text-black">
+                  {dish.dish_name}
+                </Text>
+                <Text className="font-normal text-gray-500">{`RM ${dish.dish_price?.toFixed(
+                  2
+                )}`}</Text>
+              </View>
+            </View>
+            <View
+              className="w-8 h-8 rounded-full items-center justify-center"
+              style={{ backgroundColor: bgColor }}
+            >
+              <Text className="text-white font-bold">{carbonRating}</Text>
+            </View>
+          </TouchableOpacity>
+        </SwipeableItem>
+      );
+    },
+    []
+  );
 
   const renderIOSPicker = () => (
     <View className="z-20">
