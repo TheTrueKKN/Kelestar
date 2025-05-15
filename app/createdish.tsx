@@ -26,6 +26,7 @@ import { Dish } from "../interfaces/dish";
 import { insertDishIngredient } from "../controllers/dishIngredientController";
 import DishIngredientItem from "../components/DishIngredientItem";
 import CalculateTotalCarbon from "../components/CalculateTotalCarbon";
+import { updateVendorGreenScore } from "../controllers/vendorController";
 
 
 export default function CreateDishPage() {
@@ -119,6 +120,7 @@ export default function CreateDishPage() {
    
    const insertDishIngredientSuccess = await insertDishIngredient(dishId, ingredientList)
 
+   await updateVendorGreenScore(finalVendorId)
     // Navigate back to the dishes page
 
     if(insertDishSuccess && insertDishIngredientSuccess){
@@ -231,7 +233,7 @@ export default function CreateDishPage() {
                 onPress={() => {
                   // Add functionality for adding ingredients
                   setShowIngredientSelector(true);
-                  console.log("Add ingredients button pressed");
+                  //console.log("Add ingredients button pressed");
                 }}
               >
                 <Text className="text-white text-base font-bold">

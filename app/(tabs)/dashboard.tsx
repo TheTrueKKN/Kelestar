@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, ScrollView, useWindowDimensions } from "react-native";
 import { PieChart, BarChart } from "react-native-chart-kit";
 import { Link, useFocusEffect } from "expo-router";
-import { getVendorByUser } from "../../controllers/vendorController";
+import { getVendorByUser, getVendorRank } from "../../controllers/vendorController";
 import { joinVendorDishIng } from "../../controllers/vendorDishIngJoinController";
 import { Dish } from "../../interfaces/dish";
 import { PieData } from "../../interfaces/pieData";
@@ -71,6 +71,10 @@ const Dashboard = () => {
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [totalCarbon, setTotalCarbon] = useState(0);
   const [totalDishes, setTotalDishes] = useState(0);
+  const [carbonScore, setCarbonScore] = useState(0);
+  const [vendorRank, setVendorRank] = useState(0);
+  const best_case_footprint = 0.5
+  const worst_case_footprint = 10
   // Chart related
   const [pieData, setPieData] = useState<PieData[]>([]);
   const [barData, setBarData] = useState<BarData>({
@@ -96,10 +100,13 @@ const Dashboard = () => {
         const vendorDishIngredient = async () => {
           if (!vendorId) return;
           //console.log(`Current vendor id: ${vendorId}`)
+          const ranking = await getVendorRank(vendorId)
           const result = await joinVendorDishIng(vendorId)
-          console.log(`Testing vendor dish and ingredientr: ${JSON.stringify(result)}`)
-          if(Array.isArray(result)){
+          
+          //console.log(`Testing vendor dish and ingredientr: ${JSON.stringify(result)}`)
+          if(Array.isArray(result) && ranking){
             setDishes(result)
+            setVendorRank(ranking)
           } 
           else{
             setDishes([])
@@ -111,19 +118,33 @@ const Dashboard = () => {
 
     // Changes when dishes data updated
     useEffect(() => {
-      // Set pie chart data
       
+      const totalCarbon = dishes.reduce(
+        (sum, dish) => sum + (typeof dish.dish_total_carbon === "number" ? dish.dish_total_carbon : 0),
+        0
+      );
+      const totalDishes = dishes.length;
+      const avgFootprint = totalDishes > 0 ? totalCarbon / totalDishes : 0;
       
-      // Set total carbon footprint from all dishes
-      const totalCarbon = dishes.reduce((sum, dish) => sum + dish.dish_total_carbon!, 0)
-      setTotalCarbon(Number(totalCarbon.toFixed(2)));
+      //console.log(`Carbon total value: ${totalCarbon}`)
+      setTotalCarbon(isNaN(totalCarbon) ? 0 : Number(totalCarbon.toFixed(2)));
+      setTotalDishes(totalDishes);
+      
 
-      setTotalDishes(dishes.length);
+      // Normalize the score
+      let normalizedScore = 0;
+      if (totalDishes > 0) {
+        normalizedScore =
+        ((worst_case_footprint - avgFootprint) / (worst_case_footprint - best_case_footprint)) * 100;
+        normalizedScore = Math.max(0, Math.min(100, normalizedScore));
+      }
+
+      setCarbonScore(Number(normalizedScore.toFixed(2)));
 
       setPieData(getPieChartData(dishes));
-      setBarData(getBarChartData(dishes))
-      
-    }, [dishes])
+      setBarData(getBarChartData(dishes));
+    }, [dishes]);
+
 
     useFocusEffect(
       useCallback(() => {
@@ -136,8 +157,10 @@ const Dashboard = () => {
       
     const setDishMenu = async () => {
           const menu_result = await joinVendorDishIng(vendorId)
-          if(Array.isArray(menu_result)){
+          const ranking = await getVendorRank(vendorId)
+          if(Array.isArray(menu_result) && ranking){
             setDishes(menu_result)
+            setVendorRank(ranking)
           } 
           else{
             setDishes([])
@@ -203,8 +226,8 @@ const Dashboard = () => {
 
 
     
-    console.log(`Content in dishs: ${JSON.stringify(dishes)}`)
-    console.log(`WTF inside of pie data: ${JSON.stringify(pieData)}`)
+    //console.log(`Content in dishs: ${JSON.stringify(dishes)}`)
+    //console.log(`WTF inside of pie data: ${JSON.stringify(pieData)}`)
 
   return (
     <ScrollView className="bg-white h-full">
@@ -221,9 +244,9 @@ const Dashboard = () => {
             elevation: 8,
           }}>
             <Text className="text-xs text-secondary font-psemibold mb-1">
-              My Income
+              Green Score
             </Text>
-            <Text className="text-xl font-bold text-primary">RM12,750</Text>
+            <Text className="text-xl font-bold text-primary">{carbonScore}%</Text>
           </View>
           <View className="bg-[#F8F9FA] p-4 rounded-2xl flex-1 ml-1 border border-gray-100" style={{
             shadowColor: '#000',
@@ -250,7 +273,7 @@ const Dashboard = () => {
             <Text className="text-xs text-yellow-500 font-psemibold mb-1">
               Ranking
             </Text>
-            <Text className="text-xl font-bold text-primary">#1</Text>
+            <Text className="text-xl font-bold text-primary">#{vendorRank}</Text>
           </View>
           <View className="bg-[#F8F9FA] p-4 rounded-2xl flex-1 ml-1 border border-gray-100" style={{
             shadowColor: '#000',

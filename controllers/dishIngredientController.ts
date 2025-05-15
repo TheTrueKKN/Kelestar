@@ -59,7 +59,7 @@ export async function updateDishIngredient(
             ingredient_amount
           }));
 
-          console.log(`Checking inserting data in dish ing list: ${JSON.stringify(insertData)}`)
+          //console.log(`Checking inserting data in dish ing list: ${JSON.stringify(insertData)}`)
         const { error: insertError } = await supabase
         .from('dish_ingredient')
         .insert(insertData)  
