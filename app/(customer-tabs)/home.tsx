@@ -61,7 +61,7 @@ export default function CustomerHome() {
   useFocusEffect(
     React.useCallback(() => {
     const initDishes = async () => {
-      const fetchedDishes = await getDishes({});
+      const fetchedDishes = await getDishes({active: true});
       if (fetchedDishes) {
         setDishes(fetchedDishes);
       }

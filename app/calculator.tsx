@@ -5,6 +5,7 @@ import IngredientSelector from "../components/IngredientSelector";
 import { DishIngredient } from "../interfaces/dishIngredient";
 import DishIngredientItem from "../components/DishIngredientItem";
 import CalculateTotalCarbon from "../components/CalculateTotalCarbon";
+import { useRouter } from "expo-router";
 
 export default function Calculator() {
 
@@ -16,6 +17,8 @@ export default function Calculator() {
    // Changing the Carbon grade and color
    const [grade, setGrade] = useState("A");
    const [gradeColor, setGradeColor] = useState("#74B318");
+
+   const router = useRouter();
 
    const handleAddIngredient = (dishIngredient: DishIngredient) => {
        // Check if ingredient already exists in the list
@@ -73,7 +76,7 @@ export default function Calculator() {
           {/* Header with subtle shadow */}
           <View className="px-6 pt-12 pb-6 bg-white shadow-sm">
             <View className="flex-row items-center mb-3">
-              <TouchableOpacity className="mr-3">
+              <TouchableOpacity onPress={() => router.back()}  className="mr-3">
                 <Ionicons name="chevron-back" size={24} color="#006400" />
               </TouchableOpacity>
               <Text className="text-3xl font-bold text-[#006400]">
@@ -109,7 +112,7 @@ export default function Calculator() {
                   Ingredient List:
               </Text>
 
-              <ScrollView className="h-60" showsVerticalScrollIndicator={false}>
+              <ScrollView className="h-60" showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
                   {ingredientList.length === 0 ? (
                     <Text className="text-gray-400 text-center mt-4">No ingredients added yet.</Text>
                   ) : 

@@ -97,7 +97,15 @@ export default function CreateDishPage() {
   // Function to handle Dish creation
   const handleCreateDish = async () => {
     setLoading(true)
-    
+    if(ingredientList.length == 0){
+      Alert.alert(
+        "No Ingredient added",
+        "Dish should have at least one ingredient",
+        [{ text: "OK" }]
+      );
+      setLoading(false)
+      return;
+    }
     const newDish: Dish = {
       id: Math.random().toString(), // Generate a unique ID
       dish_name: dishName, // Assuming dishName is already a string from input
@@ -161,7 +169,7 @@ export default function CreateDishPage() {
       style={{ flex: 1 }}
     >
       <View style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }} nestedScrollEnabled = {true}>
           <View className="flex-1 bg-white">
             {/* StatusBar setup */}
             <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
@@ -244,7 +252,7 @@ export default function CreateDishPage() {
               <Text className="text-base text-[#006400] mb-2">
                 Ingredient List:
               </Text>
-              <ScrollView className="h-60" showsVerticalScrollIndicator={false}>
+              <ScrollView className="h-60" showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
                   {ingredientList.length === 0 ? (
                     <Text className="text-gray-400 text-center mt-4">No ingredients added yet.</Text>
                   ) : 
@@ -265,10 +273,11 @@ export default function CreateDishPage() {
         </ScrollView>
 
         {/* Create New Dish Button */}
-        <View className="px-5 py-4 bg-white">
+        <View className="px-3 py-2 bg-white">
           <CalculateTotalCarbon ingredientList={ingredientList} onCarbonCalculated={setTotalCarbon}/>
           <TouchableOpacity
-            className="h-12 bg-[#74B318] rounded-md justify-center items-center mb-4"
+            className="h-12 bg-[#74B318] rounded-md justify-center items-center mb-2"
+            disabled={loading}
             onPress={() => {
               // Add functionality for creating the new dish
               console.log("Create new dish button pressed");

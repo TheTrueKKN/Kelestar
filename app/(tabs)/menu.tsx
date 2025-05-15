@@ -14,9 +14,10 @@ import {
 } from "expo-router";
 import { useCallback } from "react";
 import DishItem from "../../components/DishItem";
-import { getVendorByUser } from "../../controllers/vendorController";
+import { getVendorByUser, updateVendorGreenScore } from "../../controllers/vendorController";
 import { Dish } from "../../interfaces/dish";
 import { deleteDish, getDishes } from "../../controllers/dishController";
+
 
 export default function Menu() {
 
@@ -27,18 +28,22 @@ export default function Menu() {
    const [vendorDishes, setVendorDishes] = useState<Dish[]>([]);
    // Getting parameters from Initial menu page
    const { menudDishes, newDish } = useGlobalSearchParams();
+   const [loading, setLoading] = useState(false);
 
   const setDishMenu = async () => {
-      const menu_result = await getDishes({vendor_id: vendorId})
+      const menu_result = await getDishes({dish_vendor_id: vendorId, active: true})
       if(menu_result){
         setVendorDishes(menu_result)
       }
   }
 
+ 
+
   useEffect(() => {
       const setVendorValues = async () => {
+        setLoading(true)
         const result = await getVendorByUser();
-        //console.log(`Testing result: ${result}`)
+        console.log(`Testing result: ${result}`)
         if (result) {
           //console.log("TESSSS VALID")
           setVendorId(result.id!)
@@ -49,11 +54,10 @@ export default function Menu() {
             // console.log("thumbnailimage", editUri);
           }
         }
+        setLoading(false)
       };
       setVendorValues();  
-        //console.log(`Refresh with new dish menu: ${JSON.stringify(vendorDishes)}`)
-
-        //console.log(`Curren dishes: ${JSON.stringify(vendorDishes)}`)
+      
       }, []);
 
   // Getting parameters from the editvendor Page
@@ -77,13 +81,14 @@ export default function Menu() {
   // Function to delete a dish
   const removeDish = async (dish: Dish) => {
       setVendorDishes((prevDishes) => prevDishes.filter(allDish => allDish.id !== dish.id));
+      await updateVendorGreenScore(vendorId)
       const deleteDishSuccess = await deleteDish(dish)
     };
 
   // Function to edit a dish (Not functionable yet just redirect to different page)
   const editDish = (dish: Dish | null, dish_url?: string) => {
     if (!dish) return; 
-     const { dish_vendor, dish_ingredient, ...serializableDish } = dish;
+     const { dish_vendor, dish_ingredient, active, ...serializableDish } = dish;
       router.push({
         pathname: '/editdish',
         params: {
@@ -108,6 +113,10 @@ export default function Menu() {
 
     }, [newVendorName, vendorName, newVendorDesc, vendorDesc, newImg, vendorUri])
   );
+
+   if (loading) {
+      return <Text style={{ textAlign: "center", marginTop: 32 }}>Loading menu...</Text>;
+  }
 
   return (
     <View className="bg-white flex-1">

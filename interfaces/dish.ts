@@ -13,4 +13,5 @@ export interface Dish {
     dish_total_carbon?: number;
     dish_ingredient?: JoinedDishIngredient[]
     dish_rating?: CarbonRating
+    active?: boolean
   }

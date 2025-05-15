@@ -2,7 +2,7 @@ import { Text, View, TouchableOpacity, ScrollView } from 'react-native'
 import React, { useEffect, useState, useCallback } from 'react'
 import DishItem from '../components/DishItem'
 import { useGlobalSearchParams, useRouter, useFocusEffect, } from 'expo-router'
-import { getVendorByUser } from '../controllers/vendorController';
+import { getVendorByUser, updateVendorGreenScore } from '../controllers/vendorController';
 
 // Newly added
 import { getDishes, deleteDish } from "../controllers/dishController";
@@ -48,7 +48,7 @@ const InitialMenu = () => {
     try {
       // Fetch dishes from Supabase (Assuming getDishes is defined elsewhere)
       // console.log(`VENDOR IDDDDDDDDDD: ${vendorId}`)
-      const fetchedDishes = await getDishes({vendor_id: vendorId}); 
+      const fetchedDishes = await getDishes({dish_vendor_id: vendorId, active: true}); 
       // console.log('Fetched dishes:', fetchedDishes);
 
       // If fetched data is valid, map it to the Dish format
@@ -93,13 +93,14 @@ const InitialMenu = () => {
   // Function to delete a dish by ID
   const removeDish = async (dish: Dish) => {
     setDishes((prevDishes) => prevDishes.filter(allDish => allDish.id !== dish.id));
+    await updateVendorGreenScore(vendorId)
     const deleteDishSuccess = await deleteDish(dish)
   };
 
   // Function to edit a dish (navigates to edit page)
   const editDish = (dish: Dish | null, dish_url?: string) => {
     if (!dish) return; 
-     const { dish_vendor, dish_ingredient, ...serializableDish } = dish;
+     const { dish_vendor, dish_ingredient, active, ...serializableDish } = dish;
     router.push({
       pathname: '/editdish',
       params: {

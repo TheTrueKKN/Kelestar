@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, ScrollView, TextInput, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 // Types for FAQ items
 interface FAQItem {
@@ -22,6 +23,7 @@ interface Category {
 const KnowledgeBase = () => {
   // State for search input
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const router = useRouter();
   
   // Categories data
   const categories: Category[] = [
@@ -91,7 +93,7 @@ const KnowledgeBase = () => {
           {/* Header */}
           <View className="px-6 pt-12 pb-6 bg-white shadow-sm">
             <View className="flex-row items-center mb-3">
-              <TouchableOpacity className="mr-3">
+              <TouchableOpacity onPress={() => router.back()}  className="mr-3">
                 <Ionicons name="chevron-back" size={24} color="#006400" />
               </TouchableOpacity>
               <Text className="text-3xl font-bold text-[#006400]">
