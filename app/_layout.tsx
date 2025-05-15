@@ -54,13 +54,6 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
-          name="settings"
-          options={{
-            headerShown: true,
-            headerTitle: "Settings",
-          }}
-        />
-        <Stack.Screen
           name="badge"
           options={{
             headerShown: true,
