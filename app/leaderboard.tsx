@@ -52,6 +52,49 @@ const Leaderboard = () => {
     return <Text style={{ textAlign: "center", marginTop: 32 }}>Loading leaderboard...</Text>;
   }
 
+  const renderTopThreeVendors = () => {
+  const topThree = leaderboardData.slice(0, 3);
+
+  return (
+    <View style={{ flexDirection: "row", justifyContent: "space-around", marginTop: 12, marginBottom: 24 }}>
+      {topThree.map((vendor, index) => (
+        <View key={vendor.vendor_id} style={{ alignItems: "center", width: "30%", transform: index === 0 ? [{ scale: 1.1 }] : [] }}>
+          <View style={{
+            position: "absolute",
+            top: -10,
+            left: 6,
+            width: 28,
+            height: 28,
+            backgroundColor: "#FFEB3B",
+            borderRadius: 14,
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10,
+          }}>
+            <Text style={{ fontWeight: "bold", fontSize: 14 }}>{index + 1}</Text>
+          </View>
+
+          <Image
+            source={{ uri: vendor.imageUrl || "https://via.placeholder.com/150" }}
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 32,
+              marginBottom: 8,
+              borderWidth: 2,
+              borderColor: "#fff",
+              backgroundColor: "#e0f2f1",
+            }}
+          />
+          <Text style={{ fontWeight: "bold", fontSize: 14, textAlign: "center", color: "#333" }}>{vendor.vendor_name}</Text>
+          <Text style={{ fontWeight: "bold", fontSize: 16, color: "#74B318" }}>{vendor.vendor_green_score}%</Text>
+        </View>
+      ))}
+    </View>
+  );
+};
+
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <ScrollView
@@ -77,6 +120,8 @@ const Leaderboard = () => {
           </View>
           <Text style={{ fontSize: 16, fontFamily: "Poppins-Regular", color: "#74B318", textAlign: "left" }}>Top Vendors by Green Scores</Text>
         </View>
+
+        {renderTopThreeVendors()}
 
         {/* Leaderboard List */}
         <View style={{ paddingHorizontal: 18 }}>
