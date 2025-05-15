@@ -7,7 +7,6 @@ import { joinVendorDishIng } from "../../controllers/vendorDishIngJoinController
 import { Dish } from "../../interfaces/dish";
 import { PieData } from "../../interfaces/pieData";
 import { BarData } from "../../interfaces/barData";
-import { getDishes } from "../../controllers/dishController";
 
 const chartColors = [
   "#3B82F6", // blue

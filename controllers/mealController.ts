@@ -44,6 +44,23 @@ export async function getMealListingByCustomer(date?: Date) {
   }
 }
 
+export async function getMealListingByDish({meal_dish_id}: Meal, count: number) {
+  try {
+    const { data, error, status } = await supabase
+      .from("meal")
+      .select("*")
+      .limit(count)
+      .eq("meal_dish_id", meal_dish_id);
+
+    if (error && status !== 406) throw error;
+    // console.log(`Data: ${JSON.stringify(data)}, error: ${JSON.stringify(error)}, status: ${JSON.stringify(status)}`)
+    return data as Meal[];
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+}
+
 export async function insertMeal({ meal_datetime, meal_dish_id }: Meal) {
   try {
     const currentCustomer = await getCustomerByUser();

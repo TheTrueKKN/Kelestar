@@ -8,16 +8,18 @@ import {
   deleteDishImage,
   getDishImage,
 } from "./fileController";
+import {
+  getMealListingByCustomer,
+  getMealListingByDish,
+} from "./mealController";
 
 type InsertDishReturn = [number | null, boolean];
 
 export async function getDishes({
-  vendor_id,
+  dish_vendor_id,
   dish_name,
-}: {
-  vendor_id?: string;
-  dish_name?: string;
-}) {
+  active
+}: Dish) {
   try {
     // console.log(`Curr vendor id: ${vendor_id}`)
 
@@ -25,12 +27,16 @@ export async function getDishes({
       .from("dish")
       .select("*, dish_vendor: dish_vendor_id(vendor_name)");
 
-    queryBuilder = vendor_id
-      ? queryBuilder.eq("dish_vendor_id", vendor_id)
+    queryBuilder = dish_vendor_id
+      ? queryBuilder.eq("dish_vendor_id", dish_vendor_id)
       : queryBuilder;
 
     queryBuilder = dish_name
       ? queryBuilder.ilike("dish_name", `%${dish_name}%`)
+      : queryBuilder;
+
+    queryBuilder = active
+      ? queryBuilder.eq("active", true)
       : queryBuilder;
 
     //console.log("Running query with filters:", queryBuilder);
@@ -39,7 +45,7 @@ export async function getDishes({
     if (error && status !== 406) throw error;
 
     data?.map(async (dish: Dish) => {
-      dish.dish_image_url = await getDishImage(dish.dish_image_name!) ?? "";
+      dish.dish_image_url = (await getDishImage(dish.dish_image_name!)) ?? "";
     });
 
     return data as Dish[];
@@ -61,6 +67,7 @@ export async function insertDish(
       dish_image_name: "",
       dish_vendor_id: vendor_id,
       dish_total_carbon: dish_total_carbon,
+      active: true,
     };
 
     if (base64) {
@@ -136,13 +143,45 @@ export async function updateDish(
 
 export async function deleteDish({ id, dish_image_name }: Dish) {
   try {
-    console.log(`Current dish id: ${id}`);
-    const { data, error } = await supabase.from("dish").delete().eq("id", id);
+    const meal = await getMealListingByDish({ meal_dish_id: id }, 1);
 
-    console.log(`Testing delete: ${JSON.stringify(data)}`);
+    console.log("meal", meal);
 
-    if (dish_image_name) {
-      await deleteDishImage(dish_image_name);
+    let query;
+    if (meal?.length == 0) {
+      const dish: Dish = {
+        active: false,
+      };
+      query = supabase.from("dish").update(dish).eq("id", id);
+    } else {
+      query = supabase.from("dish").delete().eq("id", id);
+
+      if (dish_image_name) {
+        await deleteDishImage(dish_image_name);
+      }
     }
-  } catch (error) {}
+
+    const { data, error, status } = await query;
+    if (error && status !== 406) throw error;
+
+    return true;
+  } catch (error) {
+    if (error instanceof Error) {
+      Alert.alert(error.message);
+      return false;
+    }
+  }
 }
+
+// export async function deleteDish({ id, dish_image_name }: Dish) {
+//   try {
+//     console.log(`Current dish id: ${id}`);
+//     const { data, error } = await supabase.from("dish").delete().eq("id", id);
+
+//     console.log(`Testing delete: ${JSON.stringify(data)}`);
+
+//     if (dish_image_name) {
+//       await deleteDishImage(dish_image_name);
+//     }
+//   } catch (error) {}
+// }
