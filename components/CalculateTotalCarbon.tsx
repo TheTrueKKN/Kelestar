@@ -53,12 +53,11 @@ const CalculateTotalCarbon: React.FC<CalculateCarbonProp> = ({ ingredientList, j
     }, [ingredientList, joinedIngredientList])
     
     return(
-        <View className="p-4">
-    <Text className="text-lg font-bold">
-      Total Carbon Footprint: {(totalCarbon || 0).toFixed(2)} gCO₂
-    </Text>
-  
-</View>
+        <View className="p-1">
+            <Text className="text-lg font-bold">
+                Total Carbon Footprint: {(totalCarbon || 0).toFixed(2)} gCO₂
+            </Text>
+        </View>
     )
 }
 
