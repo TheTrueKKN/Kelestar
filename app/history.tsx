@@ -19,7 +19,7 @@ import Animated, {
   interpolate,
 } from "react-native-reanimated";
 import { PanGestureHandler } from "react-native-gesture-handler";
-import { useFocusEffect } from "expo-router";
+import { Router, useFocusEffect, useRouter } from "expo-router";
 import { getMealListingByCustomer } from "../controllers/mealController";
 import { Meal } from "../interfaces/meal";
 import { Dish } from "../interfaces/dish";
@@ -249,6 +249,7 @@ const History = () => {
     () => generateMealData(meals, selectedOption),
     [meals, selectedOption]
   );
+  const router = useRouter();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -332,7 +333,7 @@ const History = () => {
   };
 
   // Render each dish item with swipe functionality.
-  const renderFoodItem = useCallback((meal_id: string, dish: Dish) => {
+  const renderFoodItem = useCallback((meal_id: string, dish: Dish, router: Router) => {
     const carbonRating = getCarbonRating(dish.dish_total_carbon ?? 0);
     const bgColor = getRatingBadgeColor(carbonRating);
 
@@ -342,7 +343,15 @@ const History = () => {
         onEdit={() => handleEdit(dish)}
         onDelete={() => handleDelete(dish)}
       >
-        <View className="flex-row items-center justify-between p-3">
+        
+        <TouchableOpacity className="flex-row items-center justify-between p-3" onPress={() => {
+            router.push({
+              pathname: "/tracking",
+              params: {
+                dish: JSON.stringify(dish),
+              },
+            });
+          }}>
           <View className="flex-row items-center">
             <Image
               source={{ uri: dish.dish_image_url }}
@@ -364,7 +373,7 @@ const History = () => {
           >
             <Text className="text-white font-bold">{carbonRating}</Text>
           </View>
-        </View>
+        </TouchableOpacity>
       </SwipeableItem>
     );
   }, []);
@@ -462,7 +471,7 @@ const History = () => {
               {/* <Text className="text-gray-500 font-normal">{todayDate}</Text> */}
             </View>
             {mealData[period].meals.map((meal) =>
-              renderFoodItem(meal.id!, meal.meal_dish!)
+              renderFoodItem(meal.id!, meal.meal_dish!, router)
             )}
             <View className="px-4 mt-2 mb-6 items-end">
               <Text className="text-gray-500 font-normal">

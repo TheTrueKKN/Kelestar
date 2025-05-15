@@ -41,7 +41,7 @@ export default function ChooseMeal() {
         if (fetchedVendors) {
           setVendors(fetchedVendors);
         }
-        const fetchedDishes = await getDishes({});
+        const fetchedDishes = await getDishes({active: true});
         if (fetchedDishes) {
           setDishes(fetchedDishes);
         }
@@ -56,7 +56,8 @@ export default function ChooseMeal() {
         initVendorImage(selectedVendor);
         setVendorDesc(selectedVendor.vendor_description);
         const fetchedDishes = await getDishes({
-          vendor_id: selectedVendor?.id,
+          dish_vendor_id: selectedVendor?.id,
+          active: true
         });
         if (fetchedDishes) {
           setDishes(fetchedDishes);
@@ -80,7 +81,7 @@ export default function ChooseMeal() {
   const handleSearchItem = async (searchTerm: string) => {
     setSearchTerm(searchTerm);
     setSelectedVendor(null);
-    const fetchedDishes = await getDishes({ dish_name: searchTerm });
+    const fetchedDishes = await getDishes({ dish_name: searchTerm, active: true });
     if (fetchedDishes) {
       setDishes(fetchedDishes);
     }

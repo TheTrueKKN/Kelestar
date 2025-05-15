@@ -29,7 +29,7 @@ export default function Menu() {
    const { menudDishes, newDish } = useGlobalSearchParams();
 
   const setDishMenu = async () => {
-      const menu_result = await getDishes({vendor_id: vendorId})
+      const menu_result = await getDishes({dish_vendor_id: vendorId, active: true})
       if(menu_result){
         setVendorDishes(menu_result)
       }
@@ -83,7 +83,7 @@ export default function Menu() {
   // Function to edit a dish (Not functionable yet just redirect to different page)
   const editDish = (dish: Dish | null, dish_url?: string) => {
     if (!dish) return; 
-     const { dish_vendor, dish_ingredient, ...serializableDish } = dish;
+     const { dish_vendor, dish_ingredient, active, ...serializableDish } = dish;
       router.push({
         pathname: '/editdish',
         params: {
