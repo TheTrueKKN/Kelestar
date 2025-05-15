@@ -126,7 +126,7 @@ const Leaderboard = () => {
             </TouchableOpacity>
             <View style={{ flex: 1, alignItems: "center", marginRight: 32 }}>
               <Text style={{ fontSize: 24, fontWeight: "bold", color: "#ffffff" }}>Leaderboard</Text>
-              <Text style={{ fontSize: 16, color: "#ffffff", marginTop: 4 }}>No of Green Meals</Text>
+              <Text style={{ fontSize: 16, color: "#ffffff", marginTop: 4 }}>Green Score value</Text>
             </View>
           </View>
 
