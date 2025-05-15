@@ -54,13 +54,6 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
-          name="faq"
-          options={{
-            headerShown: true,
-            headerTitle: "FAQs",
-          }}
-        />
-        <Stack.Screen
           name="settings"
           options={{
             headerShown: true,
@@ -114,13 +107,6 @@ export default function RootLayout() {
           options={{
             headerShown: true,
             headerTitle: "Insert vendor detail",
-          }}
-        />
-        <Stack.Screen
-          name="calculator"
-          options={{
-            headerShown: true,
-            headerTitle: "Footprint Calculator",
           }}
         />
       </Stack>
