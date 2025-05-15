@@ -18,6 +18,7 @@ import { getVendorByUser, updateVendorGreenScore } from "../../controllers/vendo
 import { Dish } from "../../interfaces/dish";
 import { deleteDish, getDishes } from "../../controllers/dishController";
 
+
 export default function Menu() {
 
   const [vendorId, setVendorId] = useState("");
@@ -27,6 +28,7 @@ export default function Menu() {
    const [vendorDishes, setVendorDishes] = useState<Dish[]>([]);
    // Getting parameters from Initial menu page
    const { menudDishes, newDish } = useGlobalSearchParams();
+   const [loading, setLoading] = useState(false);
 
   const setDishMenu = async () => {
       const menu_result = await getDishes({vendor_id: vendorId})
@@ -35,10 +37,13 @@ export default function Menu() {
       }
   }
 
+ 
+
   useEffect(() => {
       const setVendorValues = async () => {
+        setLoading(true)
         const result = await getVendorByUser();
-        //console.log(`Testing result: ${result}`)
+        console.log(`Testing result: ${result}`)
         if (result) {
           //console.log("TESSSS VALID")
           setVendorId(result.id!)
@@ -49,11 +54,10 @@ export default function Menu() {
             // console.log("thumbnailimage", editUri);
           }
         }
+        setLoading(false)
       };
       setVendorValues();  
-        //console.log(`Refresh with new dish menu: ${JSON.stringify(vendorDishes)}`)
-
-        //console.log(`Curren dishes: ${JSON.stringify(vendorDishes)}`)
+      
       }, []);
 
   // Getting parameters from the editvendor Page
@@ -109,6 +113,10 @@ export default function Menu() {
 
     }, [newVendorName, vendorName, newVendorDesc, vendorDesc, newImg, vendorUri])
   );
+
+   if (loading) {
+      return <Text style={{ textAlign: "center", marginTop: 32 }}>Loading menu...</Text>;
+  }
 
   return (
     <View className="bg-white flex-1">

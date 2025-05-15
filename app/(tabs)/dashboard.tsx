@@ -9,37 +9,6 @@ import { PieData } from "../../interfaces/pieData";
 import { BarData } from "../../interfaces/barData";
 import { getDishes } from "../../controllers/dishController";
 
-// const pieData = [
-//   {
-//     name: "Beef",
-//     population: 30,
-//     color: "#3B82F6", // blue
-//     legendFontColor: "#54595E",
-//     legendFontSize: 15,
-//   },
-//   {
-//     name: "Poultry",
-//     population: 20,
-//     color: "#22C55E", // green
-//     legendFontColor: "#54595E",
-//     legendFontSize: 15,
-//   },
-//   {
-//     name: "Mutton",
-//     population: 35,
-//     color: "#FACC15", // yellow
-//     legendFontColor: "#54595E",
-//     legendFontSize: 15,
-//   },
-//   {
-//     name: "Others",
-//     population: 15,
-//     color: "#38BDF8", // light blue
-//     legendFontColor: "#54595E",
-//     legendFontSize: 15,
-//   },
-// ];
-
 const chartColors = [
   "#3B82F6", // blue
   "#22C55E", // green
@@ -63,8 +32,6 @@ const barData = {
   ],
 };
 
-
-
 const Dashboard = () => {
   const { width } = useWindowDimensions();
   const [vendorId, setVendorId] = useState("");
@@ -73,6 +40,8 @@ const Dashboard = () => {
   const [totalDishes, setTotalDishes] = useState(0);
   const [carbonScore, setCarbonScore] = useState(0);
   const [vendorRank, setVendorRank] = useState(0);
+  const [loading, setLoading] = useState(false)
+
   const best_case_footprint = 0.5
   const worst_case_footprint = 10
   // Chart related
@@ -84,8 +53,10 @@ const Dashboard = () => {
   const assignedColors: Record<string, string> = {};
   const barColors: Record<string, string> = {};
   
+  
 
   useEffect(() => {
+        setLoading(true);
         const getVendorValues = async () => {
           const result = await getVendorByUser();
 
@@ -118,7 +89,7 @@ const Dashboard = () => {
 
     // Changes when dishes data updated
     useEffect(() => {
-      
+      setLoading(true)
       const totalCarbon = dishes.reduce(
         (sum, dish) => sum + (typeof dish.dish_total_carbon === "number" ? dish.dish_total_carbon : 0),
         0
@@ -143,8 +114,12 @@ const Dashboard = () => {
 
       setPieData(getPieChartData(dishes));
       setBarData(getBarChartData(dishes));
+      setLoading(false)
     }, [dishes]);
 
+
+    
+    
 
     useFocusEffect(
       useCallback(() => {
@@ -225,6 +200,9 @@ const Dashboard = () => {
 };
 
 
+if (loading) {
+        return <Text style={{ textAlign: "center", marginTop: 32 }}>Loading Dashboard...</Text>     
+  }
     
     //console.log(`Content in dishs: ${JSON.stringify(dishes)}`)
     //console.log(`WTF inside of pie data: ${JSON.stringify(pieData)}`)
@@ -355,7 +333,7 @@ const Dashboard = () => {
         {/* Chart legend for bars */}
         <View className="flex-row flex-wrap justify-center mt-3">
           {barData.labels.map((label, idx) => (
-            <View key={label} className="flex-row items-center mx-2 mb-2">
+            <View key={idx} className="flex-row items-center mx-2 mb-2">
               <View
                 className="w-3 h-3 rounded-sm"
                 style={{
