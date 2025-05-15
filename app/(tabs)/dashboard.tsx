@@ -52,6 +52,8 @@ const Dashboard = () => {
   const assignedColors: Record<string, string> = {};
   const barColors: Record<string, string> = {};
   
+  const barWidth = 60
+  const chartWidth = Math.max(barData.labels.length * barWidth, width);
   
 
   useEffect(() => {
@@ -295,9 +297,10 @@ if (loading) {
           Dish Footprint
         </Text>
         <View className="bg-white rounded-2xl shadow-sm border border-gray-100 p-2">
-          <BarChart
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <BarChart
             data={barData}
-            width={width - 60}
+            width={chartWidth }
             height={220}
             yAxisLabel=""
             yAxisSuffix=""
@@ -314,7 +317,7 @@ if (loading) {
                 const index = typeof _index === "number" ? _index : 0;
                 return chartColors[index % chartColors.length];
               },
-              labelColor: (opacity = 1) => `#54595E`,
+              labelColor: () => `#54595E`,
               propsForLabels: { fontSize: 13, fontWeight: "bold", dy: 8 },
               propsForBackgroundLines: {
                 stroke: "#E5E7EB",
@@ -328,7 +331,8 @@ if (loading) {
               paddingRight: 10,
             }}
           />
-        </View>
+        </ScrollView>
+      </View>
         {/* Chart legend for bars */}
         <View className="flex-row flex-wrap justify-center mt-3">
           {barData.labels.map((label, idx) => (
