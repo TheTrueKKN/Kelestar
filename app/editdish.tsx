@@ -193,18 +193,6 @@ export default function EditDishPage() {
                 )}
               </TouchableOpacity>
 
-              {/* Ingredients Section */}
-              
-              {/* <TouchableOpacity
-                className="h-10 bg-[#74B318] rounded-md justify-center items-center mb-6"
-                onPress={() => {
-                  // Logic for editing ingredients
-                  console.log('Add ingredients button pressed');
-                }}
-              >
-                <Text className="text-white text-base font-bold">Edit Ingredients</Text>
-              </TouchableOpacity> */}
-
               <TouchableOpacity
                 className="h-10 bg-[#74B318] rounded-md justify-center items-center mb-6"
                   onPress={() => {

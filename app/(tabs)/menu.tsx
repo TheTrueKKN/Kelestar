@@ -22,15 +22,13 @@ import { deleteDish, getDishes } from "../../controllers/dishController";
 export default function Menu() {
 
   const [vendorId, setVendorId] = useState("");
-   const [vendorName, setVendorName] = useState(""); // Vendor name state
-   const [vendorDesc, setVendorDescription] = useState(""); // Vendor description state
-   const [vendorUri, setUri] = useState(""); // Thumbnail image state
    const [vendorDishes, setVendorDishes] = useState<Dish[]>([]);
    // Getting parameters from Initial menu page
    const { menudDishes, newDish } = useGlobalSearchParams();
    const [loading, setLoading] = useState(false);
 
   const setDishMenu = async () => {
+      console.log(`Current vendor Id: ${vendorId}`)
       const menu_result = await getDishes({dish_vendor_id: vendorId, active: true})
       if(menu_result){
         setVendorDishes(menu_result)
@@ -47,12 +45,6 @@ export default function Menu() {
         if (result) {
           //console.log("TESSSS VALID")
           setVendorId(result.id!)
-          setVendorName(result.vendor_name);
-          setVendorDescription(result.vendor_description);
-          if (result.vendor_image_url) {
-            setUri(result.vendor_image_url);
-            // console.log("thumbnailimage", editUri);
-          }
         }
         setLoading(false)
       };
@@ -69,14 +61,6 @@ export default function Menu() {
   const parsedDishes = menudDishes
     ? JSON.parse(Array.isArray(menudDishes) ? menudDishes[0] : menudDishes)
     : [];
-  const [dishes, setDishes] = useState<Dish[]>(parsedDishes);
-
-  // Helper function to validate and extract single value
-  const validateParam = (
-    param: string | string[] | undefined
-  ): string | undefined => {
-    return Array.isArray(param) ? param[0] : param;
-  };
 
   // Function to delete a dish
   const removeDish = async (dish: Dish) => {
@@ -104,14 +88,14 @@ export default function Menu() {
   // Update vendor details when the screen is focused
   useFocusEffect(
     useCallback(() => {
-      setVendorName(validateParam(newVendorName || vendorName) as string);
-      setVendorDescription(validateParam(newVendorDesc || vendorDesc) as string);
-      setUri(validateParam(newImg || vendorUri) as string);
+      // setVendorName(validateParam(newVendorName || vendorName) as string);
+      // setVendorDescription(validateParam(newVendorDesc || vendorDesc) as string);
+      // setUri(validateParam(newImg || vendorUri) as string);
 
       setDishMenu()
 
 
-    }, [newVendorName, vendorName, newVendorDesc, vendorDesc, newImg, vendorUri])
+    }, [vendorId])
   );
 
    if (loading) {
@@ -121,38 +105,20 @@ export default function Menu() {
   return (
     <View className="bg-white flex-1">
       {/* Top Header with icon on the right */}
-      <View className="flex-row justify-between items-center mt-12 ml-3 mr-3">
-        {/* Checking if valid Vendor name, if not show the default version */}
-        <Text className="font-bold text-2xl">
-          {vendorName ? `Hello ${vendorName}!` : "Hello there!!"}
+      <View className="mt-12 mx-3 items-center justify-center">
+        <Text className="text-3xl font-pbold text-primary mb-2">
+          Your Dishes
         </Text>
-        <TouchableOpacity
-          onPress={() =>
-            router.push({
-              pathname: "/editvendor",
-              params: { prevPage: "/menu" },
-            })
-          }
-        >
-          <Image
-            className="w-5 h-5 tintColour-white"
-            source={require("../../assets/icons/pen.png")} // Replace with your icon
-          />
-        </TouchableOpacity>
       </View>
+
 
       {/* Same goes for the thumbnail image */}
       <View className="space-y-2 justify-center items-center">
-        <Image
+        {/* <Image
           source={{ uri: vendorUri || "https://via.placeholder.com/150" }}
           className="w-40 h-40 mt-10"
-        />
+        /> */}
       </View>
-
-      {/* Display the previously given vendor description, if not valud then display a default version */}
-      <Text className="font-bold text-center px-5 mt-4">
-        {vendorDesc || "We serve because we served"}
-      </Text>
 
       {/* Create new dish button */}
       <View className="px-4 mt-6">

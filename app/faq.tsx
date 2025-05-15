@@ -100,14 +100,14 @@ const KnowledgeBase = () => {
                 Knowledge Base
               </Text>
               <View className="flex-1" />
-              <TouchableOpacity>
+              {/* <TouchableOpacity>
                 <Ionicons name="search" size={24} color="#006400" />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </View>
           
           {/* Search Bar */}
-          <View className="px-6 py-2">
+          {/* <View className="px-6 py-2">
             <View className="flex-row items-center bg-gray-100 rounded-lg px-3 py-2">
               <Ionicons name="search" size={20} color="#999999" />
               <TextInput
@@ -117,10 +117,10 @@ const KnowledgeBase = () => {
                 className="flex-1 ml-2 text-base text-gray-700"
               />
             </View>
-          </View>
+          </View> */}
           
           {/* Categories */}
-          <View className="px-6 py-4">
+          {/* <View className="px-6 py-4">
             <View className="flex-row justify-between">
               {categories.map((category) => (
                 <TouchableOpacity 
@@ -136,15 +136,15 @@ const KnowledgeBase = () => {
                 </TouchableOpacity>
               ))}
             </View>
-          </View>
+          </View> */}
           
           {/* Top Questions */}
           <View className="px-6 py-2">
             <View className="flex-row justify-between items-center mb-2">
               <Text className="text-lg font-semibold text-[#333333]">Top Questions</Text>
-              <TouchableOpacity>
+              {/* <TouchableOpacity>
                 <Text className="text-sm text-[#74B318]">View all</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
             
             {/* FAQ Items */}
@@ -156,7 +156,7 @@ const KnowledgeBase = () => {
               >
                 <View className="flex-row justify-between items-center">
                   <Text className="text-base font-medium text-[#333333] flex-1 pr-2">{faq.question}</Text>
-                  <Ionicons 
+                  <Ionicons
                     name={faq.expanded ? "remove-outline" : "add-outline"} 
                     size={20} 
                     color={faq.expanded ? "#74B318" : "#999999"} 
