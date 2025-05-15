@@ -2,7 +2,7 @@ import { Text, View, TouchableOpacity, ScrollView } from 'react-native'
 import React, { useEffect, useState, useCallback } from 'react'
 import DishItem from '../components/DishItem'
 import { useGlobalSearchParams, useRouter, useFocusEffect, } from 'expo-router'
-import { getVendorByUser } from '../controllers/vendorController';
+import { getVendorByUser, updateVendorGreenScore } from '../controllers/vendorController';
 
 // Newly added
 import { getDishes, deleteDish } from "../controllers/dishController";
@@ -93,6 +93,7 @@ const InitialMenu = () => {
   // Function to delete a dish by ID
   const removeDish = async (dish: Dish) => {
     setDishes((prevDishes) => prevDishes.filter(allDish => allDish.id !== dish.id));
+    await updateVendorGreenScore(vendorId)
     const deleteDishSuccess = await deleteDish(dish)
   };
 

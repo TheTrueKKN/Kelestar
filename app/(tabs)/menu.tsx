@@ -14,7 +14,7 @@ import {
 } from "expo-router";
 import { useCallback } from "react";
 import DishItem from "../../components/DishItem";
-import { getVendorByUser } from "../../controllers/vendorController";
+import { getVendorByUser, updateVendorGreenScore } from "../../controllers/vendorController";
 import { Dish } from "../../interfaces/dish";
 import { deleteDish, getDishes } from "../../controllers/dishController";
 
@@ -77,6 +77,7 @@ export default function Menu() {
   // Function to delete a dish
   const removeDish = async (dish: Dish) => {
       setVendorDishes((prevDishes) => prevDishes.filter(allDish => allDish.id !== dish.id));
+      await updateVendorGreenScore(vendorId)
       const deleteDishSuccess = await deleteDish(dish)
     };
 
