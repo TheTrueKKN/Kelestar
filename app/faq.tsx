@@ -55,25 +55,49 @@ const KnowledgeBase = () => {
     {
       id: "1",
       question: "How do we calculate carbon footprint?",
-      answer: "We use a method called life cycle assessment using data collected from state-of-the-art research. Each ingredient... bla bla bla",
+      answer: "We use life cycle assessment to track each ingredient from farm to plate. This includes production, processing, transportation, and cooking emissions, giving a complete environmental impact score.",
       expanded: true
     },
     {
       id: "2",
-      question: "What is life cycle assessment?",
-      answer: "Life cycle assessment is a methodology... bla bla bla",
+      question: "What qualifies as a green meal?",
+      answer: "Green meals have a carbon footprint below 1.5kg CO2e, use seasonal ingredients, minimize food waste, and include at least 50% plant-based ingredients.",
       expanded: false
     },
     {
       id: "3",
-      question: "What is carbon label?",
-      answer: "Carbon label discloses carbon footprint...bla bla bla",
+      question: "How does the leaderboard work?",
+      answer: "Restaurants earn points for each green meal served. The leaderboard updates weekly, showing which restaurants are making the biggest positive environmental impact.",
       expanded: false
     },
     {
       id: "4",
-      question: "What are the benefits of plant-based diet?",
-      answer: "Plant-based diets offer numerous environmental and health benefits...bla bla bla",
+      question: "What are the benefits of sustainable dining?",
+      answer: "Sustainable dining reduces greenhouse emissions, conserves water, minimizes waste, and promotes biodiversity while often offering healthier menu options.",
+      expanded: false
+    },
+    {
+      id: "5",
+      question: "How can I improve my restaurant's ranking?",
+      answer: "Increase plant-based options, source local ingredients, reduce food waste, track and optimize your ingredient carbon footprint, and promote green meals to customers.",
+      expanded: false
+    },
+    {
+      id: "6",
+      question: "What's the difference between A and D rated meals?",
+      answer: "A-rated meals (below 0.8kg CO2e) have minimal environmental impact, while D-rated meals (above 2.5kg CO2e) have significant carbon footprints, usually from red meat or dairy-heavy ingredients.",
+      expanded: false
+    },
+    {
+      id: "7",
+      question: "Do green meals cost more to prepare?",
+      answer: "Not necessarily. While some sustainable ingredients may cost more, reducing food waste and using seasonal produce can offset costs. Many green meals are actually more cost-effective.",
+      expanded: false
+    },
+    {
+      id: "8",
+      question: "How often is the leaderboard updated?",
+      answer: "The leaderboard updates weekly every Monday morning, reflecting the previous week's green meal counts across all participating restaurants.",
       expanded: false
     }
   ]);

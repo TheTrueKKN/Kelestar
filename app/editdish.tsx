@@ -209,7 +209,7 @@ export default function EditDishPage() {
 
               <Text className="text-base text-[#006400] mb-2">Edit Ingredients:</Text>
 
-              <ScrollView className="h-60" showsVerticalScrollIndicator={false}>
+              <ScrollView className="h-60" showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
                   {dishIngredientList.length === 0 ? (
                     <Text className="text-gray-400 text-center mt-4">No ingredients added yet.</Text>
                   ) : 
