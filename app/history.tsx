@@ -271,59 +271,12 @@ const History = () => {
     }, [])
   );
 
-useEffect(() => {
-  setLoading(true);
-  const data = generateMealData(meals, selectedOption);
-  setMealData(data);
-  setLoading(false);
-}, [meals, selectedOption]);
-
-  // Sample dish data.
-  // const [todayDishes] = useState<Dish[]>([
-  //   {
-  //     id: "1",
-  //     name: "Tofu Buddha Bowl",
-  //     image: require("../assets/images/tofu_bowl_pic.png"),
-  //     price: "RM 12",
-  //     grade: "A",
-  //     gradeColor: "#8DC63F",
-  //   },
-  //   {
-  //     id: "2",
-  //     name: "Chicken Rice",
-  //     image: require("../assets/images/chicken_rice.png"),
-  //     price: "RM 10",
-  //     grade: "B",
-  //     gradeColor: "#F8D15B",
-  //   },
-  //   {
-  //     id: "3",
-  //     name: "Beef Sharwama set",
-  //     image: require("../assets/images/beef_shawarma_set.png"),
-  //     price: "RM 18",
-  //     grade: "C",
-  //     gradeColor: "#ED1C24",
-  //   },
-  // ]);
-
-  // const [yesterdayDishes] = useState<Dish[]>([
-  //   {
-  //     id: "4",
-  //     name: "Tofu Buddha Bowl",
-  //     image: require("../assets/images/tofu_bowl_pic.png"),
-  //     price: "RM 12",
-  //     grade: "A",
-  //     gradeColor: "#8DC63F",
-  //   },
-  //   {
-  //     id: "5",
-  //     name: "Chicken Rice",
-  //     image: require("../assets/images/chicken_rice.png"),
-  //     price: "RM 10",
-  //     grade: "B",
-  //     gradeColor: "#F8D15B",
-  //   },
-  // ]);
+  useEffect(() => {
+    setLoading(true);
+    const data = generateMealData(meals, selectedOption);
+    setMealData(data);
+    setLoading(false);
+  }, [meals, selectedOption]);
 
   const toggleSortOrder = useCallback(() => {
     setIsAscending((prev) => !prev);
@@ -335,8 +288,6 @@ useEffect(() => {
   yesterday.setDate(yesterday.getDate() - 1);
   const formatDate = (date: Date) =>
     `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
-  const todayDate = formatDate(today);
-  const yesterdayDate = formatDate(yesterday);
 
   // Action handlers.
   const handleEdit = (meal: Meal) => {
@@ -447,6 +398,14 @@ useEffect(() => {
     </View>
   );
 
+  if (loading) {
+    return (
+      <Text style={{ textAlign: "center", marginTop: 32 }}>
+        Loading menu...
+      </Text>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-row justify-between items-center px-4 pt-4">
@@ -463,27 +422,6 @@ useEffect(() => {
         className="mt-4"
         contentContainerStyle={{ paddingBottom: 100 }}
       >
-        {/* Today's Section */}
-        {/* <View>
-          <View className="flex-row justify-between px-4 mb-2">
-            <Text className="text-lg font-semibold">Today</Text>
-            <Text className="text-gray-500 font-normal">{todayDate}</Text>
-          </View>
-          {todayDishes.map(renderFoodItem)}
-          <View className="px-4 mt-2 mb-6 items-end">
-            <Text className="text-gray-500 font-normal">
-              Total: 7.8 Kg CO₂e
-            </Text>
-          </View>
-        </View> */}
-        {/* Yesterday's Section */}
-        {/* <View>
-          <View className="flex-row justify-between px-4 mb-2">
-            <Text className="text-lg font-semibold">Yesterday</Text>
-            <Text className="text-gray-500 font-normal">{yesterdayDate}</Text>
-          </View>
-          {yesterdayDishes.map(renderFoodItem)}
-        </View> */}
         {Object.keys(mealData).map((period) => (
           <View key={period}>
             <View className="flex-row justify-between px-4 mb-2">
