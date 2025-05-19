@@ -164,6 +164,7 @@ export default function CreateDishPage() {
   };
 
   return (
+
       <View style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} nestedScrollEnabled = {true}>
           <View className="flex-1 bg-white">

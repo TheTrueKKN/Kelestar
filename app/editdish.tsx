@@ -193,18 +193,6 @@ export default function EditDishPage() {
                 )}
               </TouchableOpacity>
 
-              {/* Ingredients Section */}
-              
-              {/* <TouchableOpacity
-                className="h-10 bg-[#74B318] rounded-md justify-center items-center mb-6"
-                onPress={() => {
-                  // Logic for editing ingredients
-                  console.log('Add ingredients button pressed');
-                }}
-              >
-                <Text className="text-white text-base font-bold">Edit Ingredients</Text>
-              </TouchableOpacity> */}
-
               <TouchableOpacity
                 className="h-10 bg-[#74B318] rounded-md justify-center items-center mb-6"
                   onPress={() => {
@@ -221,7 +209,7 @@ export default function EditDishPage() {
 
               <Text className="text-base text-[#006400] mb-2">Edit Ingredients:</Text>
 
-              <ScrollView className="h-60" showsVerticalScrollIndicator={false}>
+              <ScrollView className="h-60" showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
                   {dishIngredientList.length === 0 ? (
                     <Text className="text-gray-400 text-center mt-4">No ingredients added yet.</Text>
                   ) : 
