@@ -41,22 +41,19 @@ const generateMealData = (meals: Meal[]): Record<string, DayData> => {
   const totalMeals = meals.length;
 
   // Generate data for the current month
-  for (let i = 0; i <= 30; i++) {
-    if (mealIndex >= totalMeals) {
-      break;
-    }
+  while (mealIndex < totalMeals) {
+    // if (mealIndex >= totalMeals) {
+    //   break;
+    // }
 
-    const date = new Date();
-    date.setDate(date.getDate() - i);
+    const date = meals[mealIndex].meal_datetime!;
+    // date.setDate(date.getDate() - i);
     const dateKey = date.toISOString().split("T")[0];
 
     const mealsToday: Meal[] = [];
     let totalCarbon = 0;
 
-    while (
-      mealIndex < totalMeals &&
-      isSameDate(meals[mealIndex].meal_datetime!, date)
-    ) {
+    do  {
       mealsToday.push({
         id: meals[mealIndex].id,
         ...meals[mealIndex],
@@ -64,7 +61,10 @@ const generateMealData = (meals: Meal[]): Record<string, DayData> => {
       totalCarbon += meals[mealIndex].meal_dish?.dish_total_carbon ?? 0;
 
       mealIndex++;
-    }
+    } while (
+      mealIndex < totalMeals &&
+      isSameDate(meals[mealIndex].meal_datetime!, date)
+    )
 
     data[dateKey] = {
       date,

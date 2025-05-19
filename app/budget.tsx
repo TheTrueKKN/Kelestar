@@ -22,7 +22,7 @@ const Budget = ({ handleBudgetSaved }: { handleBudgetSaved: () => void }) => {
 
   const handleSave = async () => {
     const updateCarbonBudgetSuccess = await updateCustomer({
-      customer_carbon_budget: carbonBudget,
+      customer_carbon_budget: Math.round((carbonBudget + Number.EPSILON) * 100) / 100,
     });
     if (updateCarbonBudgetSuccess) {
       // console.log("Carbon budget saved:", carbonBudget);
