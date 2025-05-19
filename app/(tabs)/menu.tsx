@@ -109,6 +109,19 @@ export default function Menu() {
         <Text className="text-3xl font-pbold text-primary mb-2">
           Your Dishes
         </Text>
+
+        <TouchableOpacity
+                  onPress={() =>
+                    router.push({
+                      pathname: "/testAPI",
+                    })
+                  }
+                >
+                  <Image
+                    className="w-5 h-5 tintColour-white"
+                    source={require("../../assets/icons/pen.png")} // Replace with your icon
+                  />
+                </TouchableOpacity>
       </View>
 
 

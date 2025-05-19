@@ -251,7 +251,7 @@ export default function CreateDishPage() {
               </Text>
               <ScrollView className="h-60" showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
                   {ingredientList.length === 0 ? (
-                    <Text className="text-gray-400 text-center mt-4">No ingredients added yet.</Text>
+                    <Text className="text-gray-400 text-center mt-4">No ingredients added yet</Text>
                   ) : 
                   (
                     ingredientList.map((dishIngredient) => (
@@ -270,10 +270,10 @@ export default function CreateDishPage() {
         </ScrollView>
 
         {/* Create New Dish Button */}
-        <View className="px-3 py-2 bg-white">
+        <View className="px-4 py-12 bg-white">
           <CalculateTotalCarbon ingredientList={ingredientList} onCarbonCalculated={setTotalCarbon}/>
           <TouchableOpacity
-            className="h-12 bg-[#74B318] rounded-md justify-center items-center mb-2"
+            className="h-12 bg-[#74B318] rounded-md justify-center items-center mb-5"
             disabled={loading}
             onPress={() => {
               // Add functionality for creating the new dish
