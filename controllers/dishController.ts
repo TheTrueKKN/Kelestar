@@ -25,7 +25,8 @@ export async function getDishes({
 
     let queryBuilder = supabase
       .from("dish")
-      .select("*, dish_vendor: dish_vendor_id(vendor_name)");
+      .select("*, dish_vendor: dish_vendor_id(vendor_name)")
+      .limit(500);
 
     queryBuilder = dish_vendor_id
       ? queryBuilder.eq("dish_vendor_id", dish_vendor_id)
@@ -148,7 +149,7 @@ export async function deleteDish({ id, dish_image_name }: Dish) {
     console.log("meal", meal);
 
     let query;
-    if (meal?.length == 0) {
+    if (meal?.length && meal?.length > 0) {
       const dish: Dish = {
         active: false,
       };
