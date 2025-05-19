@@ -1,6 +1,7 @@
 import { JoinedDishIngredient } from "./joinedDishIngredient";
 import { CarbonRating } from "../enums/carbonRating";
 import { Vendor } from "./vendor";
+import { DishNutrition } from "./dishNutrition";
 
 export interface Dish {
     id?: string;
@@ -14,4 +15,5 @@ export interface Dish {
     dish_ingredient?: JoinedDishIngredient[]
     dish_rating?: CarbonRating
     active?: boolean
+    dish_nutrition?: DishNutrition;
   }

@@ -88,7 +88,7 @@ export default function CustomerHome() {
       return "Night";
     }
 
-    // console.log(date.getHours());
+
   };
 
   // Dish data array
@@ -145,7 +145,7 @@ export default function CustomerHome() {
           <View className="relative flex-1">
             {/* Good Morning text with notification icon */}
             <View className="flex-row justify-between items-start px-[19px] mt-[20px]">
-              <Text className="w-[202px] h-[42px] font-psemibold text-[28px] leading-[42px] text-[#1E1F1F]">
+              <Text className="w-[270px] h-[42px] font-psemibold text-[28px] leading-[42px] text-[#1E1F1F]">
                 Good {greetingTime()}
               </Text>
               <TouchableOpacity
