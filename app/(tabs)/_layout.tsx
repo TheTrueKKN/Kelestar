@@ -1,99 +1,147 @@
-import { View, Text, Image } from "react-native";
+import { Pressable } from "react-native";
 import React from "react";
-import { Tabs, Redirect } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { View, Image, Text } from "react-native";
+import { Tabs } from "expo-router";
 import { icons } from "../../constants";
 
-interface Props {
+type TabIconProps = {
   icon: any;
+  label: string;
   color: string;
-  name: string;
   focused: boolean;
-}
+};
 
-const TabIcon = ({ icon, color, name, focused }: Props) => {
-  return (
-    <View className="items-center justify-center gap-2">
+const NoFeedbackTabBarButton = (props: any) => (
+  <Pressable {...props} android_ripple={null} style={props.style}>
+    {props.children}
+  </Pressable>
+);
+
+const TabIcon: React.FC<TabIconProps> = ({ icon, label, color, focused }) => (
+  <View
+    className="items-center justify-center"
+    style={{ flex: 1, marginTop: 8 }}
+  >
+    {/* background circle when focused */}
+    <View
+      className={`rounded-2xl`}
+      style={{
+        padding: 8,
+        marginBottom: 2,
+        alignItems: "center",
+        justifyContent: "center",
+        shadowColor: "transparent",
+        shadowOpacity: 0,
+        shadowOffset: { width: 0, height: 0 },
+        shadowRadius: 0,
+        minWidth: 38,
+      }}
+    >
       <Image
         source={icon}
         resizeMode="contain"
         tintColor={color}
-        className="w-6 h-6"
+        style={{ width: 26, height: 26 }}
       />
-      <Text
-        className={`${focused ? "font-psemibold" : "font-pregular"} text-xs w-12 text-center`}
-        style={{ 
-          color: color,
-          overflow: 'hidden',   // Hides overflow text
-        }}
-      >
-        {name}
-      </Text>
     </View>
-  );
-};
+    <Text
+      numberOfLines={1}
+      ellipsizeMode="tail"
+      className={`text-[12px] mt-1 ${
+        focused ? "text-primary font-psemibold" : "text-gray-500 font-pregular"
+      }`}
+      style={{
+        letterSpacing: 0.2,
+        maxWidth: 100,
+        minWidth: 60,
+        textAlign: "center",
+        overflow: "visible",
+      }}
+    >
+      {label}
+    </Text>
+  </View>
+);
 
-const TabsLayout = () => {
+const HomeTabBarIcon = (props: { color: string; focused: boolean }) => (
+  <TabIcon
+    icon={icons.home}
+    label="Home"
+    color={props.color}
+    focused={props.focused}
+  />
+);
+
+const MenuTabBarIcon = (props: { color: string; focused: boolean }) => (
+  <TabIcon
+    icon={icons.dishMenu}
+    label="Menu"
+    color={props.color}
+    focused={props.focused}
+  />
+);
+
+const ProfileTabBarIcon = (props: { color: string; focused: boolean }) => (
+  <TabIcon
+    icon={icons.profile}
+    label="Profile"
+    color={props.color}
+    focused={props.focused}
+  />
+);
+
+export default function TabsLayout() {
   return (
-    <>
+    <SafeAreaView edges={["bottom"]} className="flex-1 bg-white">
       <Tabs
         screenOptions={{
+          headerShown: false,
           tabBarShowLabel: false,
           tabBarActiveTintColor: "#74B318",
           tabBarInactiveTintColor: "#999999",
+          tabBarButton: NoFeedbackTabBarButton,
           tabBarStyle: {
-            backgroundColor: "#F1F1F1",
-            height: 70,
+            height: 74,
+            paddingTop: 10,
+            paddingBottom: 14,
+            backgroundColor: "#F6F6F6",
+            borderTopWidth: 0,
+            borderTopLeftRadius: 18,
+            borderTopRightRadius: 18,
+            elevation: 12,
+            shadowColor: "#000",
+            shadowOpacity: 0.08,
+            shadowOffset: { width: 0, height: -4 },
+            shadowRadius: 10,
+          },
+          tabBarItemStyle: {
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            minWidth: 80,
           },
         }}
       >
         <Tabs.Screen
           name="dashboard"
           options={{
-            title: "Dashboard",
-            headerShown: false,
-            tabBarIcon: ({ color, focused }) => (
-              <TabIcon
-                icon={icons.home}
-                color={color}
-                name="Dashboard"
-                focused={focused}
-              />
-            ),
+            tabBarIcon: HomeTabBarIcon,
           }}
         />
         <Tabs.Screen
           name="menu"
           options={{
-            title: "Menu",
-            headerShown: false,
-            tabBarIcon: ({ color, focused }) => (
-              <TabIcon
-                icon={icons.dishMenu}
-                color={color}
-                name="Menu"
-                focused={focused}
-              />
-            ),
+            tabBarIcon: MenuTabBarIcon,
           }}
         />
         <Tabs.Screen
           name="vendorprofile"
           options={{
-            title: "Profile",
-            headerShown: false,
-            tabBarIcon: ({ color, focused }) => (
-              <TabIcon
-                icon={icons.profile}
-                color={color}
-                name="Profile"
-                focused={focused}
-              />
-            ),
+            tabBarIcon: ProfileTabBarIcon,
           }}
         />
       </Tabs>
-    </>
+    </SafeAreaView>
   );
-};
-
-export default TabsLayout;
+}

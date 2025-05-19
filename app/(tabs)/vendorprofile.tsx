@@ -1,8 +1,8 @@
-import { View, Text, Image, TouchableOpacity, Modal } from "react-native";
+import { View, Text, Image, Modal, TouchableOpacity } from "react-native";
+import { getVendorByUser } from "../../controllers/vendorController";
 import { icons } from "../../constants";
 import React, { useEffect, useState, useCallback } from "react";
 import ProfileSquareButton from "../../components/ProfileSquareButton";
-import { getVendorByUser } from "../../controllers/vendorController";
 import {
   useRouter,
   useFocusEffect,
@@ -12,7 +12,6 @@ import { Vendor } from "../../interfaces/vendor";
 import { getImage } from "../../controllers/fileController";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 
-const vendorLogo = require("../../assets/images/vendor_logo.png");
 
 const vendor_profile = () => {
 
@@ -88,24 +87,24 @@ const vendor_profile = () => {
           title={"Leaderboard"}
           href={".././leaderboard"}
           icon={icons.badge}
-        ></ProfileSquareButton>
+        />
         <ProfileSquareButton
           title={"Footprint calculator"}
           href={".././calculator"}
           icon={icons.calculator}
-        ></ProfileSquareButton>
+        />
       </View>
-      <View className="flex-row items-center justify-center">
+      <View className="flex-row items-center justify-center space-x-6">
         <ProfileSquareButton
           title={"FAQs"}
           href={".././faq"}
           icon={icons.questionCircle}
-        ></ProfileSquareButton>
+        />
         <ProfileSquareButton
           title={"Settings"}
           href={".././settings"}
           icon={icons.settings}
-        ></ProfileSquareButton>
+        />
       </View>
 
       <Modal

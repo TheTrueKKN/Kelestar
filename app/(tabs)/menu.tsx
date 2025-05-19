@@ -121,24 +121,24 @@ export default function Menu() {
       </View>
 
       {/* Create new dish button */}
-      <View className="px-4 mt-6">
+      <View className="px-6 mt-7">
         <TouchableOpacity
-          className="bg-[#74B318] py-3 rounded-md justify-center items-center"
+          style={{ backgroundColor: '#74B318', paddingVertical: 14, borderRadius: 12, alignItems: 'center', shadowColor: '#74B318', shadowOpacity: 0.12, shadowOffset: { width: 0, height: 2 }, shadowRadius: 6, elevation: 2 }}
           onPress={() =>
             router.push({
               pathname: "/createdish",
-              params: { prevPage: "/menu" , vendorId: vendorId},
+              params: { prevPage: "/menu", vendorId: vendorId },
             })
           }
         >
-          <Text className="text-white text-lg font-bold">
+          <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', letterSpacing: 0.5 }}>
             Create new dish +
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* Dish list */}
-      <ScrollView className="h-60 mt-5" showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ flex: 1, marginTop: 24, paddingHorizontal: 12 }} showsVerticalScrollIndicator={false}>
         {vendorDishes.length === 0 ? (
           <Text className="text-gray-400 text-center mt-4">
             No dishes added yet.
