@@ -38,7 +38,6 @@ const IngredientSelector = ({
           })
         );
         setSelectOptions(mappedOptions);
-        // console.log("options", mappedOptions);
       }
     };
     retrieveIngredients();
@@ -85,7 +84,7 @@ const IngredientSelector = ({
       <Modal
         transparent={true}
         visible={showModal}
-        animationType="slide"
+        animationType="fade"
         onRequestClose={() => {
           handleShowModal(false);
         }}
@@ -109,7 +108,7 @@ const IngredientSelector = ({
               placeholder="Search for an ingredient"
               options={selectOptions}
               handleChangeText={(e: string) => {
-                console.log(e)
+                // console.log(e)
                 setIngredientName(e);
               }}
             />
