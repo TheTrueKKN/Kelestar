@@ -14,6 +14,7 @@ import { DishIngredient } from '../interfaces/dishIngredient';
 import { getIngredientName } from '../controllers/ingredientController';
 import { updateDishIngredient } from '../controllers/dishIngredientController';
 import CalculateTotalCarbon from '../components/CalculateTotalCarbon';
+import { updateVendorGreenScore } from '../controllers/vendorController';
 const galleryIcon = require('../assets/icons/gallery.png'); // Adjust the path to your gallery icon
 
 export default function EditDishPage() {
@@ -95,6 +96,8 @@ export default function EditDishPage() {
 
     const updateDishIngredientSuccess = await updateDishIngredient(dishId, dishIngredientList)
 
+    await updateVendorGreenScore(dish_vendor_id as string)
+    
     if (updateDishSuccess && updateDishIngredientSuccess){
       router.back()
       router.replace({pathname: prev_page as string})
@@ -190,18 +193,6 @@ export default function EditDishPage() {
                 )}
               </TouchableOpacity>
 
-              {/* Ingredients Section */}
-              
-              {/* <TouchableOpacity
-                className="h-10 bg-[#74B318] rounded-md justify-center items-center mb-6"
-                onPress={() => {
-                  // Logic for editing ingredients
-                  console.log('Add ingredients button pressed');
-                }}
-              >
-                <Text className="text-white text-base font-bold">Edit Ingredients</Text>
-              </TouchableOpacity> */}
-
               <TouchableOpacity
                 className="h-10 bg-[#74B318] rounded-md justify-center items-center mb-6"
                   onPress={() => {
@@ -218,7 +209,7 @@ export default function EditDishPage() {
 
               <Text className="text-base text-[#006400] mb-4">Edit Ingredients:</Text>
 
-              <ScrollView className="h-60" showsVerticalScrollIndicator={false}>
+              <ScrollView className="h-60" showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
                   {dishIngredientList.length === 0 ? (
                     <Text className="text-gray-400 text-center mt-2">No ingredients added yet.</Text>
                   ) : 

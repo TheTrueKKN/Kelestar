@@ -26,7 +26,7 @@ export async function joinVendorDishIng(
     return [];
   }
 
-  console.log(`Fetching vendor dishes: ${JSON.stringify(data)}`)
+  //console.log(`Fetching vendor dishes: ${JSON.stringify(data)}`)
   return data as Dish
     } catch (error) {
         

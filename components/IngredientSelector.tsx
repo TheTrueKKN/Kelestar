@@ -45,7 +45,7 @@ const IngredientSelector = ({
   }, []);
 
   const handleSavePressed = () => {
-    console.log("search term:", ingredientName);
+    //console.log("search term:", ingredientName);
     const searchedIngredient = ingredientList
       ? ingredientList.find((option) => (option.ingredient_name === ingredientName))
       : null;

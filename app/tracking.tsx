@@ -426,17 +426,30 @@ const Tracking = () => {
           </View>
 
           {/* Start Tracking Button */}
+
           <View className="px-4 mt-8 mb-4">
-            <TouchableOpacity
-              className="bg-green py-4 rounded-xl shadow-sm active:opacity-90"
-              onPress={() => handleStartTracking()}
-              accessibilityLabel="Start tracking this meal"
-              accessibilityRole="button"
-            >
-              <Text className="text-white text-center font-bold text-lg">
-                Start Tracking
-              </Text>
-            </TouchableOpacity>
+            {dish.active ? (
+              <TouchableOpacity
+                className="bg-green
+                py-4 rounded-xl shadow-sm active:opacity-90"
+                onPress={() => handleStartTracking()}
+                accessibilityLabel="Start tracking this meal"
+                accessibilityRole="button"
+                disabled={!dish.active}
+              >
+                <Text className="text-white text-center font-bold text-lg">
+                  Start Tracking
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <View
+                className=" bg-gray-100 py-4 rounded-xl shadow-sm active:opacity-90"
+              >
+                <Text className="text-gray-200 text-center font-bold text-lg">
+                  Dish no longer available
+                </Text>
+              </View>
+            )}
           </View>
         </View>
       </ScrollView>

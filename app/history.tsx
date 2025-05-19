@@ -19,7 +19,7 @@ import Animated, {
   interpolate,
 } from "react-native-reanimated";
 import { PanGestureHandler } from "react-native-gesture-handler";
-import { useFocusEffect } from "expo-router";
+import { Router, useFocusEffect, useRouter } from "expo-router";
 import { getMealListingByCustomer } from "../controllers/mealController";
 import { Meal } from "../interfaces/meal";
 import { Dish } from "../interfaces/dish";
@@ -27,6 +27,7 @@ import {
   getCarbonRating,
   getRatingBadgeColor,
 } from "../lib/utils/carbonRating";
+import { periodOptions } from "../enums/periodOptions";
 
 interface SwipeableItemProps {
   children: React.ReactNode;
@@ -110,20 +111,81 @@ const SwipeableItem = ({ children, onEdit, onDelete }: SwipeableItemProps) => {
   );
 };
 
-function isSameDate(date1: Date, date2: Date): boolean {
-  return (
-    date1.toISOString().split("T")[0] === date2.toISOString().split("T")[0]
-  );
-}
+type DateComparisonFn = (date1: Date, date2: Date) => DateComparisonResult;
 
-type DayData = {
-  date: Date;
+type DateComparisonResult = { isSamePeriod: boolean; period: string };
+
+const getSameDate: DateComparisonFn = (date1, date2) => {
+  const period = date1.toISOString().split("T")[0];
+  const result: DateComparisonResult = { isSamePeriod: false, period };
+
+  if (period === date2.toISOString().split("T")[0]) {
+    result.isSamePeriod = true;
+  }
+
+  return result;
+};
+
+const getSameWeek: DateComparisonFn = (date1, date2) => {
+  function getStartOfWeek(date: Date): Date {
+    const day = date.getDay(); // 0 (Sunday) to 6 (Saturday)
+    // Calculate difference to Monday (or Sunday if you prefer)
+    // Here we use Monday as the first day of the week
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
+
+    const startOfWeek = new Date(date);
+    startOfWeek.setDate(diff);
+    startOfWeek.setHours(0, 0, 0, 0); // set to midnight to ignore time differences
+
+    return startOfWeek;
+  }
+
+  // Get the start of the week for each date (Monday as first day)
+  const startOfWeek1 = getStartOfWeek(date1);
+  const startOfWeek2 = getStartOfWeek(date2);
+
+  const endOfWeek = new Date(startOfWeek1.getTime() + 6 * 24 * 60 * 60 * 1000);
+  // endOfWeek.setDate(startOfWeek1.getDate() + 6);
+  const period = `${startOfWeek1.toISOString().split("T")[0]} to ${
+    endOfWeek.toISOString().split("T")[0]
+  }`;
+  const result: DateComparisonResult = { isSamePeriod: false, period };
+
+  // Compare the start of week dates
+  if (startOfWeek1.getTime() === startOfWeek2.getTime()) {
+    result.isSamePeriod = true;
+  }
+
+  return result;
+};
+
+const getSameMonth: DateComparisonFn = (date1, date2) => {
+  const period = `${date1.toLocaleString("default", {
+    month: "long",
+  })} ${date1.getFullYear()}`;
+  const result: DateComparisonResult = { isSamePeriod: false, period };
+
+  if (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth()
+  ) {
+    result.isSamePeriod = true;
+  }
+
+  return result;
+};
+
+type PeriodData = {
+  period: string;
   totalCarbon: number;
   meals: Meal[];
 };
 
-const generateMealData = (meals: Meal[]): Record<string, DayData> => {
-  const data: Record<string, DayData> = {};
+const generateMealData = (
+  meals: Meal[],
+  periodType: periodOptions
+): Record<string, PeriodData> => {
+  const data: Record<string, PeriodData> = {};
 
   let mealIndex = 0;
   const totalMeals = meals.length;
@@ -135,10 +197,23 @@ const generateMealData = (meals: Meal[]): Record<string, DayData> => {
     currentDate = meals[mealIndex].meal_datetime!;
     let totalCarbon = 0;
 
-    while (
-      mealIndex < totalMeals &&
-      isSameDate(meals[mealIndex].meal_datetime!, currentDate)
-    ) {
+    const periodHandlers: Record<periodOptions, DateComparisonFn> = {
+      [periodOptions.Day]: getSameDate,
+      [periodOptions.Week]: getSameWeek,
+      [periodOptions.Month]: getSameMonth,
+    };
+
+    const getSamePeriod = periodHandlers[periodType] || getSameDate;
+
+    let samePeriod = getSamePeriod(
+      meals[mealIndex].meal_datetime!,
+      currentDate
+    );
+    let currentPeriod = samePeriod.period;
+
+    do {
+      currentPeriod = samePeriod.period;
+
       mealsToday.push({
         id: meals[mealIndex].id,
         ...meals[mealIndex],
@@ -146,11 +221,16 @@ const generateMealData = (meals: Meal[]): Record<string, DayData> => {
       totalCarbon += meals[mealIndex].meal_dish?.dish_total_carbon ?? 0;
 
       mealIndex++;
-    }
 
-    const dateKey = currentDate.toISOString().split("T")[0];
-    data[dateKey] = {
-      date: currentDate,
+      samePeriod =
+        mealIndex < totalMeals
+          ? getSamePeriod(meals[mealIndex].meal_datetime!, currentDate)
+          : { isSamePeriod: false, period: "" };
+      // console.log(samePeriod);
+    } while (samePeriod.isSamePeriod);
+
+    data[currentPeriod] = {
+      period: samePeriod.period,
       totalCarbon,
       meals: mealsToday,
     };
@@ -160,12 +240,16 @@ const generateMealData = (meals: Meal[]): Record<string, DayData> => {
 };
 
 const History = () => {
-  const [selectedOption, setSelectedOption] = useState("Month");
+  const [selectedOption, setSelectedOption] = useState(periodOptions.Day);
   const [isAscending, setIsAscending] = useState(true);
   const [showPicker, setShowPicker] = useState(false);
-  const timeOptions = ["Week", "Month", "Year"];
+  // const timeOptions = ["Day", "Week", "Month"];
   const [meals, setMeals] = useState<Meal[]>([]);
-  const mealData = useMemo(() => generateMealData(meals), [meals]);
+  const mealData = useMemo(
+    () => generateMealData(meals, selectedOption),
+    [meals, selectedOption]
+  );
+  const router = useRouter();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -173,7 +257,6 @@ const History = () => {
         const fetchedMeals = await getMealListingByCustomer();
         if (fetchedMeals) {
           setMeals(fetchedMeals);
-          const mealTemp = generateMealData(fetchedMeals);
         }
       };
       initMeals();
@@ -250,7 +333,7 @@ const History = () => {
   };
 
   // Render each dish item with swipe functionality.
-  const renderFoodItem = useCallback((meal_id: string, dish: Dish) => {
+  const renderFoodItem = useCallback((meal_id: string, dish: Dish, router: Router) => {
     const carbonRating = getCarbonRating(dish.dish_total_carbon ?? 0);
     const bgColor = getRatingBadgeColor(carbonRating);
 
@@ -260,7 +343,15 @@ const History = () => {
         onEdit={() => handleEdit(dish)}
         onDelete={() => handleDelete(dish)}
       >
-        <View className="flex-row items-center justify-between p-3">
+        
+        <TouchableOpacity className="flex-row items-center justify-between p-3" onPress={() => {
+            router.push({
+              pathname: "/tracking",
+              params: {
+                dish: JSON.stringify(dish),
+              },
+            });
+          }}>
           <View className="flex-row items-center">
             <Image
               source={{ uri: dish.dish_image_url }}
@@ -277,12 +368,12 @@ const History = () => {
             </View>
           </View>
           <View
-          className="w-8 h-8 rounded-full items-center justify-center"
-          style={{ backgroundColor: bgColor }}
+            className="w-8 h-8 rounded-full items-center justify-center"
+            style={{ backgroundColor: bgColor }}
           >
             <Text className="text-white font-bold">{carbonRating}</Text>
           </View>
-        </View>
+        </TouchableOpacity>
       </SwipeableItem>
     );
   }, []);
@@ -307,12 +398,12 @@ const History = () => {
           <Picker
             selectedValue={selectedOption}
             onValueChange={(itemValue) => {
-              setSelectedOption(itemValue.toString());
+              setSelectedOption(itemValue);
               setShowPicker(false);
             }}
             style={{ height: 150, width: 150 }}
           >
-            {timeOptions.map((option) => (
+            {Object.values(periodOptions).map((option) => (
               <Picker.Item key={option} label={option} value={option} />
             ))}
           </Picker>
@@ -325,11 +416,11 @@ const History = () => {
     <View className="ml-[-10px]">
       <Picker
         selectedValue={selectedOption}
-        onValueChange={(itemValue) => setSelectedOption(itemValue.toString())}
+        onValueChange={(itemValue) => setSelectedOption(itemValue)}
         style={{ height: 50, width: 120 }}
         dropdownIconColor="#000000"
       >
-        {timeOptions.map((option) => (
+        {Object.values(periodOptions).map((option) => (
           <Picker.Item key={option} label={option} value={option} />
         ))}
       </Picker>
@@ -373,18 +464,18 @@ const History = () => {
           </View>
           {yesterdayDishes.map(renderFoodItem)}
         </View> */}
-        {Object.keys(mealData).map((date) => (
-          <View key={date}>
+        {Object.keys(mealData).map((period) => (
+          <View key={period}>
             <View className="flex-row justify-between px-4 mb-2">
-              <Text className="text-lg font-semibold">{date}</Text>
+              <Text className="text-lg font-semibold">{period}</Text>
               {/* <Text className="text-gray-500 font-normal">{todayDate}</Text> */}
             </View>
-            {mealData[date].meals.map((meal) =>
-              renderFoodItem(meal.id!, meal.meal_dish!)
+            {mealData[period].meals.map((meal) =>
+              renderFoodItem(meal.id!, meal.meal_dish!, router)
             )}
             <View className="px-4 mt-2 mb-6 items-end">
               <Text className="text-gray-500 font-normal">
-                Total: {mealData[date].totalCarbon.toFixed(2)} Kg CO₂e
+                Total: {mealData[period].totalCarbon.toFixed(2)} Kg CO₂e
               </Text>
             </View>
           </View>
