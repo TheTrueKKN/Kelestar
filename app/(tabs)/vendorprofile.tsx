@@ -113,7 +113,7 @@ const vendor_profile = () => {
   visible={showDescriptionModal}
   onRequestClose={() => setShowDescriptionModal(false)}
 >
-  <View className="flex-1 justify-center items-center bg-black/50">
+  <View className="flex-1 justify-center items-center bg-black/50  bg-opacity-40">
     <View className="relative bg-white rounded-2xl px-6 py-8 mx-5 max-w-[90%] w-full">
 
       {/* Close Icon - Top Right */}

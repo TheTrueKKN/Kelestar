@@ -38,7 +38,7 @@ export default function Calculator() {
      
        // If not exists, add to list
        setIngredientList(prev => [...prev, dishIngredient]);
-       console.log(`Current ing list: ${JSON.stringify([...ingredientList, dishIngredient], null, 2)}`);
+       //console.log(`Current ing list: ${JSON.stringify([...ingredientList, dishIngredient], null, 2)}`);
      };
 
     const removeIngredient = async (ingredientId: string) => {
@@ -190,7 +190,7 @@ export default function Calculator() {
       animationType="fade"
       onRequestClose={() => setShowExplanationModal(false)}
       >
-        <View className="flex-1 justify-center items-center bg-black bg-opacity-40">
+        <View className="flex-1 justify-center items-center bg-black/50  bg-opacity-40">
           <View className="bg-white rounded-2xl p-6 w-80 shadow-md">
             <Text className="text-xl font-bold text-[#006400] mb-3">Grade Explanation</Text>
             <Text className="text-[#333333] text-base mb-4">

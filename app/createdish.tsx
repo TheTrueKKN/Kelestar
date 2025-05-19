@@ -86,7 +86,7 @@ export default function CreateDishPage() {
   
     // If not exists, add to list
     setIngredientList(prev => [...prev, dishIngredient]);
-    console.log(`Current ing list: ${JSON.stringify([...ingredientList, dishIngredient], null, 2)}`);
+    //console.log(`Current ing list: ${JSON.stringify([...ingredientList, dishIngredient], null, 2)}`);
   };
 
   const base64Image: Base64Image = {
@@ -127,7 +127,7 @@ export default function CreateDishPage() {
    }
    
    const insertDishIngredientSuccess = await insertDishIngredient(dishId, ingredientList)
-
+   console.log(`result: ${insertDishIngredientSuccess}`)
    await updateVendorGreenScore(finalVendorId)
     // Navigate back to the dishes page
 

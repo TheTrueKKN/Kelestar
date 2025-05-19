@@ -2,25 +2,55 @@ import { Alert } from "react-native";
 import { supabase } from "../lib/supabase";
 import { DishIngredient } from "../interfaces/dishIngredient";
 import { JoinedDishIngredient } from "../interfaces/joinedDishIngredient";
+import { generateNutritionInfo } from "../components/GeminiAI";
 
 export async function insertDishIngredient(
     dishId: string, 
     dishIngredient: DishIngredient[]
 ) {
     try {
-    
-    const ingredientsWithDishId = dishIngredient.map(ingredient => ({
-        ...ingredient,
-        dish_id: dishId, // assuming 'dish_id' is the column name in your table
+
+    const ingredientsWithDishId = dishIngredient.map(({ ingredient, ...rest }) => ({
+        ...rest,
+        dish_id: dishId,
     }));
 
-    // console.log(`DATA in dish Ingredient list: ${JSON.stringify(ingredientsWithDishId)}`)    
+    //console.log(`DATA in dish Ingredient list: ${JSON.stringify(ingredientsWithDishId)}`)    
     const {data, error} = await supabase
     .from("dish_ingredient")
     .insert(ingredientsWithDishId)
     .select()
 
-    // console.log(`Inserting new dishingredient: ${JSON.stringify(data)}`);
+    //console.log(`Inserting new dishingredient: ${JSON.stringify(error)}`);
+
+    const extractedData = dishIngredient.map(item => ({
+        ingredient_name: item.ingredient!.ingredient_name!,
+        ingredient_amount: item.ingredient_amount!.toString()
+    }));
+
+    const dish_nutrient = await generateNutritionInfo(extractedData)
+    console.log(`Dish nutrition:${JSON.stringify(dish_nutrient)}`)
+
+    const { data:nutritionData, error:nutrientError } = await supabase
+    .from("dish_nutrition")
+    .insert([
+        {
+            fats: dish_nutrient["Fats"],
+            calories: dish_nutrient["Calories"],
+            protein: dish_nutrient["Protein"],
+            carbs: dish_nutrient["Carbs"]
+        }
+    ])
+    .select();
+
+    console.log(`Result from insert nutrition Data:${JSON.stringify(nutritionData)}, Error:${nutrientError}`)
+
+    const { error: nutritionKeyError } = await supabase
+    .from("dish")
+    .update({
+        dish_nutrition_id: nutritionData![0].id
+    })
+    .eq("id", dishId);
 
     if (error) {
         throw error
