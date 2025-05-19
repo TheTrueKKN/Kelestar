@@ -4,7 +4,7 @@ import { DishIngredient } from "../interfaces/dishIngredient";
 import { JoinedDishIngredient } from "../interfaces/joinedDishIngredient";
 
 export async function insertDishIngredient(
-    dishId: number, 
+    dishId: string, 
     dishIngredient: DishIngredient[]
 ) {
     try {

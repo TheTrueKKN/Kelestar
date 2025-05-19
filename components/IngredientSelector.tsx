@@ -46,27 +46,28 @@ const IngredientSelector = ({
   const handleSavePressed = () => {
     //console.log("search term:", ingredientName);
     const searchedIngredient = ingredientList
-      ? ingredientList.find((option) => (option.ingredient_name === ingredientName))
+      ? ingredientList.find(
+          (option) => option.ingredient_name === ingredientName
+        )
       : null;
-      
+
     setIngredientWeight(Number(ingredientWeight));
     if (searchedIngredient && ingredientWeight > 0) {
       // console.log("searched ingredient:", searchedIngredient);
       const dishIngredient: DishIngredient = {
         ingredient_id: searchedIngredient.id,
-        ingredient_amount: ingredientWeight
-      }
+        ingredient_amount: ingredientWeight,
+        ingredient: searchedIngredient,
+      };
       handleAddIngredient(dishIngredient);
 
       handleShowModal(false);
       setIngredientName("");
       setIngredientWeight(0);
       //Alert.alert(`${ingredientWeight}g of ${ingredientName} added`);
-    } 
-    else if (!searchedIngredient){
+    } else if (!searchedIngredient) {
       Alert.alert("Please enter a valid ingredient");
-    }
-    else if (ingredientWeight <= 0) {
+    } else if (ingredientWeight <= 0) {
       // console.log("ingredientWeight", ingredientWeight, typeof(ingredientWeight))
       Alert.alert("Please enter a valid ingredient weight");
     }
@@ -77,7 +78,7 @@ const IngredientSelector = ({
     handleShowModal(false);
     setIngredientName("");
     setIngredientWeight(0);
-  }
+  };
 
   return (
     <View className="justify-center items-center">
