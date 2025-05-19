@@ -10,8 +10,7 @@ export async function joinDishIngredient(
         .from('dish_ingredient')
         .select(`
             ingredient:ingredient_id (
-            id,
-            ingredient_name
+            *
             ),
             ingredient_amount
         `)
