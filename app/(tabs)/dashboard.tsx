@@ -16,21 +16,6 @@ const chartColors = [
   "#0EA5E9", // sky blue
 ];
 
-const barData = {
-  labels: [
-    "Chicken Rice",
-    "Mutton Curry",
-    "Tofu Bowl",
-    "Beef Salad",
-    "Fried Shrimp",
-  ],
-  datasets: [
-    {
-      data: [80, 110, 50, 123, 85],
-    },
-  ],
-};
-
 const Dashboard = () => {
   const { width } = useWindowDimensions();
   const [vendorId, setVendorId] = useState("");

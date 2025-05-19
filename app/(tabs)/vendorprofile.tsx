@@ -1,8 +1,8 @@
-import { View, Text, Image, TouchableOpacity, Modal } from "react-native";
+import { View, Text, Image, Modal, TouchableOpacity } from "react-native";
+import { getVendorByUser } from "../../controllers/vendorController";
 import { icons } from "../../constants";
 import React, { useEffect, useState, useCallback } from "react";
 import ProfileSquareButton from "../../components/ProfileSquareButton";
-import { getVendorByUser } from "../../controllers/vendorController";
 import {
   useRouter,
   useFocusEffect,
@@ -12,7 +12,6 @@ import { Vendor } from "../../interfaces/vendor";
 import { getImage } from "../../controllers/fileController";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 
-const vendorLogo = require("../../assets/images/vendor_logo.png");
 
 const vendor_profile = () => {
 
@@ -142,4 +141,4 @@ const vendor_profile = () => {
   );
 };
 
-export default VendorProfile;
+export default vendor_profile;
