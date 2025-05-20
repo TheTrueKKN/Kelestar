@@ -41,7 +41,7 @@ export default function ChooseMeal() {
         if (fetchedVendors) {
           setVendors(fetchedVendors);
         }
-        const fetchedDishes = await getDishes({active: true});
+        const fetchedDishes = await getDishes({ active: true });
         if (fetchedDishes) {
           setDishes(fetchedDishes);
         }
@@ -57,7 +57,7 @@ export default function ChooseMeal() {
         setVendorDesc(selectedVendor.vendor_description);
         const fetchedDishes = await getDishes({
           dish_vendor_id: selectedVendor?.id,
-          active: true
+          active: true,
         });
         if (fetchedDishes) {
           setDishes(fetchedDishes);
@@ -81,7 +81,10 @@ export default function ChooseMeal() {
   const handleSearchItem = async (searchTerm: string) => {
     setSearchTerm(searchTerm);
     setSelectedVendor(null);
-    const fetchedDishes = await getDishes({ dish_name: searchTerm, active: true });
+    const fetchedDishes = await getDishes({
+      dish_name: searchTerm,
+      active: true,
+    });
     if (fetchedDishes) {
       setDishes(fetchedDishes);
     }
@@ -238,21 +241,29 @@ export default function ChooseMeal() {
               </>
             )}
 
-            {/* Section title */}
             <View className="self-start ml-[19px] mt-2 mb-2">
               <Text className="font-psemibold text-[20px] text-[#1E1F1F]">
                 Menu
               </Text>
             </View>
 
-            {/* Dishes from this store */}
-            {dishes.map((dish) => (
-              <DishCard
-                key={dish.id}
-                dish={dish}
-                onPress={() => handleDishPress(dish)}
-              />
-            ))}
+            {/* Section title */}
+            {dishes.length > 0 ? (
+              <>
+                {/* Dishes from this store */}
+                {dishes.map((dish) => (
+                  <DishCard
+                    key={dish.id}
+                    dish={dish}
+                    onPress={() => handleDishPress(dish)}
+                  />
+                ))}
+              </>
+            ) : (
+              <Text className="font-psemibold text-[14px] text-[#1E1F1F]">
+                No results found
+              </Text>
+            )}
           </View>
 
           {/* Placeholder for other stores */}

@@ -89,18 +89,6 @@ const Tracking = () => {
     legendFontSize: number;
   };
 
-  const calcIndividualIngredientFootprint = (
-    dishIngredient: JoinedDishIngredient
-  ) => {
-    return Number(
-      (
-        (dishIngredient.ingredient_amount *
-          dishIngredient.ingredient.ingredient_footprint) /
-        1000
-      ).toFixed(2)
-    );
-  };
-
   // deepseek generated colors :) Can change if you think its ugly
   const COLOR_PALETTE = [
     "#FF5C5C", // Coral red (original)
@@ -115,13 +103,32 @@ const Tracking = () => {
     "#FFD166", // Sunflower yellow (softer gold)
   ];
 
+  const calcIndividualIngredientFootprint = (
+    dishIngredient: JoinedDishIngredient
+  ) => {
+    return Number(
+      (
+        (dishIngredient.ingredient_amount *
+          dishIngredient.ingredient.ingredient_footprint) /
+        1000
+      ).toFixed(2)
+    );
+  };
+
+  const getNutritionApproximateRange = (value: number) => {
+    return value == 0? '0' : `${(value * 0.9).toFixed(0)} - ${(value * 1.1).toFixed(0)}`;
+  };
+
   const handleStartTracking = async () => {
     const insertMealSuccess = await insertMeal({
       meal_datetime: date,
       meal_dish_id: dish.id,
     });
     if (insertMealSuccess) {
-      Alert.alert(`New dish added`,`Dish name: ${dish.dish_name}\nFootprint: ${dish.dish_total_carbon} gCO₂`);
+      Alert.alert(
+        `New dish added`,
+        `Dish name: ${dish.dish_name}\nFootprint: ${dish.dish_total_carbon} gCO₂`
+      );
       router.back();
     }
   };
@@ -303,20 +310,24 @@ const Tracking = () => {
                 </Text>
                 <View className="space-y-2">
                   <Text className="text-base text-gray-700">
-                    Calories: 450 kcal
+                    Calories: {getNutritionApproximateRange(dish.dish_nutrition?.calories!)} kcal
                   </Text>
-                  <Text className="text-base text-gray-700">Protein: 25g</Text>
                   <Text className="text-base text-gray-700">
-                    Carbohydrates: 50g
+                    Protein: {getNutritionApproximateRange(dish.dish_nutrition?.protein!)} g
                   </Text>
-                  <Text className="text-base text-gray-700">Fats: 15g</Text>
-                  <Text className="text-base text-gray-700">Fiber: 8g</Text>
+                  <Text className="text-base text-gray-700">
+                    Carbohydrates: {getNutritionApproximateRange(dish.dish_nutrition?.carbs!)} g
+                  </Text>
+                  <Text className="text-base text-gray-700">
+                    Fats: {getNutritionApproximateRange(dish.dish_nutrition?.fats!)} g
+                  </Text>
+                  {/* <Text className="text-base text-gray-700">Fiber: 8g</Text>
                   <Text className="text-base text-gray-700">Sodium: 300mg</Text>
                   <Text className="text-base text-gray-700">Servings: 2</Text>
-                  <Text className="text-base text-gray-700">Sugars: 5g</Text>
+                  <Text className="text-base text-gray-700">Sugars: 5g</Text> 
                   <Text className="text-base text-gray-700">
                     Cholesterol: 20mg
-                  </Text>
+                  </Text>*/}
                 </View>
               </View>
             )}
@@ -442,9 +453,7 @@ const Tracking = () => {
                 </Text>
               </TouchableOpacity>
             ) : (
-              <View
-                className=" bg-gray-100 py-4 rounded-xl shadow-sm active:opacity-90"
-              >
+              <View className=" bg-gray-100 py-4 rounded-xl shadow-sm active:opacity-90">
                 <Text className="text-gray-200 text-center font-bold text-lg">
                   Dish no longer available
                 </Text>

@@ -31,11 +31,11 @@ export default function Menu() {
    const [nutritionModal, setNutritionModal] = useState(false);
 
   const setDishMenu = async () => {
-      console.log(`Current vendor Id: ${vendorId}`)
+      //console.log(`Current vendor Id: ${vendorId}`)
       const menu_result = await getDishes({dish_vendor_id: vendorId, active: true})
       if(menu_result){
         setVendorDishes(menu_result)
-        console.log(`DISH Data: ${JSON.stringify(menu_result)}`)
+        //console.log(`DISH Data: ${JSON.stringify(menu_result)}`)
       }
   }
 
@@ -85,7 +85,7 @@ export default function Menu() {
           prev_page: "/menu"
         }
       });
-      console.log(`Current dish being edited: ${JSON.stringify(dish)}`)
+      //console.log(`Current dish being edited: ${JSON.stringify(dish)}`)
     };
 
 

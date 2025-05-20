@@ -20,7 +20,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import { Router, useFocusEffect, useRouter } from "expo-router";
-import { getMealListingByCustomer } from "../controllers/mealController";
+import { deleteMeal, getMealListingByCustomer } from "../controllers/mealController";
 import { Meal } from "../interfaces/meal";
 import { Dish } from "../interfaces/dish";
 import {
@@ -294,8 +294,12 @@ const History = () => {
     Alert.alert("Edit", `Edit ${meal.meal_dish?.dish_name}`);
   };
 
-  const handleDelete = (meal: Meal) => {
-    Alert.alert("Delete", `Delete ${meal.meal_dish?.dish_name}`);
+  const handleDelete = async (meal_id: string) => {
+    // Alert.alert("Delete", `Delete ${meal.meal_dish?.dish_name}`);
+    const deleteMealSuccess = await deleteMeal({id: meal_id});
+    if (deleteMealSuccess) {
+      setMeals(meals.filter(meal => meal.id !== meal_id));
+    }
   };
 
   // Render each dish item with swipe functionality.
@@ -308,7 +312,7 @@ const History = () => {
         <SwipeableItem
           key={meal_id}
           onEdit={() => handleEdit(dish)}
-          onDelete={() => handleDelete(dish)}
+          onDelete={() => handleDelete(meal_id)}
         >
           <TouchableOpacity
             className="flex-row items-center justify-between p-3"
@@ -401,7 +405,7 @@ const History = () => {
   if (loading) {
     return (
       <Text style={{ textAlign: "center", marginTop: 32 }}>
-        Loading menu...
+        Loading history...
       </Text>
     );
   }
