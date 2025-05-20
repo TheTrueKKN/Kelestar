@@ -9,11 +9,10 @@ import {
   getDishImage,
 } from "./fileController";
 import {
-  getMealListingByCustomer,
   getMealListingByDish,
 } from "./mealController";
 
-type InsertDishReturn = [number | null, boolean];
+type InsertDishReturn = [string | null, boolean];
 
 export async function getDishes({
   dish_vendor_id,
@@ -25,7 +24,7 @@ export async function getDishes({
 
     let queryBuilder = supabase
       .from("dish")
-      .select("*, dish_vendor: dish_vendor_id(vendor_name)")
+      .select("*, dish_vendor: dish_vendor_id(vendor_name), dish_nutrition: dish_nutrition_id(*)")
       .limit(500);
 
     queryBuilder = dish_vendor_id

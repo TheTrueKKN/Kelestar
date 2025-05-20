@@ -5,6 +5,7 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
+  Modal,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import {
@@ -17,6 +18,7 @@ import DishItem from "../../components/DishItem";
 import { getVendorByUser, updateVendorGreenScore } from "../../controllers/vendorController";
 import { Dish } from "../../interfaces/dish";
 import { deleteDish, getDishes } from "../../controllers/dishController";
+import { Ionicons } from "@expo/vector-icons";
 
 
 export default function Menu() {
@@ -26,12 +28,14 @@ export default function Menu() {
    // Getting parameters from Initial menu page
    const { menudDishes, newDish } = useGlobalSearchParams();
    const [loading, setLoading] = useState(false);
+   const [nutritionModal, setNutritionModal] = useState(false);
 
   const setDishMenu = async () => {
       console.log(`Current vendor Id: ${vendorId}`)
       const menu_result = await getDishes({dish_vendor_id: vendorId, active: true})
       if(menu_result){
         setVendorDishes(menu_result)
+        console.log(`DISH Data: ${JSON.stringify(menu_result)}`)
       }
   }
 
@@ -150,10 +154,42 @@ export default function Menu() {
               dish={dish}
               onDelete={() => removeDish(dish)}
               onEdit={(dish, dish_url) => editDish(dish, dish_url)}
+              setModal={() =>setNutritionModal(true)}
             />
           ))
         )}
       </ScrollView>
+      <Modal
+  animationType="slide"
+  transparent={true}
+  visible={nutritionModal}
+  onRequestClose={() => setNutritionModal(false)}
+>
+  <View className="flex-1 bg-black/50 justify-center items-center">
+    <View className="bg-white rounded-2xl px-6 py-8 w-[90%] relative">
+      
+      {/* Close button */}
+      <TouchableOpacity
+        className="absolute top-3 right-3"
+        onPress={() => setNutritionModal(false)}
+      >
+        <Ionicons name="close" size={24} color="#333" />
+      </TouchableOpacity>
+
+      {/* Modal Title */}
+      <Text className="text-xl font-bold text-center mb-4 text-black">
+        Dish Nutrition
+      </Text>
+
+      {/* Modal Text */}
+      <Text className="text-base text-gray-700 text-center">
+        We serve because we served
+      </Text>
+
+    </View>
+  </View>
+</Modal>
+
     </View>
   );
 }

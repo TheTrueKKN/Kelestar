@@ -15,5 +15,6 @@ export interface Dish {
     dish_ingredient?: JoinedDishIngredient[]
     dish_rating?: CarbonRating
     active?: boolean
+    dish_nutrition_id?: string;
     dish_nutrition?: DishNutrition;
   }

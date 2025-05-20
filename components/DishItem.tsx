@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity, Modal } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -10,15 +10,17 @@ import Animated, {
 import { PanGestureHandler } from "react-native-gesture-handler";
 import { Dish } from "../interfaces/dish";
 import { getDishImage } from "../controllers/fileController";
+import { Ionicons } from "@expo/vector-icons";
 
 type DishItemProps = {
   dish: Dish;
   onEdit: (dish: Dish, dish_url?: string) => void;
   onDelete: () => void;
+  setModal: () => void
 };
 
-const DishItem: React.FC<DishItemProps> = ({ dish, onEdit, onDelete }) => {
-  const { dish_name, dish_price, dish_image_name, dish_total_carbon } = dish; // Destructure correctly
+const DishItem: React.FC<DishItemProps> = ({ dish, onEdit, onDelete, setModal }) => {
+  const { dish_name, dish_price, dish_image_name, dish_total_carbon, dish_nutrition } = dish; // Destructure correctly
 
   const [dishUrl, setDishUrl] = useState<string | null>(null);
 
@@ -35,7 +37,7 @@ const DishItem: React.FC<DishItemProps> = ({ dish, onEdit, onDelete }) => {
   //console.log(`Data passed in: ${JSON.stringify(dish)}`)
   //console.log(`Current image URl: ${dishUrl}`)
   // --- Swipeable logic (from history.tsx) ---
-  const maxTranslate = -100;
+  const maxTranslate = -150;
   const threshold = -40;
   const translateX = useSharedValue(0);
 
@@ -92,6 +94,21 @@ const DishItem: React.FC<DishItemProps> = ({ dish, onEdit, onDelete }) => {
           paddingRight: 8,
         }}
       >
+        <Animated.View style={[{ width: 48, height: "100%" }, animatedOpacity]}>
+          <TouchableOpacity
+            onPress={() => setModal()}
+            style={{
+              width: 48,
+              left: 4,
+              height: "100%",
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: "#8080FF"
+            }}
+          >
+            <Text style={{ color: "white", fontWeight: "bold" }}>View</Text>
+          </TouchableOpacity>
+        </Animated.View>
         <Animated.View style={[{ width: 48, height: "100%" }, animatedOpacity]}>
           <TouchableOpacity
             onPress={() => onEdit(dish, dishUrl ?? "")}
