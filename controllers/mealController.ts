@@ -32,7 +32,8 @@ export async function getMealListingByCustomer(date?: Date) {
 
     data?.map(async (meal: Meal) => {
       meal.meal_datetime = new Date(meal.meal_datetime!);
-      meal.meal_dish!.dish_image_url = await getDishImage(meal.meal_dish!.dish_image_name!) ?? "";
+      meal.meal_dish!.dish_image_url =
+        (await getDishImage(meal.meal_dish!.dish_image_name!)) ?? "";
     });
 
     if (error && status !== 406) throw error;
@@ -44,7 +45,10 @@ export async function getMealListingByCustomer(date?: Date) {
   }
 }
 
-export async function getMealListingByDish({meal_dish_id}: Meal, count: number) {
+export async function getMealListingByDish(
+  { meal_dish_id }: Meal,
+  count: number
+) {
   try {
     const { data, error, status } = await supabase
       .from("meal")
@@ -74,6 +78,22 @@ export async function insertMeal({ meal_datetime, meal_dish_id }: Meal) {
 
     const { error } = await supabase.from("meal").insert(meal);
 
+    if (error) {
+      throw error;
+    }
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+
+export async function deleteMeal({ id }: Meal) {
+  try {
+    // console.log(`Current meal id: ${id}`);
+    const { data, error } = await supabase.from("meal").delete().eq("id", id);
+
+    // console.log(`Testing delete: ${JSON.stringify(data)}`);
     if (error) {
       throw error;
     }

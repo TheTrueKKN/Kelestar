@@ -231,7 +231,7 @@ export default function EditDishPage() {
         </ScrollView>
 
         {/* Save Changes Button */}
-        <View className="px-5 py-4 bg-white">
+        <View className="px-5 py-16 bg-white">
           <CalculateTotalCarbon joinedIngredientList={dishIngredientList} onCarbonCalculated={setTotalCarbon}/>
           <TouchableOpacity
             className="h-12 bg-[#74B318] rounded-md justify-center items-center mb-12"

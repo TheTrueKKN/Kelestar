@@ -1,5 +1,5 @@
 // History.tsx
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -20,7 +20,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import { Router, useFocusEffect, useRouter } from "expo-router";
-import { getMealListingByCustomer } from "../controllers/mealController";
+import { deleteMeal, getMealListingByCustomer } from "../controllers/mealController";
 import { Meal } from "../interfaces/meal";
 import { Dish } from "../interfaces/dish";
 import {
@@ -243,72 +243,40 @@ const History = () => {
   const [selectedOption, setSelectedOption] = useState(periodOptions.Day);
   const [isAscending, setIsAscending] = useState(true);
   const [showPicker, setShowPicker] = useState(false);
+  const [loading, setLoading] = useState(false);
   // const timeOptions = ["Day", "Week", "Month"];
   const [meals, setMeals] = useState<Meal[]>([]);
-  const mealData = useMemo(
-    () => generateMealData(meals, selectedOption),
-    [meals, selectedOption]
-  );
+  const [mealData, setMealData] = useState<Record<string, PeriodData>>({});
+
   const router = useRouter();
+
+  // const mealData = useMemo(() => {
+  //   setLoading(true);
+  //   return generateMealData(meals, selectedOption);
+  //   setLoading(false);
+  // }, [meals, selectedOption]);
 
   useFocusEffect(
     React.useCallback(() => {
       const initMeals = async () => {
+        setLoading(true);
         const fetchedMeals = await getMealListingByCustomer();
         if (fetchedMeals) {
           setMeals(fetchedMeals);
         }
+        setLoading(false);
       };
+
       initMeals();
     }, [])
   );
 
-  // Sample dish data.
-  // const [todayDishes] = useState<Dish[]>([
-  //   {
-  //     id: "1",
-  //     name: "Tofu Buddha Bowl",
-  //     image: require("../assets/images/tofu_bowl_pic.png"),
-  //     price: "RM 12",
-  //     grade: "A",
-  //     gradeColor: "#8DC63F",
-  //   },
-  //   {
-  //     id: "2",
-  //     name: "Chicken Rice",
-  //     image: require("../assets/images/chicken_rice.png"),
-  //     price: "RM 10",
-  //     grade: "B",
-  //     gradeColor: "#F8D15B",
-  //   },
-  //   {
-  //     id: "3",
-  //     name: "Beef Sharwama set",
-  //     image: require("../assets/images/beef_shawarma_set.png"),
-  //     price: "RM 18",
-  //     grade: "C",
-  //     gradeColor: "#ED1C24",
-  //   },
-  // ]);
-
-  // const [yesterdayDishes] = useState<Dish[]>([
-  //   {
-  //     id: "4",
-  //     name: "Tofu Buddha Bowl",
-  //     image: require("../assets/images/tofu_bowl_pic.png"),
-  //     price: "RM 12",
-  //     grade: "A",
-  //     gradeColor: "#8DC63F",
-  //   },
-  //   {
-  //     id: "5",
-  //     name: "Chicken Rice",
-  //     image: require("../assets/images/chicken_rice.png"),
-  //     price: "RM 10",
-  //     grade: "B",
-  //     gradeColor: "#F8D15B",
-  //   },
-  // ]);
+  useEffect(() => {
+    setLoading(true);
+    const data = generateMealData(meals, selectedOption);
+    setMealData(data);
+    setLoading(false);
+  }, [meals, selectedOption]);
 
   const toggleSortOrder = useCallback(() => {
     setIsAscending((prev) => !prev);
@@ -320,63 +288,70 @@ const History = () => {
   yesterday.setDate(yesterday.getDate() - 1);
   const formatDate = (date: Date) =>
     `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
-  const todayDate = formatDate(today);
-  const yesterdayDate = formatDate(yesterday);
 
   // Action handlers.
   const handleEdit = (meal: Meal) => {
     Alert.alert("Edit", `Edit ${meal.meal_dish?.dish_name}`);
   };
 
-  const handleDelete = (meal: Meal) => {
-    Alert.alert("Delete", `Delete ${meal.meal_dish?.dish_name}`);
+  const handleDelete = async (meal_id: string) => {
+    // Alert.alert("Delete", `Delete ${meal.meal_dish?.dish_name}`);
+    const deleteMealSuccess = await deleteMeal({id: meal_id});
+    if (deleteMealSuccess) {
+      setMeals(meals.filter(meal => meal.id !== meal_id));
+    }
   };
 
   // Render each dish item with swipe functionality.
-  const renderFoodItem = useCallback((meal_id: string, dish: Dish, router: Router) => {
-    const carbonRating = getCarbonRating(dish.dish_total_carbon ?? 0);
-    const bgColor = getRatingBadgeColor(carbonRating);
+  const renderFoodItem = useCallback(
+    (meal_id: string, dish: Dish, router: Router) => {
+      const carbonRating = getCarbonRating(dish.dish_total_carbon ?? 0);
+      const bgColor = getRatingBadgeColor(carbonRating);
 
-    return (
-      <SwipeableItem
-        key={meal_id}
-        onEdit={() => handleEdit(dish)}
-        onDelete={() => handleDelete(dish)}
-      >
-        
-        <TouchableOpacity className="flex-row items-center justify-between p-3" onPress={() => {
-            router.push({
-              pathname: "/tracking",
-              params: {
-                dish: JSON.stringify(dish),
-              },
-            });
-          }}>
-          <View className="flex-row items-center">
-            <Image
-              source={{ uri: dish.dish_image_url }}
-              className="w-12 h-12 rounded-full"
-              resizeMode="cover"
-            />
-            <View className="ml-3">
-              <Text className="font-semibold text-base text-black">
-                {dish.dish_name}
-              </Text>
-              <Text className="font-normal text-gray-500">{`RM ${dish.dish_price?.toFixed(
-                2
-              )}`}</Text>
-            </View>
-          </View>
-          <View
-            className="w-8 h-8 rounded-full items-center justify-center"
-            style={{ backgroundColor: bgColor }}
+      return (
+        <SwipeableItem
+          key={meal_id}
+          onEdit={() => handleEdit(dish)}
+          onDelete={() => handleDelete(meal_id)}
+        >
+          <TouchableOpacity
+            className="flex-row items-center justify-between p-3"
+            onPress={() => {
+              router.push({
+                pathname: "/tracking",
+                params: {
+                  dish: JSON.stringify(dish),
+                },
+              });
+            }}
           >
-            <Text className="text-white font-bold">{carbonRating}</Text>
-          </View>
-        </TouchableOpacity>
-      </SwipeableItem>
-    );
-  }, []);
+            <View className="flex-row items-center">
+              <Image
+                source={{ uri: dish.dish_image_url }}
+                className="w-12 h-12 rounded-full"
+                resizeMode="cover"
+              />
+              <View className="ml-3">
+                <Text className="font-semibold text-base text-black">
+                  {dish.dish_name}
+                </Text>
+                <Text className="font-normal text-gray-500">{`RM ${dish.dish_price?.toFixed(
+                  2
+                )}`}</Text>
+              </View>
+            </View>
+            <View
+              className="w-8 h-8 rounded-full items-center justify-center"
+              style={{ backgroundColor: bgColor }}
+            >
+              <Text className="text-white font-bold">{carbonRating}</Text>
+            </View>
+          </TouchableOpacity>
+        </SwipeableItem>
+      );
+    },
+    []
+  );
 
   const renderIOSPicker = () => (
     <View className="z-20">
@@ -427,6 +402,14 @@ const History = () => {
     </View>
   );
 
+  if (loading) {
+    return (
+      <Text style={{ textAlign: "center", marginTop: 32 }}>
+        Loading history...
+      </Text>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-row justify-between items-center px-4 pt-4">
@@ -443,27 +426,6 @@ const History = () => {
         className="mt-4"
         contentContainerStyle={{ paddingBottom: 100 }}
       >
-        {/* Today's Section */}
-        {/* <View>
-          <View className="flex-row justify-between px-4 mb-2">
-            <Text className="text-lg font-semibold">Today</Text>
-            <Text className="text-gray-500 font-normal">{todayDate}</Text>
-          </View>
-          {todayDishes.map(renderFoodItem)}
-          <View className="px-4 mt-2 mb-6 items-end">
-            <Text className="text-gray-500 font-normal">
-              Total: 7.8 Kg CO₂e
-            </Text>
-          </View>
-        </View> */}
-        {/* Yesterday's Section */}
-        {/* <View>
-          <View className="flex-row justify-between px-4 mb-2">
-            <Text className="text-lg font-semibold">Yesterday</Text>
-            <Text className="text-gray-500 font-normal">{yesterdayDate}</Text>
-          </View>
-          {yesterdayDishes.map(renderFoodItem)}
-        </View> */}
         {Object.keys(mealData).map((period) => (
           <View key={period}>
             <View className="flex-row justify-between px-4 mb-2">
