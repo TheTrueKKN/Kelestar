@@ -36,7 +36,6 @@ ${formattedIngredients}
 
     if (!reply) return { error: "No nutrition data found." };
 
-    // 🧠 Extract values using regex (case-insensitive)
     const caloriesMatch = reply.match(/calories.*?(\d+(\.\d+)?)/i);
     const carbsMatch = reply.match(/carbs.*?(\d+(\.\d+)?)/i);
     const proteinMatch = reply.match(/protein.*?(\d+(\.\d+)?)/i);
