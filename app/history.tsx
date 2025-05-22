@@ -1,5 +1,5 @@
 // History.tsx
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,19 +7,11 @@ import {
   TouchableOpacity,
   ScrollView,
   Platform,
-  Alert,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Picker } from "@react-native-picker/picker";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  useAnimatedGestureHandler,
-  interpolate,
-} from "react-native-reanimated";
-import { PanGestureHandler } from "react-native-gesture-handler";
-import { Router, useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { deleteMeal, getMealListingByCustomer } from "../controllers/mealController";
 import { Meal } from "../interfaces/meal";
 import { Dish } from "../interfaces/dish";
@@ -29,90 +21,7 @@ import {
 } from "../lib/utils/carbonRating";
 import { periodOptions } from "../enums/periodOptions";
 
-interface SwipeableItemProps {
-  children: React.ReactNode;
-  onEdit: () => void;
-  onDelete: () => void;
-}
-
-/**
- * SwipeableItem Component using Tailwind classes for static styling
- * and inline animated style for dynamic opacity.
- */
-const SwipeableItem = ({ children, onEdit, onDelete }: SwipeableItemProps) => {
-  // Adjust swipe parameters so you don't have to swipe too far.
-  const maxTranslate = -100;
-  const threshold = -40;
-  const translateX = useSharedValue(0);
-
-  const gestureHandler = useAnimatedGestureHandler({
-    onStart: (_, ctx: { startX: number }) => {
-      ctx.startX = translateX.value;
-    },
-    onActive: (event, ctx) => {
-      // Allow only leftward swipe (negative translation)
-      translateX.value = Math.min(0, ctx.startX + event.translationX);
-    },
-    onEnd: () => {
-      // Snap open if past threshold; else, close.
-      if (translateX.value < threshold) {
-        translateX.value = withSpring(maxTranslate);
-      } else {
-        translateX.value = withSpring(0);
-      }
-    },
-  });
-
-  // Animated style for the card moving left.
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
-
-  // Animated opacity for the buttons.
-  const animatedOpacity = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      translateX.value,
-      [0, maxTranslate],
-      [0, 1],
-      "clamp"
-    );
-    return { opacity };
-  });
-
-  return (
-    <View className="mx-4 my-1 rounded-lg overflow-hidden relative">
-      {/* Underlay buttons container positioned to the right */}
-      <View className="absolute inset-y-0 right-0 flex-row items-center pr-2">
-        {/* Use Tailwind classes for width, height, and margin; merge in animated opacity */}
-        <Animated.View style={animatedOpacity} className="w-12 h-full">
-          <TouchableOpacity
-            onPress={onEdit}
-            className="w-12 h-full justify-center items-center bg-green-500 rounded-l-lg"
-          >
-            <Text className="text-white font-bold">Edit</Text>
-          </TouchableOpacity>
-        </Animated.View>
-        <Animated.View style={animatedOpacity} className="w-10 h-full">
-          <TouchableOpacity
-            onPress={onDelete}
-            className="w-12 h-full justify-center items-center bg-red-500 rounded-r-lg"
-          >
-            <Text className="text-white font-bold">Delete</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      </View>
-      {/* Swipeable card */}
-      <PanGestureHandler onGestureEvent={gestureHandler}>
-        <Animated.View style={animatedStyle} className="bg-[#F2F2F2]">
-          {children}
-        </Animated.View>
-      </PanGestureHandler>
-    </View>
-  );
-};
-
 type DateComparisonFn = (date1: Date, date2: Date) => DateComparisonResult;
-
 type DateComparisonResult = { isSamePeriod: boolean; period: string };
 
 const getSameDate: DateComparisonFn = (date1, date2) => {
@@ -128,30 +37,25 @@ const getSameDate: DateComparisonFn = (date1, date2) => {
 
 const getSameWeek: DateComparisonFn = (date1, date2) => {
   function getStartOfWeek(date: Date): Date {
-    const day = date.getDay(); // 0 (Sunday) to 6 (Saturday)
-    // Calculate difference to Monday (or Sunday if you prefer)
-    // Here we use Monday as the first day of the week
-    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
 
     const startOfWeek = new Date(date);
     startOfWeek.setDate(diff);
-    startOfWeek.setHours(0, 0, 0, 0); // set to midnight to ignore time differences
+    startOfWeek.setHours(0, 0, 0, 0);
 
     return startOfWeek;
   }
 
-  // Get the start of the week for each date (Monday as first day)
   const startOfWeek1 = getStartOfWeek(date1);
   const startOfWeek2 = getStartOfWeek(date2);
 
   const endOfWeek = new Date(startOfWeek1.getTime() + 6 * 24 * 60 * 60 * 1000);
-  // endOfWeek.setDate(startOfWeek1.getDate() + 6);
   const period = `${startOfWeek1.toISOString().split("T")[0]} to ${
     endOfWeek.toISOString().split("T")[0]
   }`;
   const result: DateComparisonResult = { isSamePeriod: false, period };
 
-  // Compare the start of week dates
   if (startOfWeek1.getTime() === startOfWeek2.getTime()) {
     result.isSamePeriod = true;
   }
@@ -189,12 +93,10 @@ const generateMealData = (
 
   let mealIndex = 0;
   const totalMeals = meals.length;
-  let currentDate = new Date();
 
-  // Generate data for the current month
   while (mealIndex < totalMeals) {
     const mealsToday: Meal[] = [];
-    currentDate = meals[mealIndex].meal_datetime!;
+    const currentDate = meals[mealIndex].meal_datetime!;
     let totalCarbon = 0;
 
     const periodHandlers: Record<periodOptions, DateComparisonFn> = {
@@ -212,8 +114,6 @@ const generateMealData = (
     let currentPeriod = samePeriod.period;
 
     do {
-      currentPeriod = samePeriod.period;
-
       mealsToday.push({
         id: meals[mealIndex].id,
         ...meals[mealIndex],
@@ -222,15 +122,15 @@ const generateMealData = (
 
       mealIndex++;
 
-      samePeriod =
-        mealIndex < totalMeals
-          ? getSamePeriod(meals[mealIndex].meal_datetime!, currentDate)
-          : { isSamePeriod: false, period: "" };
-      // console.log(samePeriod);
+      if (mealIndex < totalMeals) {
+        samePeriod = getSamePeriod(meals[mealIndex].meal_datetime!, currentDate);
+      } else {
+        break;
+      }
     } while (samePeriod.isSamePeriod);
 
     data[currentPeriod] = {
-      period: samePeriod.period,
+      period: currentPeriod,
       totalCarbon,
       meals: mealsToday,
     };
@@ -241,23 +141,18 @@ const generateMealData = (
 
 const History = () => {
   const [selectedOption, setSelectedOption] = useState(periodOptions.Day);
-  const [isAscending, setIsAscending] = useState(true);
   const [showPicker, setShowPicker] = useState(false);
   const [loading, setLoading] = useState(false);
-  // const timeOptions = ["Day", "Week", "Month"];
   const [meals, setMeals] = useState<Meal[]>([]);
   const [mealData, setMealData] = useState<Record<string, PeriodData>>({});
-
+  const [selectedMeal, setSelectedMeal] = useState<{id: string, dish: Dish} | null>(null);
+  const [actionModalVisible, setActionModalVisible] = useState(false);
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
+  
   const router = useRouter();
 
-  // const mealData = useMemo(() => {
-  //   setLoading(true);
-  //   return generateMealData(meals, selectedOption);
-  //   setLoading(false);
-  // }, [meals, selectedOption]);
-
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       const initMeals = async () => {
         setLoading(true);
         const fetchedMeals = await getMealListingByCustomer();
@@ -278,80 +173,48 @@ const History = () => {
     setLoading(false);
   }, [meals, selectedOption]);
 
-  const toggleSortOrder = useCallback(() => {
-    setIsAscending((prev) => !prev);
-  }, []);
-
-  // Date formatting helper.
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const formatDate = (date: Date) =>
-    `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
-
-  // Action handlers.
-  const handleEdit = (meal: Meal) => {
-    Alert.alert("Edit", `Edit ${meal.meal_dish?.dish_name}`);
+  // Action handlers
+  const onPressMeal = (mealId: string, dish: Dish) => {
+    setSelectedMeal({id: mealId, dish});
+    setActionModalVisible(true);
   };
 
-  const handleDelete = async (meal_id: string) => {
-    // Alert.alert("Delete", `Delete ${meal.meal_dish?.dish_name}`);
-    const deleteMealSuccess = await deleteMeal({id: meal_id});
-    if (deleteMealSuccess) {
-      setMeals(meals.filter(meal => meal.id !== meal_id));
+  const closeActionModal = () => {
+    setActionModalVisible(false);
+    setSelectedMeal(null);
+  };
+
+  const handleView = () => {
+    if (!selectedMeal) return;
+    closeActionModal();
+    router.push({
+      pathname: "/tracking",
+      params: {
+        dish: JSON.stringify(selectedMeal.dish),
+      },
+    });
+  };
+
+  const promptDelete = () => {
+    setActionModalVisible(false);
+    setConfirmDeleteVisible(true);
+  };
+
+  const confirmDelete = async () => {
+    if (selectedMeal) {
+      const success = await deleteMeal({id: selectedMeal.id});
+      if (success) {
+        setMeals(meals.filter(meal => meal.id !== selectedMeal.id));
+      }
     }
+    setConfirmDeleteVisible(false);
+    setSelectedMeal(null);
   };
 
-  // Render each dish item with swipe functionality.
-  const renderFoodItem = useCallback(
-    (meal_id: string, dish: Dish, router: Router) => {
-      const carbonRating = getCarbonRating(dish.dish_total_carbon ?? 0);
-      const bgColor = getRatingBadgeColor(carbonRating);
-
-      return (
-        <SwipeableItem
-          key={meal_id}
-          onEdit={() => handleEdit(dish)}
-          onDelete={() => handleDelete(meal_id)}
-        >
-          <TouchableOpacity
-            className="flex-row items-center justify-between p-3"
-            onPress={() => {
-              router.push({
-                pathname: "/tracking",
-                params: {
-                  dish: JSON.stringify(dish),
-                },
-              });
-            }}
-          >
-            <View className="flex-row items-center">
-              <Image
-                source={{ uri: dish.dish_image_url }}
-                className="w-12 h-12 rounded-full"
-                resizeMode="cover"
-              />
-              <View className="ml-3">
-                <Text className="font-semibold text-base text-black">
-                  {dish.dish_name}
-                </Text>
-                <Text className="font-normal text-gray-500">{`RM ${dish.dish_price?.toFixed(
-                  2
-                )}`}</Text>
-              </View>
-            </View>
-            <View
-              className="w-8 h-8 rounded-full items-center justify-center"
-              style={{ backgroundColor: bgColor }}
-            >
-              <Text className="text-white font-bold">{carbonRating}</Text>
-            </View>
-          </TouchableOpacity>
-        </SwipeableItem>
-      );
-    },
-    []
-  );
+  const cancelDelete = () => {
+    setConfirmDeleteVisible(false);
+    setSelectedMeal(null);
+  };
 
   const renderIOSPicker = () => (
     <View className="z-20">
@@ -402,6 +265,44 @@ const History = () => {
     </View>
   );
 
+  // Render each dish item
+  const renderFoodItem = (mealId: string, dish: Dish) => {
+    const carbonRating = getCarbonRating(dish.dish_total_carbon ?? 0);
+    const bgColor = getRatingBadgeColor(carbonRating);
+
+    return (
+      <TouchableOpacity
+        key={mealId}
+        className="mx-4 my-1 rounded-lg overflow-hidden bg-[#F2F2F2]"
+        onPress={() => onPressMeal(mealId, dish)}
+      >
+        <View className="flex-row items-center justify-between p-3">
+          <View className="flex-row items-center">
+            <Image
+              source={{ uri: dish.dish_image_url }}
+              className="w-12 h-12 rounded-full"
+              resizeMode="cover"
+            />
+            <View className="ml-3">
+              <Text className="font-semibold text-base text-black">
+                {dish.dish_name}
+              </Text>
+              <Text className="font-normal text-gray-500">{`RM ${dish.dish_price?.toFixed(
+                2
+              )}`}</Text>
+            </View>
+          </View>
+          <View
+            className="w-8 h-8 rounded-full items-center justify-center"
+            style={{ backgroundColor: bgColor }}
+          >
+            <Text className="text-white font-bold">{carbonRating}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   if (loading) {
     return (
       <Text style={{ textAlign: "center", marginTop: 32 }}>
@@ -414,13 +315,6 @@ const History = () => {
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-row justify-between items-center px-4 pt-4">
         {Platform.OS === "ios" ? renderIOSPicker() : renderAndroidPicker()}
-        <TouchableOpacity onPress={toggleSortOrder}>
-          <Image
-            source={require("../assets/icons/triple_line_icon.png")}
-            className="w-6 h-6"
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
       </View>
       <ScrollView
         className="mt-4"
@@ -430,10 +324,9 @@ const History = () => {
           <View key={period}>
             <View className="flex-row justify-between px-4 mb-2">
               <Text className="text-lg font-semibold">{period}</Text>
-              {/* <Text className="text-gray-500 font-normal">{todayDate}</Text> */}
             </View>
             {mealData[period].meals.map((meal) =>
-              renderFoodItem(meal.id!, meal.meal_dish!, router)
+              renderFoodItem(meal.id!, meal.meal_dish!)
             )}
             <View className="px-4 mt-2 mb-6 items-end">
               <Text className="text-gray-500 font-normal">
@@ -443,6 +336,59 @@ const History = () => {
           </View>
         ))}
       </ScrollView>
+
+      {/* Action Sheet Modal */}
+      <Modal transparent animationType="slide" visible={actionModalVisible} onRequestClose={closeActionModal}>
+        <TouchableOpacity className="flex-1 bg-black/50" activeOpacity={1} onPress={closeActionModal} />
+        <View className="bg-white p-4 rounded-t-2xl border-t border-gray-200">
+          <View className="mb-4 items-center">
+            <Text className="text-lg font-medium text-gray-800">{selectedMeal?.dish.dish_name}</Text>
+          </View>
+          <TouchableOpacity className="py-3 border-t border-gray-100" onPress={handleView}>
+            <Text className="text-base text-gray-700">View Details</Text>
+          </TouchableOpacity>
+          <TouchableOpacity className="py-3 border-t border-gray-100" onPress={promptDelete}>
+            <Text className="text-base text-red-600">Delete Record</Text>
+          </TouchableOpacity>
+          <TouchableOpacity className="py-3 mt-2" onPress={closeActionModal}>
+            <Text className="text-base text-gray-500 text-center">Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal transparent animationType="fade" visible={confirmDeleteVisible} onRequestClose={cancelDelete}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
+          <View className="bg-white rounded-2xl p-6 shadow-2xl w-full max-w-md mx-4">
+            <Text className="text-xl font-bold text-gray-800 mb-2 text-center">
+              Confirm Deletion
+            </Text>
+            <View className="h-px bg-gray-200 my-2" />
+            <Text className="text-base text-gray-600 mb-6 text-center">
+              Are you sure you want to permanently delete 
+              {'\n'}"{selectedMeal?.dish.dish_name}" from your history?
+            </Text>
+            <View className="flex-row space-x-3">
+              <TouchableOpacity
+                onPress={cancelDelete}
+                className="flex-1 bg-gray-100 rounded-lg py-2"
+              >
+                <Text className="text-center text-gray-800 font-medium">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={confirmDelete}
+                className="flex-1 bg-red-600 rounded-lg py-2"
+              >
+                <Text className="text-center text-white font-medium">
+                  Delete
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
