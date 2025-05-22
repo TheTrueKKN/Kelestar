@@ -156,6 +156,7 @@ const InitialMenu = () => {
               dish={dish}
               onDelete={() => removeDish(dish)} 
               onEdit={(dish, dish_url) => editDish(dish, dish_url)}
+              setModal={() => {}}
             />
           ))
         )
