@@ -270,10 +270,10 @@ export default function CreateDishPage() {
         </ScrollView>
 
         {/* Create New Dish Button */}
-        <View className="px-4 py-12 bg-white">
+        <View className="px-4 py-6 bg-white">
           <CalculateTotalCarbon ingredientList={ingredientList} onCarbonCalculated={setTotalCarbon}/>
           <TouchableOpacity
-            className="h-12 bg-[#74B318] rounded-md justify-center items-center mb-5"
+            className="h-10 bg-[#74B318] rounded-md justify-center items-center mb-5"
             disabled={loading}
             onPress={() => {
               // Add functionality for creating the new dish

@@ -27,7 +27,7 @@ export default function EditDishPage() {
   const [totalCarbon, setTotalCarbon] = useState(0)
   
   // Newly added 
-  const { id, dish_name, dish_price, dish_image_name, dish_url, dish_vendor_id, prev_page } = useGlobalSearchParams();
+  const { id, dish_name, dish_price, dish_image_name, dish_image_url, dish_vendor_id, prev_page } = useGlobalSearchParams();
   const [base64String, setBase64String] = useState("");
   const [dishIngredientList, setDishIngredientList] = useState<JoinedDishIngredient[]>([]);
    const [showIngredientSelector, setShowIngredientSelector] = useState(false);
@@ -37,7 +37,7 @@ export default function EditDishPage() {
       setDishName(dish_name as string)
       setDishPrice(Number(dish_price))
       setDishImageName(dish_image_name as string)
-      setDishUri(dish_url as string)
+      setDishUri(dish_image_url as string)
 
       const fetchDishIngredients = async () => {
         const result = await joinDishIngredient(id as string);
@@ -231,10 +231,10 @@ export default function EditDishPage() {
         </ScrollView>
 
         {/* Save Changes Button */}
-        <View className="px-5 py-16 bg-white">
+        <View className="px-5 py-4 bg-white">
           <CalculateTotalCarbon joinedIngredientList={dishIngredientList} onCarbonCalculated={setTotalCarbon}/>
           <TouchableOpacity
-            className="h-12 bg-[#74B318] rounded-md justify-center items-center mb-12"
+            className="h-10 bg-[#74B318] rounded-md justify-center items-center mb-12"
             onPress={() => {
               // Logic for saving the changes
               alert('Dish details updated successfully!');

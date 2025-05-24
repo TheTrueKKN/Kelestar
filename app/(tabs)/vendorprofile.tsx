@@ -26,7 +26,7 @@ const vendor_profile = () => {
   const setVendorValues = async () => {
     setLoading(true);
     const result = await getVendorByUser();
-    console.log(`Testing result: ${result}`);
+    //console.log(`Testing result: ${result}`);
     if (result) {
       const vendorUri = await getImage(result.vendor_image_name as string);
       const formattedVendor: Vendor = {

@@ -100,7 +100,7 @@ const Dashboard = () => {
     const totalDishes = dishes.length;
     const avgFootprint = totalDishes > 0 ? totalCarbon / totalDishes : 0;
 
-    //console.log(`Carbon total value: ${totalCarbon}`)
+    console.log(`Carbon total value: ${totalCarbon}, avg footprint:${avgFootprint}`)
     setTotalCarbon(isNaN(totalCarbon) ? 0 : Number(totalCarbon.toFixed(2)));
     setTotalDishes(totalDishes);
 
@@ -170,6 +170,7 @@ const Dashboard = () => {
   const setDishMenu = async () => {
     const menu_result = await joinVendorDishIng(vendorId);
     const ranking = await getVendorRank(vendorId);
+    console.log(`Current ranking: ${ranking}`)
     if (Array.isArray(menu_result) && ranking) {
       setDishes(menu_result);
       setVendorRank(ranking);

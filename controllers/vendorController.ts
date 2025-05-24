@@ -161,18 +161,20 @@ export async function updateVendorGreenScore(vendorId: string) {
     const totalCarbon = dishes.reduce((sum, dish) => sum + (dish.dish_total_carbon || 0), 0);
     const avgFootprint = totalCarbon / dishes.length;
 
+    console.log(`Total carbon" ${totalCarbon}, abg footprint:${avgFootprint}`)
+
     // Normalize to a 0–100 score
     let normalizedScore =
       ((worst_case_footprint - avgFootprint) / (worst_case_footprint - best_case_footprint)) * 100;
     normalizedScore = Math.max(0, Math.min(100, normalizedScore));
-
+    console.log(`Normlised score: ${normalizedScore}`)
     //  Update vendor with the score
     await supabase
       .from("vendor")
       .update({ vendor_green_score: Number(normalizedScore.toFixed(2)) })
       .eq("id", vendorId);
 
-    // console.log(`Updated green score for vendor ${vendorId}: ${normalizedScore.toFixed(2)}`);
+    console.log(`Updated green score for vendor ${vendorId}: ${normalizedScore.toFixed(2)}`);
   } catch (err) {
     console.error(" Failed to update vendor green score:", err);
   }
@@ -192,7 +194,7 @@ export async function getVendorRank(
 
   const sortedVendors = vendors.sort((a,b) => b.vendor_green_score - a.vendor_green_score);
 
-  //console.log(`sortedVendor: ${JSON.stringify(sortedVendors)}`)
+  console.log(`sortedVendor: ${JSON.stringify(sortedVendors)}`)
   const rank = sortedVendors.findIndex(v =>v.id === vendorId);
 
   if(rank === -1){
