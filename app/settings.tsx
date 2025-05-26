@@ -1,13 +1,27 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { signOut, signOutIfSessionExists } from "../controllers/authController";
 import CustomButton from "../components/CustomButton";
 import { useRouter } from "expo-router";
+import { getUser } from "../controllers/userController";
 
 const Settings = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [userName, setUserName] = useState("")
+  const [email, setEmail] = useState("")
+
+  useEffect(() =>{
+    const loadUserDate = async () => {
+      const result = await getUser()
+      if(result){
+        setUserName(result.user_name as string)
+        setEmail(result.user_email as string)
+      }
+    }
+    loadUserDate();
+  })
 
   const handleSignIn = async () => {
     setLoading(true);
@@ -40,20 +54,11 @@ const Settings = () => {
 
           {/* Settings List */}
           <View className="px-6 py-6">
-            {/* Profile Photo */}
-            <TouchableOpacity className="flex-row items-center justify-between py-4 border-b border-gray-100">
-              <Text className="text-base text-[#333333]">Profile photo</Text>
-              <View className="flex-row items-center">
-                <Ionicons name="chevron-forward" size={20} color="#CCCCCC" />
-              </View>
-            </TouchableOpacity>
-
             {/* Username */}
             <TouchableOpacity className="flex-row items-center justify-between py-4 border-b border-gray-100">
               <Text className="text-base text-[#333333]">Username</Text>
               <View className="flex-row items-center">
-                <Text className="text-base text-gray-400 mr-1">xxxxxxx</Text>
-                <Ionicons name="chevron-forward" size={20} color="#CCCCCC" />
+                <Text className="text-base text-gray-400 mr-1">{userName}</Text>
               </View>
             </TouchableOpacity>
 
@@ -61,33 +66,29 @@ const Settings = () => {
             <TouchableOpacity className="flex-row items-center justify-between py-4 border-b border-gray-100">
               <Text className="text-base text-[#333333]">Email</Text>
               <View className="flex-row items-center">
-                <Text className="text-base text-gray-400 mr-1">xxxxxx@student.monash.edu</Text>
-                <Ionicons name="chevron-forward" size={20} color="#CCCCCC" />
+                <Text className="text-base text-gray-400 mr-1">{email}</Text>
               </View>
             </TouchableOpacity>
 
-            {/* Password */}
-            <TouchableOpacity className="flex-row items-center justify-between py-4 border-b border-gray-100">
-              <Text className="text-base text-[#333333]">Password</Text>
-              <Ionicons name="chevron-forward" size={20} color="#CCCCCC" />
-            </TouchableOpacity>
-
             {/* Feedback */}
-            <TouchableOpacity className="flex-row items-center justify-between py-4 border-b border-gray-100">
+            <TouchableOpacity className="flex-row items-center justify-between py-4 border-b border-gray-100" 
+            onPress={() => router.push(
+              "/feedback"
+            )}>
               <Text className="text-base text-[#333333]">Feedback</Text>
               <Ionicons name="chevron-forward" size={20} color="#CCCCCC" />
             </TouchableOpacity>
 
-            {/* Terms and conditions */}
-            <TouchableOpacity className="flex-row items-center justify-between py-4 border-b border-gray-100">
-              <Text className="text-base text-[#333333]">Terms and conditions</Text>
-              <Ionicons name="chevron-forward" size={20} color="#CCCCCC" />
+            {/* Terms & Conditions */}
+            <TouchableOpacity onPress={() => router.push('/terms')} className="flex-row items-center justify-between py-4 border-b border-gray-100">
+              <Text className="text-base text-[#333333]">Terms & Conditions</Text>
+              <Ionicons name="chevron-forward" size={20} color="#22C55E" />
             </TouchableOpacity>
 
             {/* About */}
-            <TouchableOpacity className="flex-row items-center justify-between py-4 border-b border-gray-100">
+            <TouchableOpacity onPress={() => router.push('/about')} className="flex-row items-center justify-between py-4 border-b border-gray-100">
               <Text className="text-base text-[#333333]">About</Text>
-              <Ionicons name="chevron-forward" size={20} color="#CCCCCC" />
+              <Ionicons name="chevron-forward" size={20} color="#22C55E" />
             </TouchableOpacity>
           </View>
           

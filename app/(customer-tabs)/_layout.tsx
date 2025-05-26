@@ -3,7 +3,7 @@ import React from "react";
 import { Tabs } from "expo-router";
 import { icons } from "../../constants";
 import CustomTabBarButton from "../../components/CustomTabBarButton";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 interface TabIconProps {
   icon: any;

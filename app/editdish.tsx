@@ -13,18 +13,21 @@ import IngredientSelector from '../components/IngredientSelector';
 import { DishIngredient } from '../interfaces/dishIngredient';
 import { getIngredientName } from '../controllers/ingredientController';
 import { updateDishIngredient } from '../controllers/dishIngredientController';
+import CalculateTotalCarbon from '../components/CalculateTotalCarbon';
+import { updateVendorGreenScore } from '../controllers/vendorController';
 const galleryIcon = require('../assets/icons/gallery.png'); // Adjust the path to your gallery icon
 
 export default function EditDishPage() {
   const [dishId, setDishId] = useState(''); 
   const [dishName, setDishName] = useState(''); // State for the dish name
-  const [dishPrice, setDishPrice] = useState(''); // State for the dish price
+  const [dishPrice, setDishPrice] = useState(0); // State for the dish price
   const [dishImageName, setDishImageName] = useState('');
   const [dishUri, setDishUri] = useState(''); // State for the thumbnail image
   const router = useRouter(); // Initialize the router
+  const [totalCarbon, setTotalCarbon] = useState(0)
   
   // Newly added 
-  const { id, dish_name, dish_price, dish_image_name, dish_url, dish_vendor_id, prev_page } = useGlobalSearchParams();
+  const { id, dish_name, dish_price, dish_image_name, dish_image_url, dish_vendor_id, prev_page } = useGlobalSearchParams();
   const [base64String, setBase64String] = useState("");
   const [dishIngredientList, setDishIngredientList] = useState<JoinedDishIngredient[]>([]);
    const [showIngredientSelector, setShowIngredientSelector] = useState(false);
@@ -32,9 +35,9 @@ export default function EditDishPage() {
   useEffect(() => {
       setDishId(id as string)
       setDishName(dish_name as string)
-      setDishPrice(dish_price as string)
+      setDishPrice(Number(dish_price))
       setDishImageName(dish_image_name as string)
-      setDishUri(dish_url as string)
+      setDishUri(dish_image_url as string)
 
       const fetchDishIngredients = async () => {
         const result = await joinDishIngredient(id as string);
@@ -80,7 +83,8 @@ export default function EditDishPage() {
       id: dishId,
       dish_name: dishName,
       dish_price: dishPrice,
-      dish_image_name: dishImageName
+      dish_image_name: dishImageName,
+      dish_total_carbon: totalCarbon,
     };
 
     const base64Image: Base64Image = {
@@ -92,6 +96,8 @@ export default function EditDishPage() {
 
     const updateDishIngredientSuccess = await updateDishIngredient(dishId, dishIngredientList)
 
+    await updateVendorGreenScore(dish_vendor_id as string)
+    
     if (updateDishSuccess && updateDishIngredientSuccess){
       router.back()
       router.replace({pathname: prev_page as string})
@@ -108,7 +114,8 @@ export default function EditDishPage() {
         ingredient_amount: dishIngredient.ingredient_amount as number,
         ingredient: {
           id: dishIngredient.ingredient_id as string,
-          ingredient_name: ingredientName?.[0]['ingredient_name']
+          ingredient_name: ingredientName?.[0]['ingredient_name'],
+          ingredient_footprint: totalCarbon
         }
       };
   
@@ -155,12 +162,12 @@ export default function EditDishPage() {
 
               {/* Dish Price Input */}
               <Text className="text-base text-[#006400] mb-2">Edit dish price:</Text>
-              <TextInput
+              <TextInput 
                 className="h-12 bg-[#F9F9F9] border border-[#DDDDDD] rounded-md px-4 mb-4"
-                placeholder={dishPrice ? dishPrice : 'Enter dish price'}
-                value={dishPrice}
-                onChangeText={setDishPrice}
-                keyboardType="numeric" // Numeric keyboard for price input
+                placeholder={dishPrice ? dishPrice.toString() : 'Enter dish price'}
+                value={dishPrice.toString()}
+                onChangeText={(text) => setDishPrice(Number(text) || 0)}
+                keyboardType="numeric"
               />
 
               {/* Thumbnail Image Upload Box */}
@@ -186,18 +193,6 @@ export default function EditDishPage() {
                 )}
               </TouchableOpacity>
 
-              {/* Ingredients Section */}
-              
-              {/* <TouchableOpacity
-                className="h-10 bg-[#74B318] rounded-md justify-center items-center mb-6"
-                onPress={() => {
-                  // Logic for editing ingredients
-                  console.log('Add ingredients button pressed');
-                }}
-              >
-                <Text className="text-white text-base font-bold">Edit Ingredients</Text>
-              </TouchableOpacity> */}
-
               <TouchableOpacity
                 className="h-10 bg-[#74B318] rounded-md justify-center items-center mb-6"
                   onPress={() => {
@@ -212,11 +207,11 @@ export default function EditDishPage() {
               </TouchableOpacity>
 
 
-              <Text className="text-base text-[#006400] mb-2">Edit Ingredients:</Text>
+              <Text className="text-base text-[#006400] mb-4">Edit Ingredients:</Text>
 
-              <ScrollView className="h-60" showsVerticalScrollIndicator={false}>
+              <ScrollView className="h-60" showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
                   {dishIngredientList.length === 0 ? (
-                    <Text className="text-gray-400 text-center mt-4">No ingredients added yet.</Text>
+                    <Text className="text-gray-400 text-center mt-2">No ingredients added yet.</Text>
                   ) : 
                   (
                     dishIngredientList.map((dishIngredient) => (
@@ -237,8 +232,9 @@ export default function EditDishPage() {
 
         {/* Save Changes Button */}
         <View className="px-5 py-4 bg-white">
+          <CalculateTotalCarbon joinedIngredientList={dishIngredientList} onCarbonCalculated={setTotalCarbon}/>
           <TouchableOpacity
-            className="h-12 bg-[#74B318] rounded-md justify-center items-center"
+            className="h-10 bg-[#74B318] rounded-md justify-center items-center mb-12"
             onPress={() => {
               // Logic for saving the changes
               alert('Dish details updated successfully!');

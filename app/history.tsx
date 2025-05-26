@@ -1,5 +1,5 @@
 // History.tsx
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,218 +7,214 @@ import {
   TouchableOpacity,
   ScrollView,
   Platform,
-  Alert,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Picker } from "@react-native-picker/picker";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  useAnimatedGestureHandler,
-  interpolate,
-} from "react-native-reanimated";
-import { PanGestureHandler } from "react-native-gesture-handler";
+import { useFocusEffect, useRouter } from "expo-router";
+import { deleteMeal, getMealListingByCustomer } from "../controllers/mealController";
+import { Meal } from "../interfaces/meal";
+import { Dish } from "../interfaces/dish";
+import {
+  getCarbonRating,
+  getRatingBadgeColor,
+} from "../lib/utils/carbonRating";
+import { periodOptions } from "../enums/periodOptions";
 
-// TypeScript interface for Dish
-interface Dish {
-  id: string;
-  name: string;
-  image: any;
-  price: string;
-  grade: string;
-  gradeColor: string;
-}
+type DateComparisonFn = (date1: Date, date2: Date) => DateComparisonResult;
+type DateComparisonResult = { isSamePeriod: boolean; period: string };
 
-interface SwipeableItemProps {
-  children: React.ReactNode;
-  onEdit: () => void;
-  onDelete: () => void;
-}
+const getSameDate: DateComparisonFn = (date1, date2) => {
+  const period = date1.toISOString().split("T")[0];
+  const result: DateComparisonResult = { isSamePeriod: false, period };
 
-/**
- * SwipeableItem Component using Tailwind classes for static styling 
- * and inline animated style for dynamic opacity.
- */
-const SwipeableItem = ({ children, onEdit, onDelete }: SwipeableItemProps) => {
-  // Adjust swipe parameters so you don't have to swipe too far.
-  const maxTranslate = -100;
-  const threshold = -40;
-  const translateX = useSharedValue(0);
+  if (period === date2.toISOString().split("T")[0]) {
+    result.isSamePeriod = true;
+  }
 
-  const gestureHandler = useAnimatedGestureHandler({
-    onStart: (_, ctx: { startX: number }) => {
-      ctx.startX = translateX.value;
-    },
-    onActive: (event, ctx) => {
-      // Allow only leftward swipe (negative translation)
-      translateX.value = Math.min(0, ctx.startX + event.translationX);
-    },
-    onEnd: () => {
-      // Snap open if past threshold; else, close.
-      if (translateX.value < threshold) {
-        translateX.value = withSpring(maxTranslate);
-      } else {
-        translateX.value = withSpring(0);
-      }
-    },
-  });
+  return result;
+};
 
-  // Animated style for the card moving left.
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
+const getSameWeek: DateComparisonFn = (date1, date2) => {
+  function getStartOfWeek(date: Date): Date {
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
 
-  // Animated opacity for the buttons.
-  const animatedOpacity = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      translateX.value,
-      [0, maxTranslate],
-      [0, 1],
-      "clamp"
+    const startOfWeek = new Date(date);
+    startOfWeek.setDate(diff);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    return startOfWeek;
+  }
+
+  const startOfWeek1 = getStartOfWeek(date1);
+  const startOfWeek2 = getStartOfWeek(date2);
+
+  const endOfWeek = new Date(startOfWeek1.getTime() + 6 * 24 * 60 * 60 * 1000);
+  const period = `${startOfWeek1.toISOString().split("T")[0]} to ${
+    endOfWeek.toISOString().split("T")[0]
+  }`;
+  const result: DateComparisonResult = { isSamePeriod: false, period };
+
+  if (startOfWeek1.getTime() === startOfWeek2.getTime()) {
+    result.isSamePeriod = true;
+  }
+
+  return result;
+};
+
+const getSameMonth: DateComparisonFn = (date1, date2) => {
+  const period = `${date1.toLocaleString("default", {
+    month: "long",
+  })} ${date1.getFullYear()}`;
+  const result: DateComparisonResult = { isSamePeriod: false, period };
+
+  if (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth()
+  ) {
+    result.isSamePeriod = true;
+  }
+
+  return result;
+};
+
+type PeriodData = {
+  period: string;
+  totalCarbon: number;
+  meals: Meal[];
+};
+
+const generateMealData = (
+  meals: Meal[],
+  periodType: periodOptions
+): Record<string, PeriodData> => {
+  const data: Record<string, PeriodData> = {};
+
+  let mealIndex = 0;
+  const totalMeals = meals.length;
+
+  while (mealIndex < totalMeals) {
+    const mealsToday: Meal[] = [];
+    const currentDate = meals[mealIndex].meal_datetime!;
+    let totalCarbon = 0;
+
+    const periodHandlers: Record<periodOptions, DateComparisonFn> = {
+      [periodOptions.Day]: getSameDate,
+      [periodOptions.Week]: getSameWeek,
+      [periodOptions.Month]: getSameMonth,
+    };
+
+    const getSamePeriod = periodHandlers[periodType] || getSameDate;
+
+    let samePeriod = getSamePeriod(
+      meals[mealIndex].meal_datetime!,
+      currentDate
     );
-    return { opacity };
-  });
+    let currentPeriod = samePeriod.period;
 
-  return (
-    <View className="mx-4 my-1 rounded-lg overflow-hidden relative">
-      {/* Underlay buttons container positioned to the right */}
-      <View className="absolute inset-y-0 right-0 flex-row items-center pr-2">
-        {/* Use Tailwind classes for width, height, and margin; merge in animated opacity */}
-        <Animated.View style={animatedOpacity} className="w-12 h-full">
-          <TouchableOpacity
-            onPress={onEdit}
-            className="w-12 h-full justify-center items-center bg-green-500 rounded-l-lg"
-          >
-            <Text className="text-white font-bold">Edit</Text>
-          </TouchableOpacity>
-        </Animated.View>
-        <Animated.View style={animatedOpacity} className="w-10 h-full">
-          <TouchableOpacity
-            onPress={onDelete}
-            className="w-12 h-full justify-center items-center bg-red-500 rounded-r-lg"
-          >
-            <Text className="text-white font-bold">Delete</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      </View>
-      {/* Swipeable card */}
-      <PanGestureHandler onGestureEvent={gestureHandler}>
-        <Animated.View style={animatedStyle} className="bg-[#F2F2F2]">
-          {children}
-        </Animated.View>
-      </PanGestureHandler>
-    </View>
-  );
+    do {
+      mealsToday.push({
+        id: meals[mealIndex].id,
+        ...meals[mealIndex],
+      });
+      totalCarbon += meals[mealIndex].meal_dish?.dish_total_carbon ?? 0;
+
+      mealIndex++;
+
+      if (mealIndex < totalMeals) {
+        samePeriod = getSamePeriod(meals[mealIndex].meal_datetime!, currentDate);
+      } else {
+        break;
+      }
+    } while (samePeriod.isSamePeriod);
+
+    data[currentPeriod] = {
+      period: currentPeriod,
+      totalCarbon,
+      meals: mealsToday,
+    };
+  }
+
+  return data;
 };
 
 const History = () => {
-  const [selectedOption, setSelectedOption] = useState("Month");
-  const [isAscending, setIsAscending] = useState(true);
+  const [selectedOption, setSelectedOption] = useState(periodOptions.Day);
   const [showPicker, setShowPicker] = useState(false);
-  const timeOptions = ["Week", "Month", "Year"];
+  const [loading, setLoading] = useState(false);
+  const [meals, setMeals] = useState<Meal[]>([]);
+  const [mealData, setMealData] = useState<Record<string, PeriodData>>({});
+  const [selectedMeal, setSelectedMeal] = useState<{id: string, dish: Dish} | null>(null);
+  const [actionModalVisible, setActionModalVisible] = useState(false);
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
+  
+  const router = useRouter();
 
-  // Sample dish data.
-  const [todayDishes] = useState<Dish[]>([
-    {
-      id: "1",
-      name: "Tofu Buddha Bowl",
-      image: require("../assets/images/tofu_bowl_pic.png"),
-      price: "RM 12",
-      grade: "A",
-      gradeColor: "#8DC63F",
-    },
-    {
-      id: "2",
-      name: "Chicken Rice",
-      image: require("../assets/images/chicken_rice.png"),
-      price: "RM 10",
-      grade: "B",
-      gradeColor: "#F8D15B",
-    },
-    {
-      id: "3",
-      name: "Beef Sharwama set",
-      image: require("../assets/images/beef_shawarma_set.png"),
-      price: "RM 18",
-      grade: "C",
-      gradeColor: "#ED1C24",
-    },
-  ]);
+  useFocusEffect(
+    useCallback(() => {
+      const initMeals = async () => {
+        setLoading(true);
+        const fetchedMeals = await getMealListingByCustomer();
+        if (fetchedMeals) {
+          setMeals(fetchedMeals);
+        }
+        setLoading(false);
+      };
 
-  const [yesterdayDishes] = useState<Dish[]>([
-    {
-      id: "4",
-      name: "Tofu Buddha Bowl",
-      image: require("../assets/images/tofu_bowl_pic.png"),
-      price: "RM 12",
-      grade: "A",
-      gradeColor: "#8DC63F",
-    },
-    {
-      id: "5",
-      name: "Chicken Rice",
-      image: require("../assets/images/chicken_rice.png"),
-      price: "RM 10",
-      grade: "B",
-      gradeColor: "#F8D15B",
-    },
-  ]);
+      initMeals();
+    }, [])
+  );
 
-  const toggleSortOrder = useCallback(() => {
-    setIsAscending((prev) => !prev);
-  }, []);
+  useEffect(() => {
+    setLoading(true);
+    const data = generateMealData(meals, selectedOption);
+    setMealData(data);
+    setLoading(false);
+  }, [meals, selectedOption]);
 
-  // Date formatting helper.
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const formatDate = (date: Date) =>
-    `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
-  const todayDate = formatDate(today);
-  const yesterdayDate = formatDate(yesterday);
-
-  // Action handlers.
-  const handleEdit = (dish: Dish) => {
-    Alert.alert("Edit", `Edit ${dish.name}`);
+  // Action handlers
+  const onPressMeal = (mealId: string, dish: Dish) => {
+    setSelectedMeal({id: mealId, dish});
+    setActionModalVisible(true);
   };
 
-  const handleDelete = (dish: Dish) => {
-    Alert.alert("Delete", `Delete ${dish.name}`);
+  const closeActionModal = () => {
+    setActionModalVisible(false);
+    setSelectedMeal(null);
   };
 
-  // Render each dish item with swipe functionality.
-  const renderFoodItem = useCallback((dish: Dish) => (
-    <SwipeableItem
-      key={dish.id}
-      onEdit={() => handleEdit(dish)}
-      onDelete={() => handleDelete(dish)}
-    >
-      <View className="flex-row items-center justify-between p-3">
-        <View className="flex-row items-center">
-          <Image
-            source={dish.image}
-            className="w-12 h-12 rounded-full"
-            resizeMode="cover"
-          />
-          <View className="ml-3">
-            <Text className="font-semibold text-base text-black">
-              {dish.name}
-            </Text>
-            <Text className="font-normal text-gray-500">
-              {dish.price}
-            </Text>
-          </View>
-        </View>
-        <View
-          className="w-8 h-8 rounded-full items-center justify-center"
-          style={{ backgroundColor: dish.gradeColor }}
-        >
-          <Text className="text-white font-bold">{dish.grade}</Text>
-        </View>
-      </View>
-    </SwipeableItem>
-  ), []);
+  const handleView = () => {
+    if (!selectedMeal) return;
+    closeActionModal();
+    router.push({
+      pathname: "/tracking",
+      params: {
+        dish: JSON.stringify(selectedMeal.dish),
+      },
+    });
+  };
+
+  const promptDelete = () => {
+    setActionModalVisible(false);
+    setConfirmDeleteVisible(true);
+  };
+
+  const confirmDelete = async () => {
+    if (selectedMeal) {
+      const success = await deleteMeal({id: selectedMeal.id});
+      if (success) {
+        setMeals(meals.filter(meal => meal.id !== selectedMeal.id));
+      }
+    }
+    setConfirmDeleteVisible(false);
+    setSelectedMeal(null);
+  };
+
+  const cancelDelete = () => {
+    setConfirmDeleteVisible(false);
+    setSelectedMeal(null);
+  };
 
   const renderIOSPicker = () => (
     <View className="z-20">
@@ -240,12 +236,12 @@ const History = () => {
           <Picker
             selectedValue={selectedOption}
             onValueChange={(itemValue) => {
-              setSelectedOption(itemValue.toString());
+              setSelectedOption(itemValue);
               setShowPicker(false);
             }}
             style={{ height: 150, width: 150 }}
           >
-            {timeOptions.map((option) => (
+            {Object.values(periodOptions).map((option) => (
               <Picker.Item key={option} label={option} value={option} />
             ))}
           </Picker>
@@ -258,54 +254,141 @@ const History = () => {
     <View className="ml-[-10px]">
       <Picker
         selectedValue={selectedOption}
-        onValueChange={(itemValue) =>
-          setSelectedOption(itemValue.toString())
-        }
+        onValueChange={(itemValue) => setSelectedOption(itemValue)}
         style={{ height: 50, width: 120 }}
         dropdownIconColor="#000000"
       >
-        {timeOptions.map((option) => (
+        {Object.values(periodOptions).map((option) => (
           <Picker.Item key={option} label={option} value={option} />
         ))}
       </Picker>
     </View>
   );
 
+  // Render each dish item
+  const renderFoodItem = (mealId: string, dish: Dish) => {
+    const carbonRating = getCarbonRating(dish.dish_total_carbon ?? 0);
+    const bgColor = getRatingBadgeColor(carbonRating);
+
+    return (
+      <TouchableOpacity
+        key={mealId}
+        className="mx-4 my-1 rounded-lg overflow-hidden bg-[#F2F2F2]"
+        onPress={() => onPressMeal(mealId, dish)}
+      >
+        <View className="flex-row items-center justify-between p-3">
+          <View className="flex-row items-center">
+            <Image
+              source={{ uri: dish.dish_image_url }}
+              className="w-12 h-12 rounded-full"
+              resizeMode="cover"
+            />
+            <View className="ml-3">
+              <Text className="font-semibold text-base text-black">
+                {dish.dish_name}
+              </Text>
+              <Text className="font-normal text-gray-500">{`RM ${dish.dish_price?.toFixed(
+                2
+              )}`}</Text>
+            </View>
+          </View>
+          <View
+            className="w-8 h-8 rounded-full items-center justify-center"
+            style={{ backgroundColor: bgColor }}
+          >
+            <Text className="text-white font-bold">{carbonRating}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  if (loading) {
+    return (
+      <Text style={{ textAlign: "center", marginTop: 32 }}>
+        Loading history...
+      </Text>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-row justify-between items-center px-4 pt-4">
         {Platform.OS === "ios" ? renderIOSPicker() : renderAndroidPicker()}
-        <TouchableOpacity onPress={toggleSortOrder}>
-          <Image
-            source={require("../assets/icons/triple_line_icon.png")}
-            className="w-6 h-6"
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
       </View>
-      <ScrollView className="mt-4" contentContainerStyle={{ paddingBottom: 100 }}>
-        {/* Today's Section */}
-        <View>
-          <View className="flex-row justify-between px-4 mb-2">
-            <Text className="text-lg font-semibold">Today</Text>
-            <Text className="text-gray-500 font-normal">{todayDate}</Text>
+      <ScrollView
+        className="mt-4"
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
+        {Object.keys(mealData).map((period) => (
+          <View key={period}>
+            <View className="flex-row justify-between px-4 mb-2">
+              <Text className="text-lg font-semibold">{period}</Text>
+            </View>
+            {mealData[period].meals.map((meal) =>
+              renderFoodItem(meal.id!, meal.meal_dish!)
+            )}
+            <View className="px-4 mt-2 mb-6 items-end">
+              <Text className="text-gray-500 font-normal">
+                Total: {mealData[period].totalCarbon.toFixed(2)} Kg CO₂e
+              </Text>
+            </View>
           </View>
-          {todayDishes.map(renderFoodItem)}
-          <View className="px-4 mt-2 mb-6 items-end">
-            <Text className="text-gray-500 font-normal">
-              Total: 7.8 Kg CO₂e
-            </Text>
-          </View>
-        </View>
-        {/* Yesterday's Section */}
-        <View>
-          <View className="flex-row justify-between px-4 mb-2">
-            <Text className="text-lg font-semibold">Yesterday</Text>
-            <Text className="text-gray-500 font-normal">{yesterdayDate}</Text>
-          </View>
-          {yesterdayDishes.map(renderFoodItem)}
-        </View>
+        ))}
       </ScrollView>
+
+      {/* Action Sheet Modal */}
+      <Modal transparent animationType="slide" visible={actionModalVisible} onRequestClose={closeActionModal}>
+        <TouchableOpacity className="flex-1 bg-black/50" activeOpacity={1} onPress={closeActionModal} />
+        <View className="bg-white p-4 rounded-t-2xl border-t border-gray-200">
+          <View className="mb-4 items-center">
+            <Text className="text-lg font-medium text-gray-800">{selectedMeal?.dish.dish_name}</Text>
+          </View>
+          <TouchableOpacity className="py-3 border-t border-gray-100" onPress={handleView}>
+            <Text className="text-base text-gray-700">View Details</Text>
+          </TouchableOpacity>
+          <TouchableOpacity className="py-3 border-t border-gray-100" onPress={promptDelete}>
+            <Text className="text-base text-red-600">Delete Record</Text>
+          </TouchableOpacity>
+          <TouchableOpacity className="py-3 mt-2" onPress={closeActionModal}>
+            <Text className="text-base text-gray-500 text-center">Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal transparent animationType="fade" visible={confirmDeleteVisible} onRequestClose={cancelDelete}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
+          <View className="bg-white rounded-2xl p-6 shadow-2xl w-full max-w-md mx-4">
+            <Text className="text-xl font-bold text-gray-800 mb-2 text-center">
+              Confirm Deletion
+            </Text>
+            <View className="h-px bg-gray-200 my-2" />
+            <Text className="text-base text-gray-600 mb-6 text-center">
+              Are you sure you want to permanently delete 
+              {'\n'}"{selectedMeal?.dish.dish_name}" from your history?
+            </Text>
+            <View className="flex-row space-x-3">
+              <TouchableOpacity
+                onPress={cancelDelete}
+                className="flex-1 bg-gray-100 rounded-lg py-2"
+              >
+                <Text className="text-center text-gray-800 font-medium">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={confirmDelete}
+                className="flex-1 bg-red-600 rounded-lg py-2"
+              >
+                <Text className="text-center text-white font-medium">
+                  Delete
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };

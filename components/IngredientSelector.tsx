@@ -38,53 +38,36 @@ const IngredientSelector = ({
           })
         );
         setSelectOptions(mappedOptions);
-        // console.log("options", mappedOptions);
       }
     };
     retrieveIngredients();
   }, []);
 
-  // const ingredientsAvailable = [
-  //   "banana",
-  //   "rice",
-  //   "corn",
-  //   "potato",
-  //   "chicken",
-  //   "curry",
-  //   "fish",
-  //   "pop corn",
-  //   "corn dog",
-  //   "corn fish",
-  //   "corn chicken",
-  //   "corn rice",
-  //   "corn human",
-  //   "corn cat",
-  //   "corn banana",
-  // ];
   const handleSavePressed = () => {
-    console.log("search term:", ingredientName);
+    //console.log("search term:", ingredientName);
     const searchedIngredient = ingredientList
-      ? ingredientList.find((option) => (option.ingredient_name === ingredientName))
+      ? ingredientList.find(
+          (option) => option.ingredient_name === ingredientName
+        )
       : null;
-      
+
     setIngredientWeight(Number(ingredientWeight));
     if (searchedIngredient && ingredientWeight > 0) {
       // console.log("searched ingredient:", searchedIngredient);
       const dishIngredient: DishIngredient = {
         ingredient_id: searchedIngredient.id,
-        ingredient_amount: ingredientWeight
-      }
+        ingredient_amount: ingredientWeight,
+        ingredient: searchedIngredient,
+      };
       handleAddIngredient(dishIngredient);
 
       handleShowModal(false);
       setIngredientName("");
       setIngredientWeight(0);
-      Alert.alert(`${ingredientWeight}g of ${ingredientName} added`);
-    } 
-    else if (!searchedIngredient){
+      //Alert.alert(`${ingredientWeight}g of ${ingredientName} added`);
+    } else if (!searchedIngredient) {
       Alert.alert("Please enter a valid ingredient");
-    }
-    else if (ingredientWeight <= 0) {
+    } else if (ingredientWeight <= 0) {
       // console.log("ingredientWeight", ingredientWeight, typeof(ingredientWeight))
       Alert.alert("Please enter a valid ingredient weight");
     }
@@ -95,7 +78,7 @@ const IngredientSelector = ({
     handleShowModal(false);
     setIngredientName("");
     setIngredientWeight(0);
-  }
+  };
 
   return (
     <View className="justify-center items-center">
@@ -103,16 +86,26 @@ const IngredientSelector = ({
         transparent={true}
         visible={showModal}
         animationType="fade"
-        onRequestClose={() => {
-          handleShowModal(false);
-        }}
+        presentationStyle="overFullScreen"
+        statusBarTranslucent={true}
+        onRequestClose={() => handleShowModal(false)}
       >
-        <View className="flex-1 justify-center items-center bg-black/30 backdrop-blur-sm">
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.3)',
+          }}
+          className="justify-center items-center"
+        >
           {/* Popup Content */}
           <View className="bg-white w-80 p-6 rounded-lg shadow-lg shadow-gray-200">
             <TouchableOpacity
               onPress={handleCloseButtonPressed}
-              className="absolute top-0 right-0 h-20 w-20 rounded-full z-100"
+              className="absolute top-0 right-0 h-20 w-20 rounded-full z-10"
             >
               <Text className="text-black text-xl font-bold absolute top-4 right-4">
                 ✕
@@ -126,6 +119,7 @@ const IngredientSelector = ({
               placeholder="Search for an ingredient"
               options={selectOptions}
               handleChangeText={(e: string) => {
+                // console.log(e)
                 setIngredientName(e);
               }}
             />

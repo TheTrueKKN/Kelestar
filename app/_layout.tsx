@@ -54,20 +54,6 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
-          name="faq"
-          options={{
-            headerShown: true,
-            headerTitle: "FAQs",
-          }}
-        />
-        <Stack.Screen
-          name="settings"
-          options={{
-            headerShown: true,
-            headerTitle: "Settings",
-          }}
-        />
-        <Stack.Screen
           name="badge"
           options={{
             headerShown: true,
@@ -79,6 +65,41 @@ export default function RootLayout() {
           options={{
             headerShown: true,
             headerTitle: "Nutrition",
+          }}
+        />
+        <Stack.Screen
+          name="editdish"
+          options={{
+            headerShown: true,
+            headerTitle: "Edit Current Dish",
+          }}
+        />
+        <Stack.Screen
+          name="createdish"
+          options={{
+            headerShown: true,
+            headerTitle: "Create New Dish",
+          }}
+        />
+        <Stack.Screen
+          name="editvendor"
+          options={{
+            headerShown: true,
+            headerTitle: "Editing Vendor Details",
+          }}
+        />
+        <Stack.Screen
+          name="initialmenu"
+          options={{
+            headerShown: true,
+            headerTitle: "Creating Menu",
+          }}
+        />
+        <Stack.Screen
+          name="vendordetail"
+          options={{
+            headerShown: true,
+            headerTitle: "Insert vendor detail",
           }}
         />
       </Stack>

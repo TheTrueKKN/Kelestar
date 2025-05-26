@@ -1,219 +1,322 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
-import React, { useEffect, useState } from "react";
-import {
-  RouteParams,
-  useGlobalSearchParams,
-  useRouter,
-  useFocusEffect,
-} from "expo-router";
-import { useCallback } from "react";
-import DishItem from "../../components/DishItem";
-import { getVendorByUser } from "../../controllers/vendorController";
-import { Dish } from "../../interfaces/dish";
-import { deleteDish, getDishes } from "../../controllers/dishController";
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, TouchableOpacity, FlatList, Modal, Image, ScrollView } from 'react-native';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
+import { getVendorByUser, updateVendorGreenScore } from '../../controllers/vendorController';
+import { getDishes, deleteDish } from '../../controllers/dishController';
+import { Dish } from '../../interfaces/dish';
+import { getCarbonRating, getRatingBadgeColor } from '../../lib/utils/carbonRating';
+import { joinDishIngredient } from '../../controllers/dishIngredientJoinController';
+import { JoinedDishIngredient } from '../../interfaces/joinedDishIngredient';
 
 export default function Menu() {
-
-  const [vendorId, setVendorId] = useState("");
-   const [vendorName, setVendorName] = useState(""); // Vendor name state
-   const [vendorDesc, setVendorDescription] = useState(""); // Vendor description state
-   const [vendorUri, setUri] = useState(""); // Thumbnail image state
-   const [vendorDishes, setVendorDishes] = useState<Dish[]>([]);
-   // Getting parameters from Initial menu page
-  const { menudDishes, newDish } =
-    useGlobalSearchParams();
-
-    useEffect(() => {
-        const setVendorValues = async () => {
-          const result = await getVendorByUser();
-          if (result) {
-            setVendorId(result.id!)
-            setVendorName(result.vendor_name);
-            setVendorDescription(result.vendor_description);
-            if (result.vendor_image_url) {
-              setUri(result.vendor_image_url);
-              // console.log("thumbnailimage", editUri);
-            }
-          }
-        };
-        const setDishMenu = async () => {
-          const menu_result = await getDishes(vendorId)
-          if(menu_result){
-            setVendorDishes(menu_result)
-          }
-        }
-        setVendorValues();
-        setDishMenu();
-        console.log(`Refresh with new dish menu: ${JSON.stringify(vendorDishes)}`)
-
-        console.log(`Curren dishes: ${JSON.stringify(vendorDishes)}`)
-      }, []);
-
-  // Getting parameters from the editvendor Page
-  const { newVendorName, newVendorDesc, newImg } = useGlobalSearchParams();
   const router = useRouter();
+  const [vendorId, setVendorId] = useState<string>('');
+  const [dishes, setDishes] = useState<Dish[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const [validVendorName, setValidVendorName] = useState<string | undefined>(
-    undefined
-  );
-  const [validVendorDesc, setValidVendorDesc] = useState<string | undefined>(
-    undefined
-  );
-  const [validVendorUri, setValidVendorUri] = useState<string | undefined>(
-    undefined
-  );
-  
+  const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
+  const [actionSheetVisible, setActionSheetVisible] = useState<boolean>(false);
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState<boolean>(false);
+  const [dishDetailsVisible, setDishDetailsVisible] = useState<boolean>(false);
+  const [dishIngredients, setDishIngredients] = useState<JoinedDishIngredient[]>([]);
+  const [ingredientsLoading, setIngredientsLoading] = useState(false);
 
-  // Parsing the menu dishes item
-  const parsedDishes = menudDishes
-    ? JSON.parse(Array.isArray(menudDishes) ? menudDishes[0] : menudDishes)
-    : [];
-  const [dishes, setDishes] = useState<Dish[]>(parsedDishes);
+  // fetch vendor
+  useEffect(() => {
+    const fetchVendor = async () => {
+      setLoading(true);
+      const v = await getVendorByUser();
+      if (v?.id) setVendorId(v.id);
+      setLoading(false);
+    };
+    fetchVendor();
+  }, []);
 
-  // Helper function to validate and extract single value
-  const validateParam = (
-    param: string | string[] | undefined
-  ): string | undefined => {
-    return Array.isArray(param) ? param[0] : param;
+  // load dishes
+  const loadDishes = async () => {
+    if (!vendorId) return;
+    const res = await getDishes({ dish_vendor_id: vendorId, active: true });
+    if (res) setDishes(res);
+  };
+  useFocusEffect(
+    useCallback(() => {
+      loadDishes();
+    }, [vendorId])
+  );
+
+  const onPressDish = (dish: Dish) => {
+    setSelectedDish(dish);
+    setActionSheetVisible(true);
   };
 
-  // Function to add dishes into the array
-  const addNewDish = (newDish: Dish) => {
-    if (!dishes.some((dish) => dish.id === newDish.id)) {
-      setDishes((prevDishes) => [...prevDishes, newDish]);
+  const closeActionSheet = () => {
+    setActionSheetVisible(false);
+  };
+
+  const handleView = () => {
+    // First close the action sheet
+    setActionSheetVisible(false);
+    // Then show the dish details and load ingredients
+    loadDishIngredients();
+    setDishDetailsVisible(true);
+  };
+
+  const loadDishIngredients = async () => {
+    if (!selectedDish?.id) return;
+    
+    setIngredientsLoading(true);
+    try {
+      const fetchedIngredients = await joinDishIngredient(selectedDish.id);
+      if (fetchedIngredients && Array.isArray(fetchedIngredients)) {
+        setDishIngredients(fetchedIngredients);
+      }
+    } catch (error) {
+      console.error("Failed to load ingredients:", error);
+    } finally {
+      setIngredientsLoading(false);
     }
   };
 
-  // Function to delete a dish
-  const removeDish = async (dish: Dish) => {
-      setVendorDishes((prevDishes) => prevDishes.filter(allDish => allDish.id !== dish.id));
-      const deleteDishSuccess = await deleteDish(dish)
-    };
+  const closeDishDetails = () => {
+    setDishDetailsVisible(false);
+    setDishIngredients([]);
+    setSelectedDish(null); // Only reset the selected dish when closing the details modal
+  };
 
-  // Function to edit a dish (Not functionable yet just redirect to different page)
-  const editDish = (dish: Dish | null, dish_url?: string) => {
-      router.push({
-        pathname: '/editdish',
-        params: {
-          ...dish,
-          dish_url: dish_url ?? '',
-          prev_page: "/menu"
-        }
-      });
-      console.log(`Current dish being edited: ${JSON.stringify(dish)}`)
-    };
+  const handleEdit = () => {
+    if (!selectedDish) return;
+    closeActionSheet();
+    const { dish_vendor, dish_nutrition, dish_ingredient, active, ...rest } = selectedDish;
+    router.push({ pathname: '/editdish', params: { ...rest, prev_page: '/menu' } });
+  };
 
-  // Update vendor details when the screen is focused
-  useFocusEffect(
-    useCallback(() => {
-      setValidVendorName(validateParam(newVendorName || vendorName));
-      setValidVendorDesc(validateParam(newVendorDesc || vendorDesc));
-      setValidVendorUri(validateParam(newImg || vendorUri));
+  const promptDelete = () => {
+    // Show confirmation
+    setActionSheetVisible(false);
+    setConfirmDeleteVisible(true);
+  };
 
-      const setDishMenu = async () => {
-        const menu_result = await getDishes(vendorId)
-        if(menu_result){
-          setVendorDishes(menu_result)
-        }
-      }
+  const confirmDelete = async () => {
+    if (selectedDish) {
+      await deleteDish(selectedDish);
+      await updateVendorGreenScore(vendorId);
+      setDishes(dishes.filter(d => d.id !== selectedDish.id));
+    }
+    setConfirmDeleteVisible(false);
+    setSelectedDish(null);
+  };
 
-      setDishMenu()
+  const cancelDelete = () => {
+    setConfirmDeleteVisible(false);
+    setSelectedDish(null);
+  };
 
-      if (newDish) {
-        const parsedDish =
-          typeof newDish === "string" ? JSON.parse(newDish) : null;
-        if (parsedDish) {
-          addNewDish(parsedDish);
-        }
-      }
-    }, [
-      vendorName,
-      vendorDesc,
-      vendorUri,
-      newVendorName,
-      newVendorDesc,
-      newImg,
-      newDish,
-    ])
+  const renderDish = ({ item }: { item: Dish }) => (
+    <TouchableOpacity
+      className="flex-row items-center bg-white shadow-lg rounded-xl mx-4 my-2 p-4 h-28"
+      onPress={() => onPressDish(item)}
+    >
+      <Image
+        source={{ uri: item.dish_image_url || 'https://via.placeholder.com/150' }}
+        className="w-20 h-20 rounded-lg mr-4"
+      />
+      <View className="flex-1 justify-center">
+        <Text className="text-lg font-semibold text-gray-800">{item.dish_name}</Text>
+        <Text className="text-sm text-gray-600 mt-1">RM{item.dish_price?.toFixed(2) ?? '0.00'}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={24} color="#4B5563" />
+    </TouchableOpacity>
   );
 
   return (
-    <View className="bg-white flex-1">
-      {/* Top Header with icon on the right */}
-      <View className="flex-row justify-between items-center mt-5 ml-3 mr-3">
-        {/* Checking if valid Vendor name, if not show the default version */}
-        <Text className="font-bold text-2xl">
-          {validVendorName ? `Hello ${validVendorName}!` : "Hello there!!"}
-        </Text>
-        <TouchableOpacity
-          onPress={() =>
-            router.push({
-              pathname: "/editvendor",
-              params: { prevPage: "/menu" },
-            })
-          }
-        >
-          <Image
-            className="w-5 h-5 tintColour-white"
-            source={require("../../assets/icons/pen.png")} // Replace with your icon
-          />
+    <View className="flex-1 bg-gray-50">
+      {/* Stylish Header */}
+      <View className="pt-6 pb-6 px-6 bg-green rounded-b-3xl shadow-md flex-row justify-between items-center">
+        <Text className="text-4xl font-pbold text-white">Your Menu</Text>
+        <TouchableOpacity className="p-2 bg-none rounded-full" onPress={() => router.push({ pathname: '/createdish', params: { vendorId, prev_page: '/menu' } })}>
+          <Ionicons name="add-circle-sharp" size={34} color="white" />
         </TouchableOpacity>
       </View>
 
-      {/* Same goes for the thumbnail image */}
-      <View className="space-y-2 justify-center items-center">
-        <Image
-          source={{ uri: validVendorUri || "https://via.placeholder.com/150" }}
-          className="w-40 h-40 mt-10"
+      {loading ? (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-gray-500">Loading...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={dishes}
+          keyExtractor={(d, i) => d.id ?? i.toString()}
+          renderItem={renderDish}
+          contentContainerStyle={{ paddingBottom: 100 }}
         />
-      </View>
+      )}
 
-      {/* Display the previously given vendor description, if not valud then display a default version */}
-      <Text className="font-bold text-center px-5 mt-4">
-        {validVendorDesc || "Happy to serve you"}
-      </Text>
+      {/* Action Sheet */}
+      <Modal transparent animationType="slide" visible={actionSheetVisible} onRequestClose={closeActionSheet}>
+        <TouchableOpacity className="flex-1 bg-black/50" activeOpacity={1} onPress={closeActionSheet} />
+        <View className="bg-white p-4 rounded-t-2xl border-t border-gray-200">
+          <View className="mb-4 items-center">
+            <Text className="text-lg font-medium text-gray-800">{selectedDish?.dish_name}</Text>
+          </View>
+          <TouchableOpacity className="py-3 border-t border-gray-100" onPress={handleView}>
+            <Text className="text-base text-gray-700">View Dish</Text>
+          </TouchableOpacity>
+          <TouchableOpacity className="py-3 border-t border-gray-100" onPress={handleEdit}>
+            <Text className="text-base text-gray-700">Edit Dish</Text>
+          </TouchableOpacity>
+          <TouchableOpacity className="py-3 border-t border-gray-100" onPress={promptDelete}>
+            <Text className="text-base text-red-600">Delete Dish</Text>
+          </TouchableOpacity>
+          <TouchableOpacity className="py-3 mt-2" onPress={closeActionSheet}>
+            <Text className="text-base text-gray-500 text-center">Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
 
-      {/* Create new dish button */}
-      <View className="px-4 mt-6">
-        <TouchableOpacity
-          className="bg-[#74B318] py-3 rounded-md justify-center items-center"
-          onPress={() =>
-            router.push({
-              pathname: "/createdish",
-              params: { prevPage: "/menu" , vendorId: vendorId},
-            })
-          }
-        >
-          <Text className="text-white text-lg font-bold">
-            Create new dish +
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {/* Delete Confirmation Modal with blurred backdrop */}
+      <Modal transparent animationType="fade" visible={confirmDeleteVisible} onRequestClose={cancelDelete}>
+      {/* Background Blur covering entire screen */}
+      <BlurView
+        intensity={90}
+        tint="dark"
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+      />
+      <View className="flex-1 justify-center items-center px-4">
+          <View className="bg-white rounded-2xl p-6 shadow-2xl w-full max-w-md">
+            <Text className="text-xl font-bold text-gray-800 mb-2 text-center">
+              Confirm Deletion
+            </Text>
+            <View className="h-px bg-gray-200 my-2" />
+            <Text className="text-base text-gray-600 mb-6 text-center">
+              Are you sure you want to permanently delete
+              {'\n'}"{selectedDish?.dish_name}"?
+            </Text>
+            <View className="flex-row space-x-3">
+              <TouchableOpacity
+                onPress={cancelDelete}
+                className="flex-1 bg-gray-100 rounded-lg py-2"
+              >
+                <Text className="text-center text-gray-800 font-medium">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={confirmDelete}
+                className="flex-1 bg-red-600 rounded-lg py-2"
+              >
+                <Text className="text-center text-white font-medium">
+                  Delete
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
-      {/* Dish list */}
-      <ScrollView className="h-60 mt-5" showsVerticalScrollIndicator={false}>
-        {vendorDishes.length === 0 ? (
-          <Text className="text-gray-400 text-center mt-4">
-            No dishes added yet.
-          </Text>
-        ) : (
-          vendorDishes.map((dish) => (
-            <DishItem
-              key={dish.id}
-              dish={dish}
-              onDelete={() => removeDish(dish)}
-              onEdit={(dish, dish_url) => editDish(dish, dish_url)}
-            />
-          ))
-        )}
-      </ScrollView>
+      {/* Dish Details Modal */}
+      <Modal
+        visible={dishDetailsVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={closeDishDetails}
+      >
+        <BlurView
+          intensity={90}
+          tint="dark"
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        />
+        <View className="flex-1 bg-black/60 justify-center items-center px-5">
+          <View className="bg-white w-full rounded-2xl p-5 shadow-xl">
+            {/* Header with close button */}
+            <View className="flex-row justify-between items-center mb-4">
+              <Text className="text-xl font-pbold text-primary">{selectedDish?.dish_name}</Text>
+              <TouchableOpacity 
+                onPress={closeDishDetails}
+                className="p-1 rounded-full bg-gray-100"
+              >
+                <Ionicons name="close" size={18} color="#333" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Dish Image */}
+            {selectedDish?.dish_image_url && (
+              <Image
+                source={{ uri: selectedDish.dish_image_url }}
+                className="h-32 w-full rounded-lg mb-4"
+                resizeMode="cover"
+              />
+            )}
+
+            {/* Rating Badge and Carbon */}
+            <View className="flex-row justify-between items-center mb-4">
+              <Text className="text-base font-medium">
+                Carbon: <Text className="text-primary font-bold">{selectedDish?.dish_total_carbon?.toFixed(2)} kg CO₂e</Text>
+              </Text>
+              {selectedDish && (
+                <View
+                  className="w-10 h-10 rounded-full items-center justify-center"
+                  style={{ backgroundColor: getRatingBadgeColor(getCarbonRating(selectedDish.dish_total_carbon ?? 0)) }}
+                >
+                  <Text className="text-white font-pbold text-lg">
+                    {getCarbonRating(selectedDish.dish_total_carbon ?? 0)}
+                  </Text>
+                </View>
+              )}
+            </View>
+            
+            {/* Nutritional Info if available */}
+            {selectedDish?.dish_nutrition && (
+              <View className="mb-4">
+                <Text className="text-base font-pbold text-gray-700 mb-2">Nutrition Facts:</Text>
+                <View className="flex-row flex-wrap justify-between border-t border-b border-gray-200 py-2">
+                  <View className="w-1/2 p-1">
+                    <Text className="text-gray-700">Calories: {selectedDish.dish_nutrition.calories} kcal</Text>
+                  </View>
+                  <View className="w-1/2 p-1">
+                    <Text className="text-gray-700">Protein: {selectedDish.dish_nutrition.protein}g</Text>
+                  </View>
+                  <View className="w-1/2 p-1">
+                    <Text className="text-gray-700">Carbs: {selectedDish.dish_nutrition.carbs}g</Text>
+                  </View>
+                  <View className="w-1/2 p-1">
+                    <Text className="text-gray-700">Fats: {selectedDish.dish_nutrition.fats}g</Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {/* Ingredients Section */}
+            <View className="mb-4">
+              <Text className="text-base font-pbold text-gray-700 mb-2">Ingredients:</Text>
+              {(() => {
+                if (ingredientsLoading) {
+                  return <Text className="text-gray-500 italic">Loading ingredients...</Text>;
+                } else if (dishIngredients.length > 0) {
+                  return (
+                    <ScrollView style={{ maxHeight: 120 }} className="border-t border-b border-gray-200 py-2">
+                      {dishIngredients.map((ing, idx) => (
+                        <View key={ing.ingredient.id || idx} className="flex-row justify-between py-1">
+                          <Text className="text-gray-700">{ing.ingredient.ingredient_name}</Text>
+                          <Text className="text-gray-500">{ing.ingredient_amount}g</Text>
+                        </View>
+                      ))}
+                    </ScrollView>
+                  );
+                } else {
+                  return <Text className="text-gray-500 italic">No ingredient information available</Text>;
+                }
+              })()}
+            </View>
+            
+            {/* Price */}
+            <Text className="text-base font-semibold text-green-600">
+              Price: RM {selectedDish?.dish_price?.toFixed(2) ?? '0.00'}
+            </Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

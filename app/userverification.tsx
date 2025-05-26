@@ -32,7 +32,7 @@ export default function UserVerification() {
       } else if (user.user_role == UserRole.Vendor) {
         router.replace({ pathname: "/vendorhome" });
       } else if (user.user_role == UserRole.Customer) {
-        router.replace({ pathname: "/faq" });
+        router.replace("/(customer-tabs)/home");
       }
       // router.push({ pathname: "/login" });
     }

@@ -9,6 +9,8 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator, 
+  Alert, 
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import IngredientSelector from "../components/IngredientSelector";
@@ -23,6 +25,8 @@ import { Base64Image } from '../interfaces/base64image';
 import { Dish } from "../interfaces/dish";
 import { insertDishIngredient } from "../controllers/dishIngredientController";
 import DishIngredientItem from "../components/DishIngredientItem";
+import CalculateTotalCarbon from "../components/CalculateTotalCarbon";
+import { updateVendorGreenScore } from "../controllers/vendorController";
 
 
 export default function CreateDishPage() {
@@ -31,12 +35,12 @@ export default function CreateDishPage() {
   const [thumbnailImage, setThumbnailImage] = useState(""); // State for thumbnail image
   const [ingredientList, setIngredientList] = useState<DishIngredient[]>([]);
   const [showIngredientSelector, setShowIngredientSelector] = useState(false);
+  const [totalCarbon, setTotalCarbon] = useState(0);
   const router = useRouter(); // Initialize router
-
   const [base64String, setBase64String] = useState('');
-
   const { prevPage, vendorId } = useGlobalSearchParams();
   const [dishes, setDishes] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const pickImage = async () => {
     // Request permission to access the media library
@@ -65,12 +69,24 @@ export default function CreateDishPage() {
   };
 
   const handleAddIngredient = (dishIngredient: DishIngredient) => {
-  //  console.log("Adding into list")
-   const newList = [...ingredientList, dishIngredient]
-  //  setIngredientList(newList);
-   
-   setIngredientList((ingredientList) => [...ingredientList, dishIngredient]);
-   console.log(`Current ing list: ${JSON.stringify(newList, null, 2)} `);
+    // Check if ingredient already exists in the list
+    const alreadyExists = ingredientList.some(
+      item => item.ingredient_id === dishIngredient.ingredient_id
+    );
+  
+    if (alreadyExists) {
+      // Show warning that ingredient is already added
+      Alert.alert(
+        "Ingredient Exists",
+        "This ingredient has already been added to your dish.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+  
+    // If not exists, add to list
+    setIngredientList(prev => [...prev, dishIngredient]);
+    //console.log(`Current ing list: ${JSON.stringify([...ingredientList, dishIngredient], null, 2)}`);
   };
 
   const base64Image: Base64Image = {
@@ -80,11 +96,22 @@ export default function CreateDishPage() {
 
   // Function to handle Dish creation
   const handleCreateDish = async () => {
+    setLoading(true)
+    if(ingredientList.length == 0){
+      Alert.alert(
+        "No Ingredient added",
+        "Dish should have at least one ingredient",
+        [{ text: "OK" }]
+      );
+      setLoading(false)
+      return;
+    }
     const newDish: Dish = {
       id: Math.random().toString(), // Generate a unique ID
       dish_name: dishName, // Assuming dishName is already a string from input
       dish_price: Number(dishPrice), // Make sure the price is a number or string as per the type
       dish_image_name: thumbnailImage, // Assuming thumbnailImage is a string (URI to the image)
+      dish_total_carbon: totalCarbon,
     };
    
    // 2. insert dish into supabase after "create dish" is pressed
@@ -100,7 +127,8 @@ export default function CreateDishPage() {
    }
    
    const insertDishIngredientSuccess = await insertDishIngredient(dishId, ingredientList)
-
+   console.log(`result: ${insertDishIngredientSuccess}`)
+   await updateVendorGreenScore(finalVendorId)
     // Navigate back to the dishes page
 
     if(insertDishSuccess && insertDishIngredientSuccess){
@@ -109,11 +137,13 @@ export default function CreateDishPage() {
       setDishPrice("");
       setThumbnailImage("");
 
+      setLoading(false);
       // Route back to previous
       router.back();
       router.replace({pathname: prevPage as string})
-      
-      
+    }
+    else{
+      setLoading(false);
     }
     // const validPrevpage = Array.isArray(prevPage) ? prevPage[0] : prevPage;
     // if (newDish.dishName != "" || newDish.dishPrice != 0) {
@@ -134,12 +164,9 @@ export default function CreateDishPage() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
-    >
+
       <View style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }} nestedScrollEnabled = {true}>
           <View className="flex-1 bg-white">
             {/* StatusBar setup */}
             <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
@@ -168,7 +195,15 @@ export default function CreateDishPage() {
                 onChangeText={setDishPrice}
                 keyboardType="numeric" // Numeric keyboard for price input
               />
-
+              {loading && (
+                <View className="absolute inset-0 bg-white z-50 justify-center items-center">
+                  <View className="flex-row items-center space-x-3">
+                    <ActivityIndicator size="small" color="#74B318" />
+                    <Text className="text-base font-medium text-black">Creating dish...</Text>
+                  </View>
+                </View>
+              )}
+              
               {/* Thumbnail Image Upload Box */}
               <Text className="text-base text-[#006400] mb-2">
                 Dish image:
@@ -203,7 +238,7 @@ export default function CreateDishPage() {
                 onPress={() => {
                   // Add functionality for adding ingredients
                   setShowIngredientSelector(true);
-                  console.log("Add ingredients button pressed");
+                  //console.log("Add ingredients button pressed");
                 }}
               >
                 <Text className="text-white text-base font-bold">
@@ -214,9 +249,9 @@ export default function CreateDishPage() {
               <Text className="text-base text-[#006400] mb-2">
                 Ingredient List:
               </Text>
-              <ScrollView className="h-60" showsVerticalScrollIndicator={false}>
+              <ScrollView className="h-60" showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
                   {ingredientList.length === 0 ? (
-                    <Text className="text-gray-400 text-center mt-4">No ingredients added yet.</Text>
+                    <Text className="text-gray-400 text-center mt-4">No ingredients added yet</Text>
                   ) : 
                   (
                     ingredientList.map((dishIngredient) => (
@@ -235,9 +270,11 @@ export default function CreateDishPage() {
         </ScrollView>
 
         {/* Create New Dish Button */}
-        <View className="px-5 py-4 bg-white">
+        <View className="px-4 py-6 bg-white">
+          <CalculateTotalCarbon ingredientList={ingredientList} onCarbonCalculated={setTotalCarbon}/>
           <TouchableOpacity
-            className="h-12 bg-[#74B318] rounded-md justify-center items-center mb-4"
+            className="h-10 bg-[#74B318] rounded-md justify-center items-center mb-5"
+            disabled={loading}
             onPress={() => {
               // Add functionality for creating the new dish
               console.log("Create new dish button pressed");
@@ -264,6 +301,5 @@ export default function CreateDishPage() {
           ></IngredientSelector>
         </View>
       </View>
-    </KeyboardAvoidingView>
   );
 }
