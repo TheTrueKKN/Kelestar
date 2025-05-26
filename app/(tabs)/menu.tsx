@@ -6,9 +6,10 @@ import { BlurView } from 'expo-blur';
 import { getVendorByUser, updateVendorGreenScore } from '../../controllers/vendorController';
 import { getDishes, deleteDish } from '../../controllers/dishController';
 import { Dish } from '../../interfaces/dish';
-import { getCarbonRating, getRatingBadgeColor } from '../../lib/utils/carbonRating';
+import { getCarbonRating } from '../../lib/utils/carbonRating';
 import { joinDishIngredient } from '../../controllers/dishIngredientJoinController';
 import { JoinedDishIngredient } from '../../interfaces/joinedDishIngredient';
+import { RatingColor } from '../../enums/carbonRating';
 
 export default function Menu() {
   const router = useRouter();
@@ -257,7 +258,7 @@ export default function Menu() {
               {selectedDish && (
                 <View
                   className="w-10 h-10 rounded-full items-center justify-center"
-                  style={{ backgroundColor: getRatingBadgeColor(getCarbonRating(selectedDish.dish_total_carbon ?? 0)) }}
+                  style={{ backgroundColor: RatingColor[getCarbonRating(selectedDish.dish_total_carbon ?? 0)] }}
                 >
                   <Text className="text-white font-pbold text-lg">
                     {getCarbonRating(selectedDish.dish_total_carbon ?? 0)}

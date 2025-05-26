@@ -14,7 +14,8 @@ import { getCustomerByUser } from "../../controllers/customerController";
 import { Meal } from "../../interfaces/meal";
 import { Dish } from "../../interfaces/dish";
 import { useFocusEffect } from "expo-router";
-import { getCarbonRating, getRatingBadgeColor } from "../../lib/utils/carbonRating";
+import { getCarbonRating} from "../../lib/utils/carbonRating";
+import { CarbonRating, RatingColor } from "../../enums/carbonRating";
 
 // Types
 // type Meal = {
@@ -224,13 +225,13 @@ export default function Statistics() {
   );
   // Get grade for the day and its color
   const dayGrade = getCarbonRating(selectedDayData.totalCarbon);
-  const gradeColor = getRatingBadgeColor(dayGrade);
+  const gradeColor = RatingColor[dayGrade];
 
 
 
   // Render rating badge
-  const renderRatingBadge = (rating: string) => {
-    const bgColor = getRatingBadgeColor(rating);
+  const renderRatingBadge = (rating: CarbonRating) => {
+    const bgColor = RatingColor[rating];
 
     return (
       <View
@@ -307,7 +308,7 @@ export default function Statistics() {
           <View className="flex-row justify-between items-center mb-2">
             <Text className="text-gray-600">Daily Carbon budget</Text>
             <Text className="text-gray-600 font-semibold">
-              {selectedDayData.totalCarbon.toFixed(1)}/{carbonBudget} kg CO₂e
+              {selectedDayData.totalCarbon.toFixed(1)}/{carbonBudget}g CO₂e
             </Text>
           </View>
 
@@ -343,7 +344,7 @@ export default function Statistics() {
                       {meal.meal_dish?.dish_name}
                     </Text>
                     <Text className="text-gray-500">
-                      {meal.meal_dish?.dish_total_carbon?.toFixed(1)}kg CO₂e
+                      {meal.meal_dish?.dish_total_carbon?.toFixed(1)}g CO₂e
                     </Text>
                   </View>
                   {renderRatingBadge(
@@ -365,7 +366,7 @@ export default function Statistics() {
               <Text className="text-gray-600">
                 In total{" "}
                 <Text className="font-semibold">
-                  {selectedDayData.totalCarbon.toFixed(1)}kg CO₂e
+                  {selectedDayData.totalCarbon.toFixed(1)}g CO₂e
                 </Text>{" "}
                 is equivalent to...
               </Text>
@@ -512,7 +513,7 @@ export default function Statistics() {
               {selectedDishDetails && (
                 <View
                   className="w-10 h-10 rounded-full items-center justify-center"
-                  style={{ backgroundColor: getRatingBadgeColor(getCarbonRating(selectedDishDetails.dish_total_carbon ?? 0)) }}
+                  style={{ backgroundColor: RatingColor[getCarbonRating(selectedDishDetails.dish_total_carbon ?? 0)] }}
                 >
                   <Text className="text-white font-pbold text-lg">
                     {getCarbonRating(selectedDishDetails.dish_total_carbon ?? 0)}
