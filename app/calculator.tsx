@@ -194,10 +194,10 @@ export default function Calculator() {
           <View className="bg-white rounded-2xl p-6 w-80 shadow-md">
             <Text className="text-xl font-bold text-[#006400] mb-3">Grade Explanation</Text>
             <Text className="text-[#333333] text-base mb-4">
-              • A (Excellent): Less than 1 kg CO₂{'\n'}
-              • B (Good): 1–4.9 kg CO₂{'\n'}
-              • C (Moderate): 5–19.9 kg CO₂{'\n'}
-              • D (High): 20+ kg CO₂
+              • A (Excellent): Less than 1 g CO₂{'\n'}
+              • B (Good): 1–4.9 g CO₂{'\n'}
+              • C (Moderate): 5–19.9 g CO₂{'\n'}
+              • D (High): 20+ g CO₂
             </Text>
             <TouchableOpacity
               className="self-end mt-2 px-4 py-2 bg-[#74B318] rounded-md"

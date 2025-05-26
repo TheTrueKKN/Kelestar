@@ -2,25 +2,29 @@ import { CarbonRating } from "../../enums/carbonRating";
 
 export const getCarbonRating = (footprint: number) => {
   let rating = "";
-  if (footprint > 5) {
-    rating = CarbonRating.C;
-  } else if (footprint > 2.5) {
-    rating = CarbonRating.B;
-  } else {
+  if (footprint < 1) {
     rating = CarbonRating.A;
+  } else if ((footprint >= 1 && footprint < 5)) {
+    rating = CarbonRating.B;
+  } else if ((footprint >= 5 && footprint < 20))  {
+    rating = CarbonRating.C;
+  }else{
+      rating = CarbonRating.D
   }
-
+  
   return rating;
 };
 
 export const getRatingBadgeColor = (rating: string) => {
   switch (rating) {
     case "A":
-      return "#8DC63F";
+      return "#74B318";
     case "B":
-      return "#F8D15B";
+      return "#A4D056";
     case "C":
-      return "#ED1C24";
+      return "#FFDA44";
+    case "D":
+      return "#F87171"
     default:
       return "#000000";
   }

@@ -282,7 +282,7 @@ const Tracking = () => {
             {activeTab === "Carbon Info" && (
               <View>
                 <Text className="text-lg font-semibold text-center mb-4">
-                  Total CO₂e: {dish.dish_total_carbon}KG
+                  Total CO₂e: {(dish.dish_total_carbon)?.toFixed(2)}KG
                 </Text>
                 <View className="items-center">
                   <PieChart

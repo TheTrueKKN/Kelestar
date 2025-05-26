@@ -501,7 +501,7 @@ const Dashboard = () => {
                     }}
                   />
                   <Text>
-                    {name}: {population}
+                    {name}: {population}g
                   </Text>
                 </View>
               ))}

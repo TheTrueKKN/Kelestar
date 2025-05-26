@@ -307,7 +307,7 @@ export default function Statistics() {
           <View className="flex-row justify-between items-center mb-2">
             <Text className="text-gray-600">Daily Carbon budget</Text>
             <Text className="text-gray-600 font-semibold">
-              {selectedDayData.totalCarbon.toFixed(1)}/{carbonBudget} kg CO₂e
+              {selectedDayData.totalCarbon.toFixed(2)}/{carbonBudget.toFixed(2)} g CO₂e
             </Text>
           </View>
 
