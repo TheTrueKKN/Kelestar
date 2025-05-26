@@ -86,11 +86,21 @@ const IngredientSelector = ({
         transparent={true}
         visible={showModal}
         animationType="fade"
-        onRequestClose={() => {
-          handleShowModal(false);
-        }}
+        presentationStyle="overFullScreen"
+        statusBarTranslucent={true}
+        onRequestClose={() => handleShowModal(false)}
       >
-        <View className="flex-1 justify-center items-center bg-black/30 backdrop-blur-sm">
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.3)',
+          }}
+          className="justify-center items-center"
+        >
           {/* Popup Content */}
           <View className="bg-white w-80 p-6 rounded-lg shadow-lg shadow-gray-200">
             <TouchableOpacity

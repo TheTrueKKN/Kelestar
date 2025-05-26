@@ -161,7 +161,9 @@ export async function deleteDish({ id, dish_image_name }: Dish) {
       }
     }
 
+    console.log(`Current query:${JSON.stringify(query)}`)
     const { data, error, status } = await query;
+    console.log(`Data: ${data}, error:${error}`)
     if (error && status !== 406) throw error;
 
     return true;

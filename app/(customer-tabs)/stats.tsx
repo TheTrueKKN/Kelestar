@@ -1,16 +1,18 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Modal, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   ChevronLeft,
   ChevronRight,
   Share2,
   BarChart2,
+  X as CloseIcon
 } from "lucide-react-native";
 import Svg, { Path, Circle, Line, Text as SvgText } from "react-native-svg";
 import { getMealListingByCustomer } from "../../controllers/mealController";
 import { getCustomerByUser } from "../../controllers/customerController";
 import { Meal } from "../../interfaces/meal";
+import { Dish } from "../../interfaces/dish";
 import { useFocusEffect } from "expo-router";
 import { getCarbonRating, getRatingBadgeColor } from "../../lib/utils/carbonRating";
 
@@ -81,6 +83,8 @@ export default function Statistics() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [carbonBudget, setCarbonBudget] = useState(7.5);
   const [meals, setMeals] = useState<Meal[]>([]);
+  const [selectedDishDetails, setSelectedDishDetails] = useState<Dish | null>(null);
+  const [dishDetailsVisible, setDishDetailsVisible] = useState(false);
   const mealData = useMemo(() => generateMealData(meals), [meals]);
   // const [mealData, setMealData] = useState<Record<string, DayData>>({});
 
@@ -218,6 +222,9 @@ export default function Statistics() {
     (selectedDayData.totalCarbon / carbonBudget) * 100,
     100
   );
+  // Get grade for the day and its color
+  const dayGrade = getCarbonRating(selectedDayData.totalCarbon);
+  const gradeColor = getRatingBadgeColor(dayGrade);
 
 
 
@@ -239,14 +246,11 @@ export default function Statistics() {
     <SafeAreaView edges={["top"]} className="flex-1 bg-white">
       <ScrollView className="flex-1">
         {/* Header */}
-        <View className="px-4 pt-2 pb-6">
+        <View className="px-4 pt-6 pb-6">
           <View className="flex-row justify-between items-center">
             <Text className="h-[42px] font-psemibold text-[28px] leading-[42px] text-[#1E1F1F]">
               My Meal Footprint
             </Text>
-            <TouchableOpacity>
-              <Share2 size={20} color="#666" />
-            </TouchableOpacity>
           </View>
 
           {/* Date selector */}
@@ -307,12 +311,12 @@ export default function Statistics() {
             </Text>
           </View>
 
-          <View className="h-6 bg-gray-200 rounded-full overflow-hidden">
-            <View
-              className="h-full bg-green-500 rounded-full"
-              style={{ width: `${budgetPercentage}%` }}
-            />
-          </View>
+        <View className="h-6 bg-gray-200 rounded-full overflow-hidden">
+          <View
+            className="h-full rounded-full"
+            style={{ width: `${budgetPercentage}%`, backgroundColor: gradeColor }}
+          />
+        </View>
         </View>
 
         {/* Meals */}
@@ -327,17 +331,25 @@ export default function Statistics() {
                 key={meal.id}
                 className="bg-gray-100 rounded-xl p-4 flex-row justify-between items-center mb-3"
               >
-                <View>
-                  <Text className="font-semibold text-base">
-                    {meal.meal_dish?.dish_name}
-                  </Text>
-                  <Text className="text-gray-500">
-                    {meal.meal_dish?.dish_total_carbon?.toFixed(1)}kg CO₂e
-                  </Text>
-                </View>
-                {renderRatingBadge(
-                  getCarbonRating(meal.meal_dish?.dish_total_carbon ?? 0)
-                )}
+                <TouchableOpacity 
+                  className="flex-1 flex-row justify-between items-center"
+                  onPress={() => {
+                    setSelectedDishDetails(meal.meal_dish || null);
+                    setDishDetailsVisible(true);
+                  }}
+                >
+                  <View>
+                    <Text className="font-semibold text-base">
+                      {meal.meal_dish?.dish_name}
+                    </Text>
+                    <Text className="text-gray-500">
+                      {meal.meal_dish?.dish_total_carbon?.toFixed(1)}kg CO₂e
+                    </Text>
+                  </View>
+                  {renderRatingBadge(
+                    getCarbonRating(meal.meal_dish?.dish_total_carbon ?? 0)
+                  )}
+                </TouchableOpacity>
               </View>
             ))
           ) : (
@@ -366,7 +378,7 @@ export default function Statistics() {
           <View className="px-4 mb-6">
             <View className="flex-row items-center">
               <View className="mr-4">
-                <Svg width={80} height={50} viewBox="0 0 100 60">
+                <Svg width={80} height={65} viewBox="0 0 100 70">
                   <Path
                     d="M10,45 L20,45 C25,45 25,30 30,30 L70,30 C75,30 75,45 80,45 L90,45 L90,55 L10,55 Z"
                     fill="#FF9D42"
@@ -462,6 +474,77 @@ export default function Statistics() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Dish Details Modal */}
+      <Modal
+        visible={dishDetailsVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setDishDetailsVisible(false)}
+      >
+        <View className="flex-1 bg-black/60 justify-center items-center px-5">
+          <View className="bg-white w-full rounded-2xl p-5 shadow-xl">
+            {/* Header with close button */}
+            <View className="flex-row justify-between items-center mb-4">
+              <Text className="text-xl font-pbold text-primary">{selectedDishDetails?.dish_name}</Text>
+              <TouchableOpacity 
+                onPress={() => setDishDetailsVisible(false)}
+                className="p-1 rounded-full bg-gray-100"
+              >
+                <CloseIcon size={18} color="#333" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Dish Image */}
+            {selectedDishDetails?.dish_image_url && (
+              <Image
+                source={{ uri: selectedDishDetails.dish_image_url }}
+                className="h-32 w-full rounded-lg mb-4"
+                resizeMode="cover"
+              />
+            )}
+
+            {/* Rating Badge and Carbon */}
+            <View className="flex-row justify-between items-center mb-4">
+              <Text className="text-base font-medium">
+                Carbon: <Text className="text-primary font-bold">{selectedDishDetails?.dish_total_carbon?.toFixed(2)} kg CO₂e</Text>
+              </Text>
+              {selectedDishDetails && (
+                <View
+                  className="w-10 h-10 rounded-full items-center justify-center"
+                  style={{ backgroundColor: getRatingBadgeColor(getCarbonRating(selectedDishDetails.dish_total_carbon ?? 0)) }}
+                >
+                  <Text className="text-white font-pbold text-lg">
+                    {getCarbonRating(selectedDishDetails.dish_total_carbon ?? 0)}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {/* Ingredients Section */}
+            <View className="mb-4">
+              <Text className="text-base font-pbold text-gray-700 mb-2">Ingredients:</Text>
+              {selectedDishDetails?.dish_ingredient?.length ? (
+                <ScrollView style={{ maxHeight: 120 }} className="border-t border-b border-gray-200 py-2">
+                  {selectedDishDetails.dish_ingredient.map((ing, idx) => (
+                    <View key={ing.ingredient.id || idx} className="flex-row justify-between py-1">
+                      <Text className="text-gray-700">{ing.ingredient.ingredient_name}</Text>
+                      <Text className="text-gray-500">{ing.ingredient_amount}g</Text>
+                    </View>
+                  ))}
+                </ScrollView>
+              ) : (
+                <Text className="text-gray-500 italic">No ingredient information available</Text>
+              )}
+            </View>
+
+            {/* Price */}
+            <Text className="text-base font-semibold text-green-600">
+              Price: RM {selectedDishDetails?.dish_price?.toFixed(2) || '0.00'}
+            </Text>
+          </View>
+        </View>
+      </Modal>
 
       {/* Bottom navigation indicator only */}
       <View className="h-12 bg-gray-100 border-t border-gray-200">

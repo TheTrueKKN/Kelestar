@@ -164,8 +164,10 @@ export default function ChooseMeal() {
             <TextInput
               placeholder="Search your favorite meal"
               placeholderTextColor="#8B8B8B"
-              className="flex-1 font-pregular text-base mt-2 h-10 text-left"
+              className="flex-1 font-pregular text-base h-10 text-left"
+              style={{ paddingTop: 0, paddingBottom: 0, marginTop: 0, marginBottom: 0 }}
               onChangeText={(e: string) => handleSearchItem(e)}
+              scrollEnabled={false}
             />
             <TouchableOpacity
               onPress={() => handleSearchItem(searchTerm ?? "")}

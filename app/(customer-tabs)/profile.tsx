@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from '../../constants';
 import { useRouter } from 'expo-router';
+import { getUser } from '../../controllers/userController';
 
 // Menu item interface
 interface MenuItem {
@@ -31,6 +32,15 @@ const MenuSquare = ({ item, onPress }: { item: MenuItem; onPress: () => void }) 
 
 export default function CustomerProfile() {
   const router = useRouter();
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const user = await getUser();
+      if (user?.user_name) setUserName(user.user_name);
+    };
+    fetchUser();
+  }, []);
 
   // Menu items data
   const menuItems: MenuItem[] = [
@@ -88,36 +98,24 @@ export default function CustomerProfile() {
         contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={true}
       >
-        {/* Profile Image Section - increased top padding */}
-        <View className="w-full items-center pt-[20px] pb-6">
-          {/* Profile image container */}
-          <View className="w-[140px] h-[140px] bg-[#F5F5F5] rounded-3xl justify-center items-center relative">
-            {/* Default image placeholder */}
-            <View className="w-[100px] h-[100px] rounded-full bg-[#E0E0E0] items-center justify-center">
-              <Text className="text-[40px] font-psemibold text-gray-500">U</Text>
-            </View>
-            
-            {/* Edit profile image button */}
-            <TouchableOpacity 
-              className="absolute bottom-2 right-2 bg-white w-9 h-9 rounded-full items-center justify-center shadow-md"
-            >
-              <Image 
-                source={require('../../assets/icons/edit_icon.png')}
-                className="w-4.5 h-4.5"
-                resizeMode="contain"
+        {/* Modern Name Banner Section with Avatar */}
+        <View className="w-full items-center pb-6">
+          <View className="w-full bg-green rounded-b-3xl py-7 px-6 shadow-lg items-center justify-center">
+            <View className="mb-3 w-20 h-20 rounded-full bg-white items-center justify-center shadow-md border-4 border-green-700">
+              <Image
+                source={require('../../assets/images/default-avatar.jpg')}
+                className="w-16 h-16 rounded-full"
+                resizeMode="cover"
               />
-            </TouchableOpacity>
+            </View>
+            <Text className="text-2xl font-extrabold text-white tracking-wide" style={{ color: '#22C55E', backgroundColor: 'white', borderRadius: 12, paddingHorizontal: 18, paddingVertical: 6, overflow: 'hidden', marginTop: 4 }}>{userName || 'User'}</Text>
           </View>
-          
-          {/* User name */}
-          <Text className="mt-4 text-[24px] font-pbold">John Doe</Text>
-          <Text className="text-[16px] font-pregular text-gray-500">john@example.com</Text>
         </View>
 
-        {/* Menu Grid */}
+        {/* Menu Grid (without Badge and Nutrition) */}
         <View className="px-[10px] pt-4 mb-20">
           <View className="flex-row flex-wrap justify-center">
-            {menuItems.map(item => (
+            {menuItems.filter(item => item.title !== 'Badge' && item.title !== 'Nutrition').map(item => (
               <MenuSquare 
                 key={item.id} 
                 item={item} 

@@ -79,16 +79,16 @@ const Settings = () => {
               <Ionicons name="chevron-forward" size={20} color="#CCCCCC" />
             </TouchableOpacity>
 
-            {/* Terms and conditions */}
-            <TouchableOpacity className="flex-row items-center justify-between py-4 border-b border-gray-100">
-              <Text className="text-base text-[#333333]">Terms and conditions</Text>
-              <Ionicons name="chevron-forward" size={20} color="#CCCCCC" />
+            {/* Terms & Conditions */}
+            <TouchableOpacity onPress={() => router.push('/terms')} className="flex-row items-center justify-between py-4 border-b border-gray-100">
+              <Text className="text-base text-[#333333]">Terms & Conditions</Text>
+              <Ionicons name="chevron-forward" size={20} color="#22C55E" />
             </TouchableOpacity>
 
             {/* About */}
-            <TouchableOpacity className="flex-row items-center justify-between py-4 border-b border-gray-100">
+            <TouchableOpacity onPress={() => router.push('/about')} className="flex-row items-center justify-between py-4 border-b border-gray-100">
               <Text className="text-base text-[#333333]">About</Text>
-              <Ionicons name="chevron-forward" size={20} color="#CCCCCC" />
+              <Ionicons name="chevron-forward" size={20} color="#22C55E" />
             </TouchableOpacity>
           </View>
           
