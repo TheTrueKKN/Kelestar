@@ -17,9 +17,9 @@ import { Meal } from "../interfaces/meal";
 import { Dish } from "../interfaces/dish";
 import {
   getCarbonRating,
-  getRatingBadgeColor,
 } from "../lib/utils/carbonRating";
 import { periodOptions } from "../enums/periodOptions";
+import { RatingColor } from "../enums/carbonRating";
 
 type DateComparisonFn = (date1: Date, date2: Date) => DateComparisonResult;
 type DateComparisonResult = { isSamePeriod: boolean; period: string };
@@ -255,7 +255,7 @@ const History = () => {
       <Picker
         selectedValue={selectedOption}
         onValueChange={(itemValue) => setSelectedOption(itemValue)}
-        style={{ height: 50, width: 120 }}
+        style={{ height: 60, width: 140 }}
         dropdownIconColor="#000000"
       >
         {Object.values(periodOptions).map((option) => (
@@ -268,7 +268,7 @@ const History = () => {
   // Render each dish item
   const renderFoodItem = (mealId: string, dish: Dish) => {
     const carbonRating = getCarbonRating(dish.dish_total_carbon ?? 0);
-    const bgColor = getRatingBadgeColor(carbonRating);
+    const bgColor = RatingColor[carbonRating];
 
     return (
       <TouchableOpacity
@@ -330,7 +330,7 @@ const History = () => {
             )}
             <View className="px-4 mt-2 mb-6 items-end">
               <Text className="text-gray-500 font-normal">
-                Total: {mealData[period].totalCarbon.toFixed(2)} Kg CO₂e
+                Total: {mealData[period].totalCarbon.toFixed(2)} g CO₂e
               </Text>
             </View>
           </View>

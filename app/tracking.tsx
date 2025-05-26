@@ -19,10 +19,8 @@ import { Dish } from "../interfaces/dish";
 import { joinDishIngredient } from "../controllers/dishIngredientJoinController";
 import { JoinedDishIngredient } from "../interfaces/joinedDishIngredient";
 import { insertMeal } from "../controllers/mealController";
-import {
-  getCarbonRating,
-  getRatingBadgeColor,
-} from "../lib/utils/carbonRating";
+import { getCarbonRating } from "../lib/utils/carbonRating";
+import { RatingColor } from "../enums/carbonRating";
 
 const Tracking = () => {
   const { width } = useWindowDimensions();
@@ -39,7 +37,7 @@ const Tracking = () => {
   >([]);
   const [pieData, setPieData] = useState<PieData[]>([]);
   const carbonRating = getCarbonRating(dish.dish_total_carbon ?? 0);
-  const bgColor = getRatingBadgeColor(carbonRating);
+  const bgColor = RatingColor[carbonRating];
 
   // const getImage = (id: string) => {
   //   switch(id) {
@@ -116,7 +114,11 @@ const Tracking = () => {
   };
 
   const getNutritionApproximateRange = (value: number) => {
-    return value == 0? '0' : `${(value * 0.9).toFixed(0)} - ${(value * 1.1).toFixed(0)}`;
+    const startValue = (value * 0.9).toFixed(0);
+    const endValue = (value * 1.1).toFixed(0);
+    return startValue == endValue
+      ? startValue
+      : `${startValue} - ${endValue}`;
   };
 
   const handleStartTracking = async () => {
@@ -222,11 +224,12 @@ const Tracking = () => {
               <Tooltip
                 isVisible={showGradeTooltip}
                 content={
-                  <View className="w-[200px]">
-                    <Text className="text-black">
-                      Grade 'A' indicates this meal has a low carbon footprint
-                      and is environmentally sustainable. It's among the
-                      top-rated choices for eco-conscious dining.
+                  <View className="h-[80px]">
+                    <Text className="text-black w-[250px] h-[150px]">
+                      • A (Excellent): Less than 1 g CO₂{'\n'}
+                      • B (Good): 1–4.9 g CO₂{'\n'}
+                      • C (Moderate): 5–19.9 g CO₂{'\n'}
+                      • D (High): 20+ g CO₂
                     </Text>
                   </View>
                 }
@@ -282,7 +285,7 @@ const Tracking = () => {
             {activeTab === "Carbon Info" && (
               <View>
                 <Text className="text-lg font-semibold text-center mb-4">
-                  Total CO₂e: {(dish.dish_total_carbon)?.toFixed(2)}KG
+                  Total CO₂e: {dish.dish_total_carbon}g
                 </Text>
                 <View className="items-center">
                   <PieChart
@@ -310,16 +313,27 @@ const Tracking = () => {
                 </Text>
                 <View className="space-y-2">
                   <Text className="text-base text-gray-700">
-                    Calories: {getNutritionApproximateRange(dish.dish_nutrition?.calories!)} kcal
+                    Calories:{" "}
+                    {getNutritionApproximateRange(
+                      dish.dish_nutrition?.calories!
+                    )}{" "}
+                    kcal
                   </Text>
                   <Text className="text-base text-gray-700">
-                    Protein: {getNutritionApproximateRange(dish.dish_nutrition?.protein!)} g
+                    Protein:{" "}
+                    {getNutritionApproximateRange(
+                      dish.dish_nutrition?.protein!
+                    )}{" "}
+                    g
                   </Text>
                   <Text className="text-base text-gray-700">
-                    Carbohydrates: {getNutritionApproximateRange(dish.dish_nutrition?.carbs!)} g
+                    Carbohydrates:{" "}
+                    {getNutritionApproximateRange(dish.dish_nutrition?.carbs!)}{" "}
+                    g
                   </Text>
                   <Text className="text-base text-gray-700">
-                    Fats: {getNutritionApproximateRange(dish.dish_nutrition?.fats!)} g
+                    Fats:{" "}
+                    {getNutritionApproximateRange(dish.dish_nutrition?.fats!)} g
                   </Text>
                   {/* <Text className="text-base text-gray-700">Fiber: 8g</Text>
                   <Text className="text-base text-gray-700">Sodium: 300mg</Text>
@@ -347,8 +361,7 @@ const Tracking = () => {
                       - {dishIngredient.ingredient_amount}g{" "}
                       {dishIngredient.ingredient.ingredient_name}{" "}
                       <Text className="text-sm text-gray-500">
-                        ({calcIndividualIngredientFootprint(dishIngredient)}{" "}
-                        CO₂e)
+                        ({calcIndividualIngredientFootprint(dishIngredient)}{}g CO₂e)
                       </Text>
                     </Text>
                   ))}
@@ -378,7 +391,7 @@ const Tracking = () => {
                   </Text> */}
                 </View>
                 <Text className="text-lg font-bold text-gray-800 mt-4">
-                  Total Estimated Carbon Emission: {dish.dish_total_carbon}kg
+                  Total Estimated Carbon Emission: {dish.dish_total_carbon}g
                   CO₂e
                 </Text>
               </View>
@@ -414,12 +427,12 @@ const Tracking = () => {
                   minimumDate={(() => {
                     const d = new Date();
                     d.setDate(d.getDate() - 6);
-                    d.setHours(0,0,0,0);
+                    d.setHours(0, 0, 0, 0);
                     return d;
                   })()}
                   maximumDate={(() => {
                     const d = new Date();
-                    d.setHours(23,59,59,999);
+                    d.setHours(23, 59, 59, 999);
                     return d;
                   })()}
                   onChange={(event, selectedDate) => {
@@ -440,12 +453,12 @@ const Tracking = () => {
                   minimumDate={(() => {
                     const d = new Date();
                     d.setDate(d.getDate() - 6);
-                    d.setHours(0,0,0,0);
+                    d.setHours(0, 0, 0, 0);
                     return d;
                   })()}
                   maximumDate={(() => {
                     const d = new Date();
-                    d.setHours(23,59,59,999);
+                    d.setHours(23, 59, 59, 999);
                     return d;
                   })()}
                   onChange={(event, selectedDate) => {

@@ -1,82 +1,100 @@
-import React, { useState, useEffect }from "react";
-import { View, Text, TextInput, TouchableOpacity, SafeAreaView, StatusBar, ScrollView, Alert, Modal } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  SafeAreaView,
+  StatusBar,
+  ScrollView,
+  Alert,
+  Modal,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import IngredientSelector from "../components/IngredientSelector";
 import { DishIngredient } from "../interfaces/dishIngredient";
 import DishIngredientItem from "../components/DishIngredientItem";
 import CalculateTotalCarbon from "../components/CalculateTotalCarbon";
 import { useRouter } from "expo-router";
+import { getCarbonRating } from "../lib/utils/carbonRating";
+import { RatingColor } from "../enums/carbonRating";
 
 export default function Calculator() {
+  const [showIngredientSelector, setShowIngredientSelector] = useState(false);
+  const [ingredientList, setIngredientList] = useState<DishIngredient[]>([]);
+  const [totalCarbon, setTotalCarbon] = useState(0);
+  const [showExplanationModal, setShowExplanationModal] = useState(false);
 
-   const [showIngredientSelector, setShowIngredientSelector] = useState(false);
-   const [ingredientList, setIngredientList] = useState<DishIngredient[]>([]);
-   const [totalCarbon, setTotalCarbon] = useState(0);
-   const [showExplanationModal, setShowExplanationModal] = useState(false);
+  // Changing the Carbon grade and color
+  const [grade, setGrade] = useState("A");
+  const [gradeColor, setGradeColor] = useState("#74B318");
 
-   // Changing the Carbon grade and color
-   const [grade, setGrade] = useState("A");
-   const [gradeColor, setGradeColor] = useState("#74B318");
+  const router = useRouter();
 
-   const router = useRouter();
+  const handleAddIngredient = (dishIngredient: DishIngredient) => {
+    // Check if ingredient already exists in the list
+    const alreadyExists = ingredientList.some(
+      (item) => item.ingredient_id === dishIngredient.ingredient_id
+    );
 
-   const handleAddIngredient = (dishIngredient: DishIngredient) => {
-       // Check if ingredient already exists in the list
-       const alreadyExists = ingredientList.some(
-         item => item.ingredient_id === dishIngredient.ingredient_id
-       );
-     
-       if (alreadyExists) {
-         // Show warning that ingredient is already added
-         Alert.alert(
-           "Ingredient Exists",
-           "This ingredient has already been added to your dish.",
-           [{ text: "OK" }]
-         );
-         return;
-       }
-     
-       // If not exists, add to list
-       setIngredientList(prev => [...prev, dishIngredient]);
-       //console.log(`Current ing list: ${JSON.stringify([...ingredientList, dishIngredient], null, 2)}`);
-     };
-
-    const removeIngredient = async (ingredientId: string) => {
-      setIngredientList((ingredientList) => ingredientList.filter(allIngredient => allIngredient.ingredient_id !== ingredientId))
-    };
-
-    useEffect(() => {
-  const getCarbonGrade = (carbon: number): string => {
-    if (carbon < 1) return "A";
-    if (carbon >= 1 && carbon < 5) return "B";
-    if (carbon >= 5 && carbon < 20) return "C";
-    return "D";
-  };
-
-  const getGradeColor = (grade: string): string => {
-    switch (grade) {
-      case "A": return "#74B318"; // green
-      case "B": return "#A4D056"; // light green
-      case "C": return "#FFDA44"; // yellow
-      case "D": return "#F87171"; // red
-      default: return "#CCCCCC";
+    if (alreadyExists) {
+      // Show warning that ingredient is already added
+      Alert.alert(
+        "Ingredient Exists",
+        "This ingredient has already been added to your dish.",
+        [{ text: "OK" }]
+      );
+      return;
     }
+
+    // If not exists, add to list
+    setIngredientList((prev) => [...prev, dishIngredient]);
+    //console.log(`Current ing list: ${JSON.stringify([...ingredientList, dishIngredient], null, 2)}`);
   };
-  
-  const newGrade = getCarbonGrade(totalCarbon);
-  setGrade(newGrade);
-  setGradeColor(getGradeColor(newGrade));
-}, [totalCarbon]);
+
+  const removeIngredient = async (ingredientId: string) => {
+    setIngredientList((ingredientList) =>
+      ingredientList.filter(
+        (allIngredient) => allIngredient.ingredient_id !== ingredientId
+      )
+    );
+  };
+
+  useEffect(() => {
+    // const getCarbonGrade = (carbon: number): string => {
+    //   if (carbon < 1) return "A";
+    //   if (carbon >= 1 && carbon < 5) return "B";
+    //   if (carbon >= 5 && carbon < 20) return "C";
+    //   return "D";
+    // };
+
+    // const getGradeColor = (grade: string): string => {
+    //   switch (grade) {
+    //     case "A": return "#74B318"; // green
+    //     case "B": return "#A4D056"; // light green
+    //     case "C": return "#FFDA44"; // yellow
+    //     case "D": return "#F87171"; // red
+    //     default: return "#CCCCCC";
+    //   }
+    // };
+
+    const newGrade = getCarbonRating(totalCarbon);
+    setGrade(newGrade);
+    setGradeColor(RatingColor[newGrade]);
+  }, [totalCarbon]);
 
   return (
     <SafeAreaView style={{ flex: 1 }} className="bg-white">
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-      <ScrollView contentContainerStyle={{ flexGrow: 1 } } nestedScrollEnabled={true}>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        nestedScrollEnabled={true}
+      >
         <View className="flex-1 bg-white">
           {/* Header with subtle shadow */}
           <View className="px-6 pt-12 pb-6 bg-white shadow-sm">
             <View className="flex-row items-center mb-3">
-              <TouchableOpacity onPress={() => router.back()}  className="mr-3">
+              <TouchableOpacity onPress={() => router.back()} className="mr-3">
                 <Ionicons name="chevron-back" size={24} color="#006400" />
               </TouchableOpacity>
               <Text className="text-3xl font-bold text-[#006400]">
@@ -92,7 +110,9 @@ export default function Calculator() {
           <View className="px-6 py-6">
             {/* Ingredients Section */}
             <View className="mb-6">
-              <Text className="text-sm font-medium text-[#006400] mb-3">INGREDIENTS</Text>
+              <Text className="text-sm font-medium text-[#006400] mb-3">
+                INGREDIENTS
+              </Text>
 
               {/* Add ingredient button */}
               <TouchableOpacity
@@ -104,29 +124,34 @@ export default function Calculator() {
                 }}
               >
                 <Text className="text-white text-base font-bold">
-                    + Add ingredients
+                  + Add ingredients
                 </Text>
               </TouchableOpacity>
 
               <Text className="text-base text-[#006400] mb-2">
-                  Ingredient List:
+                Ingredient List:
               </Text>
 
-              <ScrollView className="h-60" showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
-                  {ingredientList.length === 0 ? (
-                    <Text className="text-gray-400 text-center mt-4">No ingredients added yet.</Text>
-                  ) : 
-                  (
-                    ingredientList.map((dishIngredient) => (
+              <ScrollView
+                className="h-60"
+                showsVerticalScrollIndicator={false}
+                nestedScrollEnabled={true}
+              >
+                {ingredientList.length === 0 ? (
+                  <Text className="text-gray-400 text-center mt-4">
+                    No ingredients added yet.
+                  </Text>
+                ) : (
+                  ingredientList.map((dishIngredient) => (
                     <DishIngredientItem
-                    key={dishIngredient.ingredient_id}
-                    dishIngredient={dishIngredient}
-                    onDelete={() => removeIngredient(dishIngredient.ingredient_id!)} 
-
+                      key={dishIngredient.ingredient_id}
+                      dishIngredient={dishIngredient}
+                      onDelete={() =>
+                        removeIngredient(dishIngredient.ingredient_id!)
+                      }
                     />
-                    ))
-                  )
-                }
+                  ))
+                )}
               </ScrollView>
 
               {/* Ingredient tags */}
@@ -144,40 +169,67 @@ export default function Calculator() {
                 ))}
               </View> */}
               <IngredientSelector
-            showModal={showIngredientSelector}
-            handleShowModal={setShowIngredientSelector}
-            handleAddIngredient={(e: DishIngredient) => handleAddIngredient(e)}
-          ></IngredientSelector>
+                showModal={showIngredientSelector}
+                handleShowModal={setShowIngredientSelector}
+                handleAddIngredient={(e: DishIngredient) =>
+                  handleAddIngredient(e)
+                }
+              ></IngredientSelector>
             </View>
 
             {/* Total Footprint Section */}
             <View className="mb-4">
-              <Text className="text-sm font-medium text-[#006400] mb-3">TOTAL FOOTPRINT</Text>
+              <Text className="text-sm font-medium text-[#006400] mb-3">
+                TOTAL FOOTPRINT
+              </Text>
 
               <View className="items-center bg-[#F9F9F9] border border-[#DDDDDD] rounded-xl px-6 py-8">
                 {/* Grade bubble */}
                 <View className="mb-4">
-                  <View className="w-24 h-24 rounded-full items-center justify-center shadow-sm" style={{ backgroundColor: gradeColor }}>
-                    <Text className="text-white text-5xl font-bold">{grade}</Text>
+                  <View
+                    className="w-24 h-24 rounded-full items-center justify-center shadow-sm"
+                    style={{ backgroundColor: gradeColor }}
+                  >
+                    <Text className="text-white text-5xl font-bold">
+                      {grade}
+                    </Text>
                   </View>
                 </View>
 
                 {/* Rating bar */}
                 <View className="flex-row items-center mb-4 w-64 h-5 overflow-hidden rounded-full">
-                  <View className="h-full flex-1 bg-[#74B318]" />
-                  <View className="h-full flex-1 bg-[#A4D056]" />
-                  <View className="h-full flex-1 bg-[#FFDA44]" />
-                  <View className="h-full flex-1 bg-[#F87171]" />
+                  <View
+                    style={{ backgroundColor: RatingColor.A }}
+                    className="h-full flex-1"
+                  />
+                  <View
+                    style={{ backgroundColor: RatingColor.B }}
+                    className="h-full flex-1"
+                  />
+                  <View
+                    style={{ backgroundColor: RatingColor.C }}
+                    className="h-full flex-1"
+                  />
+                  <View
+                    style={{ backgroundColor: RatingColor.D }}
+                    className="h-full flex-1"
+                  />
                 </View>
 
                 {/* Emissions */}
-                <CalculateTotalCarbon ingredientList={ingredientList} onCarbonCalculated={setTotalCarbon}/>
+                <CalculateTotalCarbon
+                  ingredientList={ingredientList}
+                  onCarbonCalculated={setTotalCarbon}
+                />
 
                 {/* Explanation link */}
-                <TouchableOpacity className="mt-2"
+                <TouchableOpacity
+                  className="mt-2"
                   onPress={() => setShowExplanationModal(true)}
                 >
-                <Text className="text-[#74B318] font-medium">What does this label mean?</Text>
+                  <Text className="text-[#74B318] font-medium">
+                    What does this label mean?
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -185,23 +237,23 @@ export default function Calculator() {
         </View>
       </ScrollView>
       <Modal
-      visible={showExplanationModal}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={() => setShowExplanationModal(false)}
+        visible={showExplanationModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowExplanationModal(false)}
       >
         <View className="flex-1 justify-center items-center bg-black/50  bg-opacity-40">
           <View className="bg-white rounded-2xl p-6 w-80 shadow-md">
-            <Text className="text-xl font-bold text-[#006400] mb-3">Grade Explanation</Text>
+            <Text className="text-xl font-bold text-[#006400] mb-3">
+              Grade Explanation
+            </Text>
             <Text className="text-[#333333] text-base mb-4">
-              • A (Excellent): Less than 1 g CO₂{'\n'}
-              • B (Good): 1–4.9 g CO₂{'\n'}
-              • C (Moderate): 5–19.9 g CO₂{'\n'}
-              • D (High): 20+ g CO₂
+              • A (Excellent): Less than 1 kg CO₂{"\n"}• B (Good): 1–4.9 kg CO₂
+              {"\n"}• C (Moderate): 5–19.9 kg CO₂{"\n"}• D (High): 20+ kg CO₂
             </Text>
             <TouchableOpacity
               className="self-end mt-2 px-4 py-2 bg-[#74B318] rounded-md"
-                onPress={() => setShowExplanationModal(false)}
+              onPress={() => setShowExplanationModal(false)}
             >
               <Text className="text-white font-medium">Close</Text>
             </TouchableOpacity>
