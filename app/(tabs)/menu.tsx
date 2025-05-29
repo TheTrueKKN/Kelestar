@@ -253,7 +253,7 @@ export default function Menu() {
             {/* Rating Badge and Carbon */}
             <View className="flex-row justify-between items-center mb-4">
               <Text className="text-base font-medium">
-                Carbon: <Text className="text-primary font-bold">{selectedDish?.dish_total_carbon?.toFixed(2)} kg CO₂e</Text>
+                Carbon: <Text className="text-primary font-bold">{selectedDish?.dish_total_carbon?.toFixed(2)}g CO₂e</Text>
               </Text>
               {selectedDish && (
                 <View

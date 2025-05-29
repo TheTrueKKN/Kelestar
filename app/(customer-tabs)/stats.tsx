@@ -308,7 +308,7 @@ export default function Statistics() {
           <View className="flex-row justify-between items-center mb-2">
             <Text className="text-gray-600">Daily Carbon budget</Text>
             <Text className="text-gray-600 font-semibold">
-              {selectedDayData.totalCarbon.toFixed(1)}/{carbonBudget}g CO₂e
+              {selectedDayData.totalCarbon.toFixed(1)}/{carbonBudget.toFixed(2)}kg CO₂e
             </Text>
           </View>
 
@@ -344,7 +344,7 @@ export default function Statistics() {
                       {meal.meal_dish?.dish_name}
                     </Text>
                     <Text className="text-gray-500">
-                      {meal.meal_dish?.dish_total_carbon?.toFixed(1)}g CO₂e
+                      {meal.meal_dish?.dish_total_carbon?.toFixed(1)}kg CO₂e
                     </Text>
                   </View>
                   {renderRatingBadge(

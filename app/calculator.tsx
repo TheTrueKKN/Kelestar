@@ -92,7 +92,7 @@ export default function Calculator() {
       >
         <View className="flex-1 bg-white">
           {/* Header with subtle shadow */}
-          <View className="px-6 pt-12 pb-6 bg-white shadow-sm">
+          <View className="px-6 pt-12 pb-4 bg-white shadow-sm">
             <View className="flex-row items-center mb-3">
               <TouchableOpacity onPress={() => router.back()} className="mr-3">
                 <Ionicons name="chevron-back" size={24} color="#006400" />
@@ -178,7 +178,7 @@ export default function Calculator() {
             </View>
 
             {/* Total Footprint Section */}
-            <View className="mb-4">
+            <View className="mb-3">
               <Text className="text-sm font-medium text-[#006400] mb-3">
                 TOTAL FOOTPRINT
               </Text>
@@ -248,8 +248,8 @@ export default function Calculator() {
               Grade Explanation
             </Text>
             <Text className="text-[#333333] text-base mb-4">
-              • A (Excellent): Less than 1 kg CO₂{"\n"}• B (Good): 1–4.9 kg CO₂
-              {"\n"}• C (Moderate): 5–19.9 kg CO₂{"\n"}• D (High): 20+ kg CO₂
+              • A (Excellent): Less than 1 kg CO₂e{"\n"}• B (Good): 1–4.9 kg CO₂e
+              {"\n"}• C (Moderate): 5–19.9 kg CO₂e{"\n"}• D (High): 20+ kg CO₂e
             </Text>
             <TouchableOpacity
               className="self-end mt-2 px-4 py-2 bg-[#74B318] rounded-md"
