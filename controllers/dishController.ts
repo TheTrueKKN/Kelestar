@@ -41,7 +41,7 @@ export async function getDishes({
 
     //console.log("Running query with filters:", queryBuilder);
     const { data, error, status } = await queryBuilder;
-    // console.log(`Data: ${JSON.stringify(data)}, error: ${JSON.stringify(error)}, status: ${JSON.stringify(status)}`)
+    console.log(`Data: ${JSON.stringify(data)}, error: ${JSON.stringify(error)}, status: ${JSON.stringify(status)}`)
     if (error && status !== 406) throw error;
 
     data?.map(async (dish: Dish) => {
