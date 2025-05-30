@@ -9,6 +9,7 @@ import { getUser } from "../controllers/userController";
 import { verifyEmailOtp } from "../controllers/authController";
 import FormField from "../components/FormField";
 import { UserRole } from "../enums/userRole";
+import { Alert } from "react-native";
 
 export default function UserVerification() {
   const [token, setToken] = useState("");
@@ -21,13 +22,15 @@ export default function UserVerification() {
   const handlePress = async () => {
     if (await verifyEmailOtp(email, token))
     {
-      // Alert.alert("Login successful");
+      Alert.alert("Login successful");
       const user = await getUser();
       if (!user) {
         throw new Error("Failed to get user!");
       }
       // router.dismissAll();
+      console.log(`Checking user role: ${user.user_role}`)
       if (!user.user_role) {
+        
         router.replace({ pathname: "/role_page" });
       } else if (user.user_role == UserRole.Vendor) {
         router.replace({ pathname: "/vendorhome" });

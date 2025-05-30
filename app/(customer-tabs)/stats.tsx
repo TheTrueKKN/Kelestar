@@ -366,7 +366,7 @@ export default function Statistics() {
               <Text className="text-gray-600">
                 In total{" "}
                 <Text className="font-semibold">
-                  {selectedDayData.totalCarbon.toFixed(1)}g CO₂e
+                  {selectedDayData.totalCarbon.toFixed(1)}kg CO₂e
                 </Text>{" "}
                 is equivalent to...
               </Text>

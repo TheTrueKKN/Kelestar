@@ -54,7 +54,7 @@ const Budget = ({ handleBudgetSaved }: { handleBudgetSaved: () => void }) => {
             <Text className="text-sm font-pregular">10g</Text>
           </View>
           <Text className="text-lg font-psemibold my-4 text-center">
-            {localValue.toFixed(1)}g CO₂e
+            {localValue.toFixed(1)}kg CO₂e
           </Text>
           <TouchableOpacity
             onPress={handleSave}
