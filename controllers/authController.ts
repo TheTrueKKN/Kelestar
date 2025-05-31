@@ -74,6 +74,7 @@ export async function verifyEmailOtp(  email: string, token: string){
     token,
     type: 'email'
   });
+  console.log(`What going on dtata:${JSON.stringify(data)},  ${error}`)
   if (error) {
     Alert.alert(error.message);
     return false;

@@ -129,7 +129,7 @@ const Tracking = () => {
     if (insertMealSuccess) {
       Alert.alert(
         `New dish added`,
-        `Dish name: ${dish.dish_name}\nFootprint: ${dish.dish_total_carbon} gCO₂`
+        `Dish name: ${dish.dish_name}\nFootprint: ${dish.dish_total_carbon} kg CO₂e`
       );
       router.back();
     }
@@ -226,10 +226,10 @@ const Tracking = () => {
                 content={
                   <View className="h-[80px]">
                     <Text className="text-black w-[250px] h-[150px]">
-                      • A (Excellent): Less than 1 g CO₂{'\n'}
-                      • B (Good): 1–4.9 g CO₂{'\n'}
-                      • C (Moderate): 5–19.9 g CO₂{'\n'}
-                      • D (High): 20+ g CO₂
+                      • A (Excellent): Less than 1 kg CO₂{'\n'}
+                      • B (Good): 1–4.9 kg CO₂{'\n'}
+                      • C (Moderate): 5–19.9 kg CO₂{'\n'}
+                      • D (High): 20+ kg CO₂
                     </Text>
                   </View>
                 }
@@ -285,7 +285,7 @@ const Tracking = () => {
             {activeTab === "Carbon Info" && (
               <View>
                 <Text className="text-lg font-semibold text-center mb-4">
-                  Total CO₂e: {dish.dish_total_carbon}g
+                  Total CO₂e: {(dish.dish_total_carbon)?.toFixed(2)}kg
                 </Text>
                 <View className="items-center">
                   <PieChart

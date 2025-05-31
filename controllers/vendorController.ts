@@ -142,9 +142,10 @@ export async function updateVendorGreenScore(vendorId: string) {
 
     // Fetch all dishes for the vendor
     const { data: dishes, error } = await supabase
-      .from("dish")
-      .select("dish_total_carbon")
-      .eq("dish_vendor_id", vendorId);
+    .from("dish")
+    .select("dish_total_carbon")
+    .eq("dish_vendor_id", vendorId)
+    .eq("active", true); // only fetch active dishes
 
     if (error) throw error;
 
@@ -162,7 +163,7 @@ export async function updateVendorGreenScore(vendorId: string) {
     const avgFootprint = totalCarbon / dishes.length;
 
     console.log(`Total carbon" ${totalCarbon}, abg footprint:${avgFootprint}`)
-
+    console.log("HEYYYYYYY")
     // Normalize to a 0–100 score
     let normalizedScore =
       ((worst_case_footprint - avgFootprint) / (worst_case_footprint - best_case_footprint)) * 100;

@@ -309,7 +309,7 @@ const Dashboard = () => {
               Total Footprint
             </Text>
             <Text className="text-xl font-bold text-primary">
-              {totalCarbon} g
+              {totalCarbon} kg CO₂e
             </Text>
           </View>
         </View>
@@ -501,7 +501,7 @@ const Dashboard = () => {
                     }}
                   />
                   <Text>
-                    {name}: {population}
+                    {name}: {population}g
                   </Text>
                 </View>
               ))}

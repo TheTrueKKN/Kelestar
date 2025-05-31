@@ -50,11 +50,11 @@ const Budget = ({ handleBudgetSaved }: { handleBudgetSaved: () => void }) => {
             thumbTintColor="#4CAF50"
           />
           <View className="flex-row justify-between mt-2">
-            <Text className="text-sm font-pregular">0g</Text>
-            <Text className="text-sm font-pregular">10g</Text>
+            <Text className="text-sm font-pregular">0kg</Text>
+            <Text className="text-sm font-pregular">10kg</Text>
           </View>
           <Text className="text-lg font-psemibold my-4 text-center">
-            {localValue.toFixed(1)}g CO₂e
+            {localValue.toFixed(1)}kg CO₂e
           </Text>
           <TouchableOpacity
             onPress={handleSave}

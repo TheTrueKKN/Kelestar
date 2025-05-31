@@ -330,7 +330,7 @@ const History = () => {
             )}
             <View className="px-4 mt-2 mb-6 items-end">
               <Text className="text-gray-500 font-normal">
-                Total: {mealData[period].totalCarbon.toFixed(2)} g CO₂e
+                Total: {mealData[period].totalCarbon.toFixed(2)} kg CO₂e
               </Text>
             </View>
           </View>
