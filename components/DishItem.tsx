@@ -206,7 +206,7 @@ const DishItem: React.FC<DishItemProps> = ({ dish, onEdit, onDelete, setModal })
               RM {dish_price}
             </Text>
             <Text style={{ color: "#64748b", marginTop: 2 }}>
-              {dish_total_carbon?.toFixed(3)} gCO₂
+              {dish_total_carbon?.toFixed(2)} kgCO₂
             </Text>
           </View>
         </Animated.View>

@@ -243,7 +243,7 @@ const Dashboard = () => {
 
   const getBarChartData = (dishes: Dish[]): BarData => {
     const labels = dishes.map((dish) => dish.dish_name!);
-    const data = dishes.map((dish) => dish.dish_total_carbon!);
+    const data = dishes.map((dish) => Number(dish.dish_total_carbon?.toFixed(2)));
     // Use deterministic chartColors for consistent bar colors
     const colors = dishes.map(
       (_, idx) => () => chartColors[idx % chartColors.length]

@@ -37,7 +37,7 @@ const SignIn = () => {
         username: username,
         email: email,
       };
-      router.dismissAll();
+
       router.replace({ pathname: "/userverification", params: userDetails });
     }
     setLoading(false);
