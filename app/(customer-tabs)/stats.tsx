@@ -16,6 +16,8 @@ import { Dish } from "../../interfaces/dish";
 import { useFocusEffect } from "expo-router";
 import { getCarbonRating} from "../../lib/utils/carbonRating";
 import { CarbonRating, RatingColor } from "../../enums/carbonRating";
+import { JoinedDishIngredient } from "../../interfaces/joinedDishIngredient";
+import { joinDishIngredient } from "../../controllers/dishIngredientJoinController";
 
 // Types
 // type Meal = {
@@ -87,6 +89,10 @@ export default function Statistics() {
   const [selectedDishDetails, setSelectedDishDetails] = useState<Dish | null>(null);
   const [dishDetailsVisible, setDishDetailsVisible] = useState(false);
   const mealData = useMemo(() => generateMealData(meals), [meals]);
+  const [dishIngredients, setDishIngredients] = useState<
+      JoinedDishIngredient[]
+    >([]);
+  const [mealsLoaded, setMealsLoaded] = useState(false);
   // const [mealData, setMealData] = useState<Record<string, DayData>>({});
 
   useFocusEffect(
@@ -107,12 +113,43 @@ export default function Statistics() {
         const fetchedMeals = await getMealListingByCustomer();
         if (fetchedMeals) {
           setMeals(fetchedMeals);
+          setMealsLoaded(false)
           // setMealData(generateMealData(fetchedMeals));
         }
       };
       initMeals();
     }, [])
   );
+
+ useEffect(() => {
+  const fetchDishIngredient = async () => {
+    if (mealsLoaded || meals.length === 0) return;
+
+    const mealsWithDish = await Promise.all(
+      meals.map(async (meal) => {
+        console.log(`Meal info ${JSON.stringify(meal.meal_dish)}`)
+        if (meal.meal_dish && !meal.meal_dish.dish_ingredient) {
+          console.log(`HEYYYYYY${JSON.stringify(meal.meal_dish)}`)
+          const fetchedIngredients = await joinDishIngredient(meal.meal_dish_id!);
+          return {
+            ...meal,
+            meal_dish: {
+              ...meal.meal_dish,
+              dish_ingredient: fetchedIngredients,
+            },
+          } as Meal;
+        }
+        return meal;
+      })
+    );
+
+    setMeals(mealsWithDish);
+    setMealsLoaded(true); // prevent future runs
+  };
+
+  fetchDishIngredient();
+}, [meals, mealsLoaded]);
+
 
   // Format date to YYYY-MM-DD for lookup
   const selectedDateKey = selectedDate.toISOString().split("T")[0];
@@ -335,7 +372,9 @@ export default function Statistics() {
                 <TouchableOpacity 
                   className="flex-1 flex-row justify-between items-center"
                   onPress={() => {
+                    //console.log(`Current meal detail :${JSON.stringify(meal.meal_dish )}`)
                     setSelectedDishDetails(meal.meal_dish || null);
+                    //console.log(`Current dish info: ${JSON.stringify(meal.meal_dish)}`)
                     setDishDetailsVisible(true);
                   }}
                 >
@@ -344,7 +383,7 @@ export default function Statistics() {
                       {meal.meal_dish?.dish_name}
                     </Text>
                     <Text className="text-gray-500">
-                      {meal.meal_dish?.dish_total_carbon?.toFixed(1)}kg CO₂e
+                      {meal.meal_dish?.dish_total_carbon?.toFixed(2)}kg CO₂e
                     </Text>
                   </View>
                   {renderRatingBadge(
@@ -366,7 +405,7 @@ export default function Statistics() {
               <Text className="text-gray-600">
                 In total{" "}
                 <Text className="font-semibold">
-                  {selectedDayData.totalCarbon.toFixed(1)}kg CO₂e
+                  {selectedDayData.totalCarbon.toFixed(2)}kg CO₂e
                 </Text>{" "}
                 is equivalent to...
               </Text>

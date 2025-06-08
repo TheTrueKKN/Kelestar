@@ -129,7 +129,7 @@ const Tracking = () => {
     if (insertMealSuccess) {
       Alert.alert(
         `New dish added`,
-        `Dish name: ${dish.dish_name}\nFootprint: ${dish.dish_total_carbon} kg CO₂e`
+        `Dish name: ${dish.dish_name}\nFootprint: ${dish.dish_total_carbon?.toFixed(2)} kg CO₂e`
       );
       router.back();
     }
@@ -361,7 +361,7 @@ const Tracking = () => {
                       - {dishIngredient.ingredient_amount}g{" "}
                       {dishIngredient.ingredient.ingredient_name}{" "}
                       <Text className="text-sm text-gray-500">
-                        ({calcIndividualIngredientFootprint(dishIngredient)}{}g CO₂e)
+                        ({calcIndividualIngredientFootprint(dishIngredient)}{}kg CO₂e)
                       </Text>
                     </Text>
                   ))}
@@ -391,7 +391,7 @@ const Tracking = () => {
                   </Text> */}
                 </View>
                 <Text className="text-lg font-bold text-gray-800 mt-4">
-                  Total Estimated Carbon Emission: {dish.dish_total_carbon}g
+                  Total Estimated Carbon Emission: {dish.dish_total_carbon}kg
                   CO₂e
                 </Text>
               </View>
